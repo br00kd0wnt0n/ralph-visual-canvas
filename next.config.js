@@ -12,7 +12,13 @@ const nextConfig = {
     outputFileTracingRoot: undefined
   },
   poweredByHeader: false,
-  compress: true
+  compress: true,
+  // Ensure proper production settings
+  productionBrowserSourceMaps: false,
+  swcMinify: true,
+  images: {
+    unoptimized: true
+  }
 }
 
 module.exports = nextConfig 

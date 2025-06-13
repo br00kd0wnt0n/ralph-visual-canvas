@@ -20,18 +20,19 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_SHARP_PATH=/app/node_modules/sharp
+ENV NPM_CONFIG_LOGLEVEL=verbose
 
 # Debug: List contents of the build directory
-RUN ls -la
+RUN echo "=== Build Directory Contents ===" && \
+    ls -la && \
+    echo "=== Node and NPM Versions ===" && \
+    node --version && npm --version && \
+    echo "=== Node Modules Contents ===" && \
+    ls -la node_modules || echo "node_modules not found"
 
-# Debug: Check node and npm versions
-RUN node --version && npm --version
-
-# Debug: Check if node_modules exists and its contents
-RUN ls -la node_modules || echo "node_modules not found"
-
-# Build the application
-RUN npm run build || (echo "Build failed" && exit 1)
+# Build the application with verbose output
+RUN echo "=== Starting Build ===" && \
+    npm run build --verbose || (echo "=== Build Failed ===" && cat .next/build-error.log && exit 1)
 
 # Production image, copy all the files and run next
 FROM base AS runner
