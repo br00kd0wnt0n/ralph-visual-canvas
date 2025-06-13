@@ -82,7 +82,19 @@ export interface VisualState {
     // Chromatic Effects
     chromatic: {
       aberration: number;
-      rainbow: number;
+      aberrationColors: {
+        red: string;
+        green: string;
+        blue: string;
+      };
+      rainbow: {
+        intensity: number;
+        speed: number;
+        rotation: number;
+        blendMode: 'normal' | 'screen' | 'overlay' | 'soft-light' | 'hard-light' | 'color-dodge' | 'color-burn' | 'difference' | 'exclusion';
+        colors: string[];
+        opacity: number;
+      };
       prism: number;
     };
     
@@ -105,6 +117,7 @@ export interface VisualState {
     
     // Volumetric Effects
     volumetric: {
+      enabled: boolean;
       fog: number;
       lightShafts: number;
       density: number;
@@ -201,7 +214,27 @@ const defaultState: VisualState = {
     },
     chromatic: {
       aberration: 0,
-      rainbow: 0,
+      aberrationColors: {
+        red: '#ff0000',
+        green: '#00ff00',
+        blue: '#0000ff',
+      },
+      rainbow: {
+        intensity: 0,
+        speed: 1,
+        rotation: 0,
+        blendMode: 'screen',
+        colors: [
+          '#ff0000',
+          '#ff7f00',
+          '#ffff00',
+          '#00ff00',
+          '#0000ff',
+          '#4b0082',
+          '#9400d3'
+        ],
+        opacity: 0.3
+      },
       prism: 0,
     },
     distortion: {
@@ -218,6 +251,7 @@ const defaultState: VisualState = {
       turbulence: 0,
     },
     volumetric: {
+      enabled: false,
       fog: 0,
       lightShafts: 0,
       density: 0.5,

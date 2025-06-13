@@ -14,7 +14,14 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   images: {
     unoptimized: true
-  }
+  },
+  webpack: (config, { dev, isServer }) => {
+    if (dev) {
+      // Disable webpack caching during development
+      config.cache = false;
+    }
+    return config;
+  },
 }
 
 module.exports = nextConfig 

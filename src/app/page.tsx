@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Scene } from '../components/Scene';
-import { Dashboard } from '../components/Dashboard';
+import { EnhancedVisualCanvas } from '../components/EnhancedVisualCanvas';
+import { GlobalEffectsDashboard } from '../components/GlobalEffectsDashboard';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -10,11 +10,9 @@ export default function Home() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.scene}>
-          <Scene />
+          <EnhancedVisualCanvas />
         </div>
-        <div className={styles.dashboard}>
-          <Dashboard />
-        </div>
+        <GlobalEffectsDashboard />
       </div>
     </main>
   );

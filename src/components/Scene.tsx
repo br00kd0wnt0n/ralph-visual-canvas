@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect, CSSProperties } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Sphere, Box, Torus, PerspectiveCamera } from '@react-three/drei';
 import { useVisualStore } from '../store/visualStore';
@@ -171,32 +171,133 @@ const ResizeHandler = () => {
 };
 
 export const Scene = () => {
-  const { background, geometric, particles, effects } = useVisualStore();
+  const { background, geometric, particles, effects, globalEffects } = useVisualStore();
   const { opacity, blur, color } = background;
 
-  return (
-    <div className="scene-container">
-      <Canvas
-        style={{
-          background: 'transparent',
-          filter: `
-            contrast(${effects.contrast})
-            saturate(${effects.saturation})
-            hue-rotate(${effects.hue}deg)
-          `,
-        }}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance',
-        }}
-      >
-        <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={75} />
-        <ResizeHandler />
-        <Background />
+  // Calculate global effects styles with more pronounced effects
+  const globalEffectsStyle: CSSProperties = {
+    filter: [
+      // Base effects
+      `contrast(${effects.contrast})`,
+      `saturate(${effects.saturation})`,
+      `hue-rotate(${effects.hue}deg)`,
+      `brightness(${effects.brightness})`,
+      // Atmospheric blur - make it more visible
+      globalEffects.atmosphericBlur.enabled ? 
+        `blur(${globalEffects.atmosphericBlur.intensity * 5}px)
+         brightness(${1 + globalEffects.atmosphericBlur.intensity * 0.2})` : '',
+      // Glow system
+      globalEffects.glowSystem.enabled ? 
+        `drop-shadow(0 0 ${globalEffects.glowSystem.intensity * 10}px ${globalEffects.glowSystem.color})
+         drop-shadow(0 0 ${globalEffects.glowSystem.intensity * 5}px ${globalEffects.glowSystem.color})` : '',
+      // Chromatic effects - make them more pronounced
+      globalEffects.chromatic.aberration > 0 ? 
+        `contrast(${1 + globalEffects.chromatic.aberration * 3})
+         hue-rotate(${globalEffects.chromatic.rainbow * 20}deg)
+         saturate(${1 + globalEffects.chromatic.prism * 2})` : '',
+    ].filter(Boolean).join(' '),
+    mixBlendMode: globalEffects.colorBlending.enabled ? 
+      (globalEffects.colorBlending.mode as CSSProperties['mixBlendMode']) : 
+      'normal',
+    // Add intensity to color blending
+    ...(globalEffects.colorBlending.enabled && {
+      opacity: 0.5 + (globalEffects.colorBlending.intensity * 0.5),
+    }),
+  };
+
+  // Create a wrapper for effects that need to be applied to the entire scene
+  const wrapperStyle: CSSProperties = {
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    // Depth of field - make it more visible
+    ...(globalEffects.depthOfField.enabled && {
+      backdropFilter: `
+        blur(${globalEffects.depthOfField.blurRadius * 4}px)
+        contrast(${1 + globalEffects.depthOfField.blurRadius * 0.1})
+      `,
+    }),
+    // Distortion effects - make them more pronounced
+    ...(globalEffects.distortion.wave > 0 && {
+      transform: `
+        skew(${globalEffects.distortion.wave * 10}deg, ${globalEffects.distortion.ripple * 10}deg)
+        scale(${1 + globalEffects.distortion.noise * 0.1})
+      `,
+      filter: `contrast(${1 + globalEffects.distortion.frequency * 0.2})`,
+    }),
+    // Volumetric effects - add fog and light shafts
+    ...(globalEffects.volumetric.fog > 0 && {
+      background: `linear-gradient(
+        to bottom,
+        ${globalEffects.volumetric.color}${Math.floor(globalEffects.volumetric.fog * 50).toString(16).padStart(2, '0')},
+        transparent
+      )`,
+      backdropFilter: `blur(${globalEffects.volumetric.density * 10}px)`,
+    }),
+  };
+
+  // Create a group for particle interaction effects
+  const ParticleGroup = () => {
+    const particleStyle = useMemo(() => ({
+      ...(globalEffects.particleInteraction.enabled && {
+        filter: `
+          contrast(${1 + globalEffects.particleInteraction.magnetism * 0.5})
+          brightness(${1 + globalEffects.particleInteraction.repulsion * 0.2})
+        `,
+        transform: globalEffects.particleInteraction.flowField ? 
+          `scale(${1 + globalEffects.particleInteraction.turbulence * 0.1})` : 'none',
+      }),
+    }), [globalEffects.particleInteraction]);
+
+    return (
+      <group>
         <GeometricShapes />
         <Particles />
-      </Canvas>
+      </group>
+    );
+  };
+
+  return (
+    <div className="scene-container relative w-full h-full">
+      {/* Effects wrapper - outside Canvas */}
+      <div style={wrapperStyle} />
+      
+      {/* Main canvas with enhanced effects */}
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <Canvas
+          style={{
+            background: 'transparent',
+            ...globalEffectsStyle,
+            // Add chromatic aberration transform
+            ...(globalEffects.chromatic.aberration > 0 && {
+              transform: `
+                translateX(${globalEffects.chromatic.aberration * 4}px)
+                scale(${1 + globalEffects.chromatic.prism * 0.1})
+              `,
+            }),
+          }}
+          gl={{
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance',
+          }}
+        >
+          <PerspectiveCamera 
+            makeDefault 
+            position={[0, 0, 10]} 
+            fov={75}
+            // Enhanced depth of field
+            {...(globalEffects.depthOfField.enabled && {
+              focusDistance: globalEffects.depthOfField.focusDistance,
+              bokehScale: globalEffects.depthOfField.bokehEffect ? 4 : 0,
+              focusRange: globalEffects.depthOfField.blurRadius * 2,
+            })}
+          />
+          <ResizeHandler />
+          <Background />
+          <ParticleGroup />
+        </Canvas>
+      </div>
     </div>
   );
 }; 

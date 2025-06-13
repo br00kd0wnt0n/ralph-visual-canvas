@@ -1,7 +1,6 @@
 .main {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -15,6 +14,7 @@
   width: 100%;
   height: 100%;
   position: relative;
+  z-index: 10;
 }
 
 .scene {
@@ -24,158 +24,4 @@
   height: 100%;
 }
 
-.dashboard {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 400px;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  padding: 20px;
-  overflow-y: auto;
-  color: #fff;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 10;
-}
-
-/* Dashboard styles */
-.control-group {
-  margin-bottom: 15px;
-}
-
-.control-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.slider {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  outline: none;
-  -webkit-appearance: none;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #fff;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.slider::-webkit-slider-thumb:hover {
-  background: #f0f0f0;
-}
-
-.color-picker {
-  width: 100%;
-  height: 30px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.toggle {
-  width: 40px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  position: relative;
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: background 0.2s;
-}
-
-.toggle:checked {
-  background: #4CAF50;
-}
-
-.toggle::before {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #fff;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.2s;
-}
-
-.toggle:checked::before {
-  transform: translateX(20px);
-}
-
-.section {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.section h2 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  color: #fff;
-}
-
-.subsection {
-  margin-bottom: 20px;
-  padding-left: 15px;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.subsection h3 {
-  font-size: 16px;
-  margin-bottom: 10px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.preset-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.preset-input {
-  width: 100%;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #fff;
-  font-size: 14px;
-}
-
-.preset-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.preset-button {
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.preset-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Scene container styles */
-.scene-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-} 
+/* Remove unused scene-container class */ 
