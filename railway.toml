@@ -7,7 +7,7 @@ nixpacksVersion = "1.0.0"
 nixPkgs = ["nodejs@18"]
 
 [deploy]
-startCommand = "npm start"
+startCommand = "node server.js"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 
