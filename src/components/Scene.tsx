@@ -171,7 +171,8 @@ const ResizeHandler = () => {
 };
 
 export const Scene = () => {
-  const { effects } = useVisualStore();
+  const { background, geometric, particles, effects } = useVisualStore();
+  const { opacity, blur, color } = background;
 
   return (
     <div className="scene-container">

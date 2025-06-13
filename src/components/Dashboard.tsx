@@ -1,5 +1,6 @@
 import React from 'react';
 import { useVisualStore } from '../store/visualStore';
+import type { VisualState } from '../store/visualStore';
 
 const SliderControl = ({ 
   label, 
@@ -95,6 +96,31 @@ export const Dashboard = () => {
 
   const [presetName, setPresetName] = React.useState('');
 
+  const handleNumberChange = (section: 'background' | 'particles' | 'effects', key: string, value: number) => {
+    switch (section) {
+      case 'background':
+        updateBackground({ [key]: value });
+        break;
+      case 'particles':
+        updateParticles({ [key]: value });
+        break;
+      case 'effects':
+        updateEffects({ [key]: value });
+        break;
+    }
+  };
+
+  const handleColorChange = (section: 'background' | 'particles', key: string, value: string) => {
+    switch (section) {
+      case 'background':
+        updateBackground({ [key]: value });
+        break;
+      case 'particles':
+        updateParticles({ [key]: value });
+        break;
+    }
+  };
+
   return (
     <div className="dashboard">
       <div className="section">
@@ -104,19 +130,19 @@ export const Dashboard = () => {
           value={background.opacity}
           min={0}
           max={1}
-          onChange={(value) => updateBackground({ opacity: value })}
+          onChange={(value) => handleNumberChange('background', 'opacity', value)}
         />
         <SliderControl
           label="Blur"
           value={background.blur}
           min={0}
           max={10}
-          onChange={(value) => updateBackground({ blur: value })}
+          onChange={(value) => handleNumberChange('background', 'blur', value)}
         />
         <ColorControl
           label="Color"
           value={background.color}
-          onChange={(value) => updateBackground({ color: value })}
+          onChange={(value) => handleColorChange('background', 'color', value)}
         />
         <ToggleControl
           label="Gradient"
@@ -187,40 +213,40 @@ export const Dashboard = () => {
           min={0}
           max={1000}
           step={10}
-          onChange={(value) => updateParticles({ count: value })}
+          onChange={(value) => handleNumberChange('particles', 'count', value)}
         />
         <SliderControl
           label="Size"
           value={particles.size}
           min={0.01}
           max={0.5}
-          onChange={(value) => updateParticles({ size: value })}
+          onChange={(value) => handleNumberChange('particles', 'size', value)}
         />
         <ColorControl
           label="Color"
           value={particles.color}
-          onChange={(value) => updateParticles({ color: value })}
+          onChange={(value) => handleColorChange('particles', 'color', value)}
         />
         <SliderControl
           label="Speed"
           value={particles.speed}
           min={0}
           max={3}
-          onChange={(value) => updateParticles({ speed: value })}
+          onChange={(value) => handleNumberChange('particles', 'speed', value)}
         />
         <SliderControl
           label="Opacity"
           value={particles.opacity}
           min={0}
           max={1}
-          onChange={(value) => updateParticles({ opacity: value })}
+          onChange={(value) => handleNumberChange('particles', 'opacity', value)}
         />
         <SliderControl
           label="Spread"
           value={particles.spread}
           min={1}
           max={20}
-          onChange={(value) => updateParticles({ spread: value })}
+          onChange={(value) => handleNumberChange('particles', 'spread', value)}
         />
       </div>
 
@@ -231,21 +257,21 @@ export const Dashboard = () => {
           value={effects.glow}
           min={0}
           max={1}
-          onChange={(value) => updateEffects({ glow: value })}
+          onChange={(value) => handleNumberChange('effects', 'glow', value)}
         />
         <SliderControl
           label="Contrast"
           value={effects.contrast}
           min={0.5}
           max={2}
-          onChange={(value) => updateEffects({ contrast: value })}
+          onChange={(value) => handleNumberChange('effects', 'contrast', value)}
         />
         <SliderControl
           label="Saturation"
           value={effects.saturation}
           min={0}
           max={2}
-          onChange={(value) => updateEffects({ saturation: value })}
+          onChange={(value) => handleNumberChange('effects', 'saturation', value)}
         />
         <SliderControl
           label="Hue"
@@ -253,7 +279,7 @@ export const Dashboard = () => {
           min={0}
           max={360}
           step={1}
-          onChange={(value) => updateEffects({ hue: value })}
+          onChange={(value) => handleNumberChange('effects', 'hue', value)}
         />
       </div>
 
