@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -20,19 +20,25 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_SHARP_PATH=/app/node_modules/sharp
-ENV NPM_CONFIG_LOGLEVEL=verbose
 
-# Debug: List contents of the build directory
-RUN echo "=== Build Directory Contents ===" && \
-    ls -la && \
+# Debug: Show environment
+RUN echo "=== Environment ===" && \
+    env | sort && \
     echo "=== Node and NPM Versions ===" && \
     node --version && npm --version && \
+    echo "=== Build Directory Contents ===" && \
+    ls -la && \
     echo "=== Node Modules Contents ===" && \
     ls -la node_modules || echo "node_modules not found"
 
-# Build the application with verbose output
-RUN echo "=== Starting Build ===" && \
-    npm run build --verbose || (echo "=== Build Failed ===" && cat .next/build-error.log && exit 1)
+# Build the application
+RUN npm run build
+
+# Verify the build output
+RUN echo "=== Build Output ===" && \
+    ls -la .next && \
+    echo "=== Standalone Directory ===" && \
+    ls -la .next/standalone || echo "standalone directory not found"
 
 # Production image, copy all the files and run next
 FROM base AS runner
