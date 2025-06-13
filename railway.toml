@@ -1,6 +1,10 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm run build"
+buildCommand = "npm install && npm run build"
+nixpacksVersion = "1.0.0"
+
+[phases.setup]
+nixPkgs = ["nodejs@18"]
 
 [deploy]
 startCommand = "npm start"
@@ -9,4 +13,5 @@ healthcheckTimeout = 100
 
 [env]
 NODE_ENV = "production"
-PORT = "3000" 
+PORT = "3000"
+NODE_VERSION = "18.x" 
