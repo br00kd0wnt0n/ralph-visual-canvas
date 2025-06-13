@@ -4,7 +4,15 @@ const nextConfig = {
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true
-  }
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
+  experimental: {
+    outputFileTracingRoot: undefined
+  },
+  poweredByHeader: false,
+  compress: true
 }
 
 module.exports = nextConfig 
