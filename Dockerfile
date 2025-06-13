@@ -21,24 +21,25 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_SHARP_PATH=/app/node_modules/sharp
 
-# Debug: Show environment
+# Debug: Show environment and verify node_modules
 RUN echo "=== Environment ===" && \
     env | sort && \
     echo "=== Node and NPM Versions ===" && \
     node --version && npm --version && \
-    echo "=== Build Directory Contents ===" && \
-    ls -la && \
     echo "=== Node Modules Contents ===" && \
-    ls -la node_modules || echo "node_modules not found"
+    ls -la node_modules/.bin/next || echo "next binary not found in node_modules/.bin"
 
-# Build the application
-RUN npm run build
+# Build the application with explicit error handling
+RUN npm run build || (echo "Build failed" && exit 1)
 
-# Verify the build output
+# Verify the build output and standalone directory
 RUN echo "=== Build Output ===" && \
     ls -la .next && \
     echo "=== Standalone Directory ===" && \
-    ls -la .next/standalone || echo "standalone directory not found"
+    if [ ! -d ".next/standalone" ]; then \
+        echo "Standalone directory not found - build may have failed" && exit 1; \
+    fi && \
+    ls -la .next/standalone
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -52,17 +53,22 @@ ENV HOSTNAME="0.0.0.0"
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
-COPY --from=builder /app/public ./public
+# Copy necessary files from the standalone output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
-# Set permissions (removed RUN mkdir .next, and use chown -f to ignore errors if .next is missing)
-RUN chown -f -R nextjs:nodejs .next || true
-RUN chown -f -R nextjs:nodejs . || true
+# Verify the server.js file exists
+RUN if [ ! -f "server.js" ]; then \
+        echo "server.js not found in standalone output" && exit 1; \
+    fi
+
+# Set permissions
+RUN chown -R nextjs:nodejs .
 
 USER nextjs
 
 EXPOSE 3000
 
+# Use node to run the server directly
 CMD ["node", "server.js"] 
