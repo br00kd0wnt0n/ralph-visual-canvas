@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
@@ -22,181 +22,379 @@ const useRainbowAnimation = (speed: number, rotation: number) => {
   return time;
 };
 
+// Add client-side only rendering wrapper
+const ClientOnly = ({ children }: { children: React.ReactNode }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Force store hydration on mount
+    console.log('Store state on mount:', useVisualStore.getState());
+  }, []);
+
+  if (!mounted) return null;
+  return <>{children}</>;
+};
+
+// Add debug logging to store initialization
+const store = useVisualStore;
+console.log('=== STORE INITIALIZATION ===');
+console.log('Initial store state:', store.getState());
+
 const Spheres = () => {
-  const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects } = useVisualStore();
   const { spheres } = geometric;
-  const { atmosphericBlur } = globalEffects;
+  const { shapeGlow } = globalEffects;
+  const groupRef = useRef<THREE.Group>(null);
+  const [positions, setPositions] = useState<THREE.Vector3[]>([]);
+  const renderKey = useMemo(() => `spheres-${spheres.count}-${Date.now()}`, [spheres.count]);
 
-  const spherePositions = useMemo(() => {
-    const positions = [];
+  console.log('=== SPHERES COMPONENT DEBUG ===');
+  console.log('Spheres count:', spheres?.count);
+  console.log('Spheres object:', spheres);
+  console.log('Geometric object:', geometric);
+  console.log('Full store state:', useVisualStore.getState());
+
+  if (!spheres || spheres.count === 0) {
+    console.log('Spheres component: No spheres to render - spheres:', spheres);
+    return null;
+  }
+
+  // Generate positions using useMemo to ensure they're available before render
+  const generatedPositions = useMemo(() => {
+    console.log('Generating sphere positions for count:', spheres.count);
+    const newPositions: THREE.Vector3[] = [];
     for (let i = 0; i < spheres.count; i++) {
-      positions.push([
+      newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 20,
         (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 10,
-      ]);
+        (Math.random() - 0.5) * 20
+      ));
     }
-    return positions;
-  }, [spheres.count]);
+    console.log('Generated sphere positions:', newPositions.length);
+    return newPositions;
+  }, [spheres.count, spheres.size]);
+
+  // Update positions state when generated positions change
+  useEffect(() => {
+    setPositions(generatedPositions);
+  }, [generatedPositions]);
 
   useFrame((state) => {
-    if (groupRef.current) {
-      const time = state.clock.elapsedTime;
+    if (!groupRef.current) return;
+    
+    const time = state.clock.elapsedTime;
+    const waveIntensity = globalEffects.distortion.wave * 2;
+    const rippleIntensity = globalEffects.distortion.ripple * 3;
+    
+    // Rotate the entire group
+    groupRef.current.rotation.y += spheres.speed * 0.01;
+    
+    // Animate individual spheres
+    groupRef.current.children.forEach((child, i) => {
+      const pos = positions[i];
+      if (!pos) return;
       
-      // Enhanced movement with distortion effects
-      const waveIntensity = globalEffects.distortion.wave * 2;
-      const rippleIntensity = globalEffects.distortion.ripple * 3;
+      // Base movement
+      child.position.y = pos.y + Math.sin(time + i) * 2 * spheres.speed;
       
-      groupRef.current.rotation.y += spheres.speed * 0.01;
-      groupRef.current.children.forEach((child, i) => {
-        // Base movement
-        child.position.y += Math.sin(time + i) * 0.02 * spheres.speed;
-        
-        // Add wave distortion
-        if (waveIntensity > 0) {
-          child.position.x += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
-          child.position.z += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
-        }
-        
-        // Add ripple effect
-        if (rippleIntensity > 0) {
-          const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
-          child.position.y += Math.sin(time * 2 + distance * 0.5) * rippleIntensity;
-        }
-      });
-    }
+      // Add wave distortion
+      if (waveIntensity > 0) {
+        child.position.x = pos.x + Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
+        child.position.z = pos.z + Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+      } else {
+        child.position.x = pos.x;
+        child.position.z = pos.z;
+      }
+      
+      // Add ripple effect
+      if (rippleIntensity > 0) {
+        const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
+        child.position.y += Math.sin(time * 2 + distance * 0.5) * rippleIntensity;
+      }
+    });
   });
 
+  console.log('Rendering spheres with positions:', positions);
+
+  // Don't render until positions are available
+  if (positions.length === 0) {
+    console.log('Waiting for sphere positions to be generated...');
+    return null;
+  }
+
   return (
-    <group ref={groupRef}>
-      {spherePositions.map((position, i) => (
-        <group key={i} position={position as [number, number, number]}>
-          <mesh>
-            <sphereGeometry args={[spheres.size, 32, 32]} />
-            <meshBasicMaterial 
-              color={spheres.color} 
-              transparent 
-              opacity={spheres.opacity}
-              alphaTest={0.1}
-            />
-          </mesh>
-        </group>
-      ))}
+    <group ref={groupRef} key={renderKey}>
+      {positions.map((pos, i) => {
+        console.log(`Rendering sphere ${i} at position:`, pos);
+        return (
+          <group key={`sphere-${i}-${spheres.count}`} position={pos}>
+            {/* Main sphere */}
+            <mesh>
+              <sphereGeometry args={[spheres.size, 32, 32]} />
+              <meshBasicMaterial 
+                color={spheres.color} 
+                transparent 
+                opacity={spheres.opacity}
+                visible={true}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+            
+            {/* Single glow layer */}
+            {shapeGlow.enabled && (
+              <mesh>
+                <sphereGeometry args={[spheres.size * 1.5, 32, 32]} />
+                <meshBasicMaterial
+                  color={shapeGlow.useObjectColor ? spheres.color : shapeGlow.customColor}
+                  transparent
+                  opacity={shapeGlow.intensity * 0.3}
+                  blending={THREE.AdditiveBlending}
+                  depthWrite={false}
+                  visible={true}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 };
 
 const Cubes = () => {
-  const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects } = useVisualStore();
   const { cubes } = geometric;
-  const { atmosphericBlur } = globalEffects;
+  const { shapeGlow } = globalEffects;
+  const groupRef = useRef<THREE.Group>(null);
+  const [positions, setPositions] = useState<THREE.Vector3[]>([]);
+  const renderKey = useMemo(() => `cubes-${cubes.count}-${Date.now()}`, [cubes.count]);
 
-  const cubePositions = useMemo(() => {
-    const positions = [];
+  console.log('=== CUBES COMPONENT DEBUG ===');
+  console.log('Cubes count:', cubes?.count);
+  console.log('Cubes object:', cubes);
+  console.log('Geometric object:', geometric);
+  console.log('Full store state:', useVisualStore.getState());
+
+  if (!cubes || cubes.count === 0) {
+    console.log('Cubes component: No cubes to render - cubes:', cubes);
+    return null;
+  }
+
+  // Generate positions using useMemo
+  const generatedPositions = useMemo(() => {
+    console.log('Generating cube positions for count:', cubes.count);
+    const newPositions: THREE.Vector3[] = [];
     for (let i = 0; i < cubes.count; i++) {
-      positions.push([
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 8,
-      ]);
+      newPositions.push(new THREE.Vector3(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20
+      ));
     }
-    return positions;
-  }, [cubes.count]);
+    console.log('Generated cube positions:', newPositions.length);
+    return newPositions;
+  }, [cubes.count, cubes.size]);
+
+  // Update positions state when generated positions change
+  useEffect(() => {
+    setPositions(generatedPositions);
+  }, [generatedPositions]);
 
   useFrame((state) => {
-    if (groupRef.current) {
-      const time = state.clock.elapsedTime;
-      const noiseIntensity = globalEffects.distortion.noise;
+    if (!groupRef.current) return;
+    
+    const time = state.clock.elapsedTime;
+    const noiseIntensity = globalEffects.distortion.noise;
+    
+    // Rotate the entire group
+    groupRef.current.rotation.y += cubes.rotation * 0.01;
+    
+    // Animate individual cubes
+    groupRef.current.children.forEach((child, i) => {
+      const pos = positions[i];
+      if (!pos) return;
       
-      groupRef.current.children.forEach((child, i) => {
-        // Enhanced rotation with distortion
-        child.rotation.x += cubes.rotation * 0.01;
-        child.rotation.y += cubes.rotation * 0.015;
-        child.position.x += Math.sin(time + i) * 0.01;
-        
-        // Add noise distortion
-        if (noiseIntensity > 0) {
-          child.rotation.z += Math.random() * noiseIntensity * 0.1;
-          child.scale.setScalar(1 + Math.random() * noiseIntensity * 0.2);
-        }
-      });
-    }
+      // Rotate individual cubes
+      child.rotation.x += cubes.rotation * 0.01;
+      child.rotation.y += cubes.rotation * 0.015;
+      
+      // Base movement
+      child.position.x = pos.x + Math.sin(time + i) * 2;
+      child.position.y = pos.y + Math.cos(time * 0.5 + i) * 2;
+      child.position.z = pos.z + Math.sin(time * 0.3 + i) * 2;
+      
+      // Add noise distortion
+      if (noiseIntensity > 0) {
+        child.position.x += (Math.random() - 0.5) * noiseIntensity;
+        child.position.y += (Math.random() - 0.5) * noiseIntensity;
+        child.position.z += (Math.random() - 0.5) * noiseIntensity;
+      }
+    });
   });
 
+  console.log('Rendering cubes with positions:', positions);
+
+  // Don't render until positions are available
+  if (positions.length === 0) {
+    console.log('Waiting for cube positions to be generated...');
+    return null;
+  }
+
   return (
-    <group ref={groupRef}>
-      {cubePositions.map((position, i) => (
-        <group key={i} position={position as [number, number, number]}>
-          <mesh>
-            <boxGeometry args={[cubes.size, cubes.size, cubes.size]} />
-            <meshBasicMaterial 
-              color={cubes.color} 
-              transparent 
-              opacity={cubes.opacity}
-              alphaTest={0.1}
-            />
-          </mesh>
-        </group>
-      ))}
+    <group ref={groupRef} key={renderKey}>
+      {positions.map((pos, i) => {
+        console.log(`Rendering cube ${i} at position:`, pos);
+        return (
+          <group key={`cube-${i}-${cubes.count}`} position={pos}>
+            {/* Main cube */}
+            <mesh>
+              <boxGeometry args={[cubes.size, cubes.size, cubes.size]} />
+              <meshBasicMaterial 
+                color={cubes.color} 
+                transparent 
+                opacity={cubes.opacity}
+                visible={true}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+            
+            {/* Single glow layer */}
+            {shapeGlow.enabled && (
+              <mesh>
+                <boxGeometry args={[cubes.size * 1.5, cubes.size * 1.5, cubes.size * 1.5]} />
+                <meshBasicMaterial
+                  color={shapeGlow.useObjectColor ? cubes.color : shapeGlow.customColor}
+                  transparent
+                  opacity={shapeGlow.intensity * 0.3}
+                  blending={THREE.AdditiveBlending}
+                  depthWrite={false}
+                  visible={true}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 };
 
 const Toruses = () => {
-  const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects } = useVisualStore();
   const { toruses } = geometric;
-  const { atmosphericBlur } = globalEffects;
+  const { shapeGlow } = globalEffects;
+  const groupRef = useRef<THREE.Group>(null);
+  const [positions, setPositions] = useState<THREE.Vector3[]>([]);
+  const renderKey = useMemo(() => `toruses-${toruses.count}-${Date.now()}`, [toruses.count]);
 
-  const torusPositions = useMemo(() => {
-    const positions = [];
+  console.log('=== TORUSES COMPONENT DEBUG ===');
+  console.log('Toruses count:', toruses?.count);
+  console.log('Toruses object:', toruses);
+  console.log('Geometric object:', geometric);
+  console.log('Full store state:', useVisualStore.getState());
+
+  if (!toruses || toruses.count === 0) {
+    console.log('Toruses component: No toruses to render - toruses:', toruses);
+    return null;
+  }
+
+  // Generate positions using useMemo
+  const generatedPositions = useMemo(() => {
+    console.log('Generating torus positions for count:', toruses.count);
+    const newPositions: THREE.Vector3[] = [];
     for (let i = 0; i < toruses.count; i++) {
-      positions.push([
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 15,
-        (Math.random() - 0.5) * 8,
-      ]);
+      newPositions.push(new THREE.Vector3(
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20,
+        (Math.random() - 0.5) * 20
+      ));
     }
-    return positions;
-  }, [toruses.count]);
+    console.log('Generated torus positions:', newPositions.length);
+    return newPositions;
+  }, [toruses.count, toruses.size]);
+
+  // Update positions state when generated positions change
+  useEffect(() => {
+    setPositions(generatedPositions);
+  }, [generatedPositions]);
 
   useFrame((state) => {
-    if (groupRef.current) {
-      const time = state.clock.elapsedTime;
-      const waveIntensity = globalEffects.distortion.wave * 2;
+    if (!groupRef.current) return;
+    
+    const time = state.clock.elapsedTime;
+    const waveIntensity = globalEffects.distortion.wave * 2;
+    
+    // Rotate the entire group
+    groupRef.current.rotation.z += toruses.speed * 0.008;
+    
+    // Animate individual toruses
+    groupRef.current.children.forEach((child, i) => {
+      const pos = positions[i];
+      if (!pos) return;
       
-      groupRef.current.rotation.y += toruses.speed * 0.01;
-      groupRef.current.children.forEach((child, i) => {
-        // Base movement
-        child.rotation.x += toruses.speed * 0.02;
-        child.rotation.z += toruses.speed * 0.01;
-        
-        // Add wave distortion
-        if (waveIntensity > 0) {
-          child.position.y += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
-          child.position.x += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
-        }
-      });
-    }
+      // Rotate individual toruses
+      child.rotation.x += toruses.speed * 0.02;
+      
+      // Base movement
+      child.position.x = pos.x + Math.cos(time * 0.02 + i * 0.5) * toruses.speed * 2;
+      child.position.y = pos.y + Math.sin(time * 0.01 + i * 0.5) * toruses.speed * 2;
+      child.position.z = pos.z + Math.cos(time * 0.03 + i * 0.5) * toruses.speed * 2;
+      
+      // Add wave effects
+      if (waveIntensity > 0) {
+        child.position.x += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
+        child.position.y += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+      }
+    });
   });
 
+  console.log('Rendering toruses with positions:', positions);
+
+  // Don't render until positions are available
+  if (positions.length === 0) {
+    console.log('Waiting for torus positions to be generated...');
+    return null;
+  }
+
   return (
-    <group ref={groupRef}>
-      {torusPositions.map((position, i) => (
-        <group key={i} position={position as [number, number, number]}>
-          <mesh>
-            <torusGeometry args={[toruses.size, toruses.size * 0.4, 32, 64]} />
-            <meshBasicMaterial 
-              color={toruses.color} 
-              transparent 
-              opacity={toruses.opacity}
-              alphaTest={0.1}
-            />
-          </mesh>
-        </group>
-      ))}
+    <group ref={groupRef} key={renderKey}>
+      {positions.map((pos, i) => {
+        console.log(`Rendering torus ${i} at position:`, pos);
+        return (
+          <group key={`torus-${i}-${toruses.count}`} position={pos}>
+            {/* Main torus */}
+            <mesh>
+              <torusGeometry args={[toruses.size, toruses.size * 0.3, 16, 32]} />
+              <meshBasicMaterial 
+                color={toruses.color} 
+                transparent 
+                opacity={toruses.opacity}
+                visible={true}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+            
+            {/* Single glow layer */}
+            {shapeGlow.enabled && (
+              <mesh>
+                <torusGeometry args={[toruses.size * 1.5, toruses.size * 0.45, 16, 32]} />
+                <meshBasicMaterial
+                  color={shapeGlow.useObjectColor ? toruses.color : shapeGlow.customColor}
+                  transparent
+                  opacity={shapeGlow.intensity * 0.3}
+                  blending={THREE.AdditiveBlending}
+                  depthWrite={false}
+                  visible={true}
+                  side={THREE.DoubleSide}
+                />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
     </group>
   );
 };
@@ -315,7 +513,10 @@ const VolumetricFog = () => {
 
 const Scene = () => {
   const { globalEffects } = useVisualStore();
-  const { volumetric, glowSystem } = globalEffects;
+  const { volumetric, shapeGlow } = globalEffects;
+
+  console.log('=== SCENE COMPONENT DEBUG ===');
+  console.log('Scene rendering with store state:', useVisualStore.getState());
 
   return (
     <>
@@ -323,8 +524,8 @@ const Scene = () => {
       <ambientLight intensity={0.5 + (volumetric.lightShafts * 0.5)} />
       <pointLight 
         position={[10, 10, 10]} 
-        intensity={1 + glowSystem.intensity}
-        color={glowSystem.color}
+        intensity={1 + (shapeGlow?.intensity || 0)}
+        color={shapeGlow?.useObjectColor ? '#ffffff' : shapeGlow?.customColor || '#ffffff'}
       />
       <Spheres />
       <Cubes />
@@ -341,9 +542,13 @@ const EnhancedVisualCanvas = () => {
     volumetric, 
     atmosphericBlur, 
     colorBlending, 
-    glowSystem, 
     distortion 
   } = globalEffects;
+  const [forceRender, setForceRender] = useState(0);
+
+  console.log('=== ENHANCED VISUAL CANVAS DEBUG ===');
+  console.log('Canvas rendering with store state:', useVisualStore.getState());
+  console.log('Force render count:', forceRender);
 
   // Create high blur layer for extreme settings
   const highBlurLayer = useMemo(() => {
@@ -505,63 +710,67 @@ const EnhancedVisualCanvas = () => {
     );
   }, [volumetric]);
 
-  // Create post-processing overlay for brightness and vignette
-  const postProcessingOverlay = useMemo(() => {
-    if (!effects.enabled) return null;
-    
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 300, // Highest z-index to ensure it's on top
-          background: `
-            radial-gradient(circle at center, 
-              transparent ${(1 - effects.vignette) * 70}%, 
-              rgba(0, 0, 0, ${effects.vignette * 0.8}) 100%
-            )
-          `,
-          mixBlendMode: 'normal',
-          willChange: 'background',
-          isolation: 'isolate'
-        }}
-      />
-    );
-  }, [effects]);
+  // Post-processing overlay for brightness and vignette
+  const postProcessingOverlay = useMemo(() => (
+    <div
+      className={styles.postProcessingOverlay}
+      style={{
+        background: effects.vignette > 0 ? `radial-gradient(circle at center, transparent ${100 - (effects.vignette * 30)}%, rgba(0, 0, 0, ${effects.vignette * 0.8}) 100%)` : 'none',
+        mixBlendMode: 'multiply',
+        pointerEvents: 'none',
+        zIndex: 300
+      }}
+    />
+  ), [effects.vignette]);
 
   return (
-    <div className={styles.canvasContainer}>
-      {aberrationLayers}
-      {rainbowLayer}
-      {fogLayer}
-      {highBlurLayer}
-      {postProcessingOverlay}
-      
-      <Canvas
-        style={{
-          filter: `
-            ${effects.enabled ? `brightness(${effects.brightness})` : ''}
-            ${atmosphericBlur.enabled ? `blur(${atmosphericBlur.intensity * 0.8}px)` : ''}
-            ${distortion.enabled && distortion.wave > 0 ? `skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)` : ''}
-            ${distortion.enabled && distortion.noise > 0 ? `scale(${1 + distortion.noise * 0.1})` : ''}
-            ${glowSystem.enabled ? `
-              drop-shadow(0 0 ${glowSystem.radius}px ${glowSystem.color})
-              drop-shadow(0 0 ${glowSystem.radius * 0.5}px ${glowSystem.color})
-              brightness(${1 + glowSystem.intensity * 0.2})
-            ` : ''}
-            ${chromatic.enabled && chromatic.prism > 0 ? `saturate(${1 + chromatic.prism * 0.3})` : ''}
-          `,
-          transformOrigin: 'center center',
-          mixBlendMode: colorBlending.enabled ? colorBlending.mode : 'normal',
-          opacity: colorBlending.enabled ? 0.5 + (colorBlending.intensity * 0.5) : 1,
-          willChange: 'transform, filter, opacity',
-          isolation: 'isolate'
-        }}
-      >
-        <Scene />
-      </Canvas>
-    </div>
+    <ClientOnly>
+      <div className={styles.canvasContainer}>
+        <button 
+          onClick={() => setForceRender(prev => prev + 1)}
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1000,
+            padding: '8px 16px',
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '4px',
+            color: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          Force Re-render (Test): {forceRender}
+        </button>
+        
+        {aberrationLayers}
+        {rainbowLayer}
+        {fogLayer}
+        {highBlurLayer}
+        {postProcessingOverlay}
+        
+        <Canvas
+          key={forceRender} // Force canvas re-render when button is clicked
+          style={{
+            filter: `
+              ${effects.brightness !== 1 ? `brightness(${effects.brightness})` : ''}
+              ${atmosphericBlur.enabled ? `blur(${atmosphericBlur.intensity * 0.8}px)` : ''}
+              ${distortion.enabled && distortion.wave > 0 ? `skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)` : ''}
+              ${distortion.enabled && distortion.noise > 0 ? `scale(${1 + distortion.noise * 0.1})` : ''}
+              ${chromatic.enabled && chromatic.prism > 0 ? `saturate(${1 + chromatic.prism * 0.3})` : ''}
+            `,
+            transformOrigin: 'center center',
+            mixBlendMode: colorBlending.enabled ? colorBlending.mode : 'normal',
+            opacity: colorBlending.enabled ? 0.5 + (colorBlending.intensity * 0.5) : 1,
+            willChange: 'transform, filter, opacity',
+            isolation: 'isolate'
+          }}
+        >
+          <Scene />
+        </Canvas>
+      </div>
+    </ClientOnly>
   );
 };
 

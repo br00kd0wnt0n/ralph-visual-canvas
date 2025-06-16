@@ -61,12 +61,13 @@ export interface VisualState {
       intensity: number;
     };
     
-    // Glow & Light Interaction
-    glowSystem: {
+    // Shape Glow System (renamed from glowSystem)
+    shapeGlow: {
       enabled: boolean;
       intensity: number;
       radius: number;
-      color: string;
+      useObjectColor: boolean; // When true, uses the object's color for glow
+      customColor: string; // Used when useObjectColor is false
       pulsing: boolean;
       pulseSpeed: number;
     };
@@ -199,11 +200,12 @@ const defaultState: VisualState = {
       mode: 'screen',
       intensity: 0.5,
     },
-    glowSystem: {
+    shapeGlow: {
       enabled: false,
       intensity: 0.4,
       radius: 20,
-      color: '#ffffff',
+      useObjectColor: true,
+      customColor: '#ffffff',
       pulsing: false,
       pulseSpeed: 1.0,
     },
@@ -274,56 +276,68 @@ const defaultState: VisualState = {
 
 type Store = VisualState & VisualActions;
 
-export const useVisualStore = create<Store>((set, get) => ({
-  ...defaultState,
+export const useVisualStore = create<Store>((set, get) => {
+  console.log('=== STORE INITIALIZATION ===');
+  console.log('Creating store with default state:', defaultState);
   
-  updateBackground: (updates: Partial<VisualState['background']>) =>
-    set((state: VisualState) => ({
-      background: { ...state.background, ...updates },
-    })),
-  
-  updateGeometric: (shape: keyof VisualState['geometric'], updates: Partial<VisualState['geometric'][keyof VisualState['geometric']]>) =>
-    set((state: VisualState) => ({
-      geometric: {
-        ...state.geometric,
-        [shape]: { ...state.geometric[shape], ...updates },
-      },
-    })),
-  
-  updateParticles: (updates: Partial<VisualState['particles']>) =>
-    set((state: VisualState) => ({
-      particles: { ...state.particles, ...updates },
-    })),
-  
-  updateGlobalEffects: (updates: Partial<VisualState['globalEffects']>) =>
-    set((state: VisualState) => ({
-      globalEffects: { ...state.globalEffects, ...updates },
-    })),
-  
-  updateEffects: (updates: Partial<VisualState['effects']>) =>
-    set((state: VisualState) => ({
-      effects: { ...state.effects, ...updates },
-    })),
-  
-  resetToDefaults: () => set(defaultState),
-  
-  savePreset: (name: string) => {
-    const state = get();
-    const presets: Record<string, Partial<VisualState>> = JSON.parse(localStorage.getItem('visualPresets') || '{}');
-    presets[name] = {
-      background: state.background,
-      geometric: state.geometric,
-      particles: state.particles,
-      globalEffects: state.globalEffects,
-      effects: state.effects,
-    };
-    localStorage.setItem('visualPresets', JSON.stringify(presets));
-  },
-  
-  loadPreset: (name: string) => {
-    const presets: Record<string, Partial<VisualState>> = JSON.parse(localStorage.getItem('visualPresets') || '{}');
-    if (presets[name]) {
-      set((state: VisualState) => ({ ...state, ...presets[name] }));
-    }
-  },
-})); 
+  const store = {
+    ...defaultState,
+    
+    updateBackground: (updates: Partial<VisualState['background']>) => {
+      console.log('Updating background:', updates);
+      set((state: VisualState) => ({
+        background: { ...state.background, ...updates },
+      }));
+    },
+    
+    updateGeometric: (shape: keyof VisualState['geometric'], updates: Partial<VisualState['geometric'][keyof VisualState['geometric']]>) => {
+      console.log('Updating geometric shape:', shape, updates);
+      set((state: VisualState) => ({
+        geometric: {
+          ...state.geometric,
+          [shape]: { ...state.geometric[shape], ...updates },
+        },
+      }));
+    },
+    
+    updateParticles: (updates: Partial<VisualState['particles']>) =>
+      set((state: VisualState) => ({
+        particles: { ...state.particles, ...updates },
+      })),
+    
+    updateGlobalEffects: (updates: Partial<VisualState['globalEffects']>) =>
+      set((state: VisualState) => ({
+        globalEffects: { ...state.globalEffects, ...updates },
+      })),
+    
+    updateEffects: (updates: Partial<VisualState['effects']>) =>
+      set((state: VisualState) => ({
+        effects: { ...state.effects, ...updates },
+      })),
+    
+    resetToDefaults: () => set(defaultState),
+    
+    savePreset: (name: string) => {
+      const state = get();
+      const presets: Record<string, Partial<VisualState>> = JSON.parse(localStorage.getItem('visualPresets') || '{}');
+      presets[name] = {
+        background: state.background,
+        geometric: state.geometric,
+        particles: state.particles,
+        globalEffects: state.globalEffects,
+        effects: state.effects,
+      };
+      localStorage.setItem('visualPresets', JSON.stringify(presets));
+    },
+    
+    loadPreset: (name: string) => {
+      const presets: Record<string, Partial<VisualState>> = JSON.parse(localStorage.getItem('visualPresets') || '{}');
+      if (presets[name]) {
+        set((state: VisualState) => ({ ...state, ...presets[name] }));
+      }
+    },
+  };
+
+  console.log('Store created with initial state:', store);
+  return store;
+}); 

@@ -176,44 +176,80 @@ export const GlobalEffectsDashboard = () => {
         />
       </div>
 
-      {/* Glow System */}
+      {/* Shape Glow */}
       <div className={styles.controlSection}>
-        <h3>✨ Global Glow</h3>
+        <h3>✨ Shape Glow</h3>
         <ToggleControl
           label="Enable"
-          value={globalEffects.glowSystem.enabled}
+          value={globalEffects.shapeGlow.enabled}
           onChange={(value) => updateGlobalEffects({ 
-            glowSystem: { ...globalEffects.glowSystem, enabled: value }
+            shapeGlow: { ...globalEffects.shapeGlow, enabled: value }
           })}
         />
+        <ToggleControl
+          label="Use Object Color"
+          value={globalEffects.shapeGlow.useObjectColor}
+          onChange={(value) => updateGlobalEffects({ 
+            shapeGlow: { ...globalEffects.shapeGlow, useObjectColor: value }
+          })}
+          disabled={!globalEffects.shapeGlow.enabled}
+        />
+        {!globalEffects.shapeGlow.useObjectColor && (
+          <div className={styles.colorControls}>
+            <label>Glow Color</label>
+            <input
+              type="color"
+              value={globalEffects.shapeGlow.customColor}
+              onChange={(e) => updateGlobalEffects({
+                shapeGlow: {
+                  ...globalEffects.shapeGlow,
+                  customColor: e.target.value
+                }
+              })}
+              disabled={!globalEffects.shapeGlow.enabled}
+            />
+          </div>
+        )}
         <SliderControl
           label="Intensity"
-          value={globalEffects.glowSystem.intensity}
+          value={globalEffects.shapeGlow.intensity}
           min={0}
           max={3}
           onChange={(value) => updateGlobalEffects({ 
-            glowSystem: { ...globalEffects.glowSystem, intensity: value }
+            shapeGlow: { ...globalEffects.shapeGlow, intensity: value }
           })}
-          disabled={!globalEffects.glowSystem.enabled}
+          disabled={!globalEffects.shapeGlow.enabled}
         />
         <SliderControl
           label="Radius"
-          value={globalEffects.glowSystem.radius}
+          value={globalEffects.shapeGlow.radius}
           min={5}
           max={100}
           onChange={(value) => updateGlobalEffects({ 
-            glowSystem: { ...globalEffects.glowSystem, radius: value }
+            shapeGlow: { ...globalEffects.shapeGlow, radius: value }
           })}
-          disabled={!globalEffects.glowSystem.enabled}
+          disabled={!globalEffects.shapeGlow.enabled}
         />
         <ToggleControl
           label="Pulsing"
-          value={globalEffects.glowSystem.pulsing}
+          value={globalEffects.shapeGlow.pulsing}
           onChange={(value) => updateGlobalEffects({ 
-            glowSystem: { ...globalEffects.glowSystem, pulsing: value }
+            shapeGlow: { ...globalEffects.shapeGlow, pulsing: value }
           })}
-          disabled={!globalEffects.glowSystem.enabled}
+          disabled={!globalEffects.shapeGlow.enabled}
         />
+        {globalEffects.shapeGlow.pulsing && (
+          <SliderControl
+            label="Pulse Speed"
+            value={globalEffects.shapeGlow.pulseSpeed}
+            min={0.1}
+            max={5}
+            onChange={(value) => updateGlobalEffects({ 
+              shapeGlow: { ...globalEffects.shapeGlow, pulseSpeed: value }
+            })}
+            disabled={!globalEffects.shapeGlow.enabled}
+          />
+        )}
       </div>
 
       {/* Chromatic Effects */}
