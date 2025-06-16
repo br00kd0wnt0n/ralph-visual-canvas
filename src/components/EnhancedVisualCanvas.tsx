@@ -26,6 +26,7 @@ const Spheres = () => {
   const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects } = useVisualStore();
   const { spheres } = geometric;
+  const { atmosphericBlur } = globalEffects;
 
   const spherePositions = useMemo(() => {
     const positions = [];
@@ -70,14 +71,17 @@ const Spheres = () => {
   return (
     <group ref={groupRef}>
       {spherePositions.map((position, i) => (
-        <mesh key={i} position={position as [number, number, number]}>
-          <sphereGeometry args={[spheres.size, 16, 16]} />
-          <meshBasicMaterial 
-            color={spheres.color} 
-            transparent 
-            opacity={spheres.opacity}
-          />
-        </mesh>
+        <group key={i} position={position as [number, number, number]}>
+          <mesh>
+            <sphereGeometry args={[spheres.size, 32, 32]} />
+            <meshBasicMaterial 
+              color={spheres.color} 
+              transparent 
+              opacity={spheres.opacity}
+              alphaTest={0.1}
+            />
+          </mesh>
+        </group>
       ))}
     </group>
   );
@@ -87,6 +91,7 @@ const Cubes = () => {
   const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects } = useVisualStore();
   const { cubes } = geometric;
+  const { atmosphericBlur } = globalEffects;
 
   const cubePositions = useMemo(() => {
     const positions = [];
@@ -123,14 +128,74 @@ const Cubes = () => {
   return (
     <group ref={groupRef}>
       {cubePositions.map((position, i) => (
-        <mesh key={i} position={position as [number, number, number]}>
-          <boxGeometry args={[cubes.size, cubes.size, cubes.size]} />
-          <meshBasicMaterial 
-            color={cubes.color} 
-            transparent 
-            opacity={cubes.opacity}
-          />
-        </mesh>
+        <group key={i} position={position as [number, number, number]}>
+          <mesh>
+            <boxGeometry args={[cubes.size, cubes.size, cubes.size]} />
+            <meshBasicMaterial 
+              color={cubes.color} 
+              transparent 
+              opacity={cubes.opacity}
+              alphaTest={0.1}
+            />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+};
+
+const Toruses = () => {
+  const groupRef = useRef<THREE.Group>(null);
+  const { geometric, globalEffects } = useVisualStore();
+  const { toruses } = geometric;
+  const { atmosphericBlur } = globalEffects;
+
+  const torusPositions = useMemo(() => {
+    const positions = [];
+    for (let i = 0; i < toruses.count; i++) {
+      positions.push([
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 15,
+        (Math.random() - 0.5) * 8,
+      ]);
+    }
+    return positions;
+  }, [toruses.count]);
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      const time = state.clock.elapsedTime;
+      const waveIntensity = globalEffects.distortion.wave * 2;
+      
+      groupRef.current.rotation.y += toruses.speed * 0.01;
+      groupRef.current.children.forEach((child, i) => {
+        // Base movement
+        child.rotation.x += toruses.speed * 0.02;
+        child.rotation.z += toruses.speed * 0.01;
+        
+        // Add wave distortion
+        if (waveIntensity > 0) {
+          child.position.y += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
+          child.position.x += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+        }
+      });
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {torusPositions.map((position, i) => (
+        <group key={i} position={position as [number, number, number]}>
+          <mesh>
+            <torusGeometry args={[toruses.size, toruses.size * 0.4, 32, 64]} />
+            <meshBasicMaterial 
+              color={toruses.color} 
+              transparent 
+              opacity={toruses.opacity}
+              alphaTest={0.1}
+            />
+          </mesh>
+        </group>
       ))}
     </group>
   );
@@ -185,10 +250,12 @@ const Particles = () => {
       </bufferGeometry>
       <pointsMaterial
         color={particles.color}
-        size={particles.size}
+        size={particles.size * 2}
         transparent
         opacity={particles.opacity}
-        sizeAttenuation={false}
+        sizeAttenuation={true}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
       />
     </points>
   );
@@ -261,182 +328,186 @@ const Scene = () => {
       />
       <Spheres />
       <Cubes />
+      <Toruses />
       <Particles />
     </>
   );
 };
 
-export const EnhancedVisualCanvas = () => {
-  const { background, effects, globalEffects } = useVisualStore();
-  const rainbowTime = useRainbowAnimation(
-    globalEffects.chromatic.rainbow.speed,
-    globalEffects.chromatic.rainbow.rotation
-  );
+const EnhancedVisualCanvas = () => {
+  const { globalEffects } = useVisualStore();
+  const { 
+    chromatic, 
+    volumetric, 
+    atmosphericBlur, 
+    colorBlending, 
+    glowSystem, 
+    distortion 
+  } = globalEffects;
 
-  // Build complex filter chain
-  const buildFilterChain = () => {
-    const filters = [];
+  // Create high blur layer for extreme settings
+  const highBlurLayer = useMemo(() => {
+    if (!atmosphericBlur.enabled || atmosphericBlur.intensity <= 15) return null;
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backdropFilter: `blur(${(atmosphericBlur.intensity - 15) * 2}px)`,
+          pointerEvents: 'none',
+          zIndex: 50,
+          mixBlendMode: 'normal',
+          willChange: 'backdrop-filter',
+          isolation: 'isolate'
+        }}
+      />
+    );
+  }, [atmosphericBlur]);
+
+  // Create chromatic aberration layers
+  const aberrationLayers = useMemo(() => {
+    if (!chromatic.enabled || chromatic.aberration <= 0) return null;
+    const baseOffset = chromatic.aberration * 10; // Increased for more visible separation
     
-    // Base effects
-    if (background.blur > 0) filters.push(`blur(${background.blur}px)`);
-    if (effects.contrast !== 1) filters.push(`contrast(${effects.contrast})`);
-    if (effects.saturation !== 1) filters.push(`saturate(${effects.saturation})`);
-    if (effects.hue !== 0) filters.push(`hue-rotate(${effects.hue}deg)`);
-    if (effects.brightness !== 1) filters.push(`brightness(${effects.brightness})`);
-    
-    // Chromatic effects
-    if (globalEffects.chromatic.aberration > 0) {
-      filters.push(`blur(${globalEffects.chromatic.aberration * 0.5}px)`);
-    }
-    
-    return filters.join(' ');
-  };
+    return (
+      <>
+        {/* Red channel */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          transform: `translate(${baseOffset}px, 0)`,
+          filter: `blur(${chromatic.aberration * 0.3}px)`,
+          mixBlendMode: 'screen',
+          opacity: 0.5,
+          pointerEvents: 'none',
+          zIndex: 2,
+          background: `linear-gradient(to right, 
+            transparent 0%,
+            ${chromatic.aberrationColors.red} 20%,
+            ${chromatic.aberrationColors.red} 80%,
+            transparent 100%
+          )`
+        }} />
+        {/* Green channel */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          transform: 'translate(0, 0)',
+          filter: `blur(${chromatic.aberration * 0.3}px)`,
+          mixBlendMode: 'screen',
+          opacity: 0.5,
+          pointerEvents: 'none',
+          zIndex: 1,
+          background: `linear-gradient(to right, 
+            transparent 0%,
+            ${chromatic.aberrationColors.green} 20%,
+            ${chromatic.aberrationColors.green} 80%,
+            transparent 100%
+          )`
+        }} />
+        {/* Blue channel */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          transform: `translate(${-baseOffset}px, 0)`,
+          filter: `blur(${chromatic.aberration * 0.3}px)`,
+          mixBlendMode: 'screen',
+          opacity: 0.5,
+          pointerEvents: 'none',
+          zIndex: 2,
+          background: `linear-gradient(to right, 
+            transparent 0%,
+            ${chromatic.aberrationColors.blue} 20%,
+            ${chromatic.aberrationColors.blue} 80%,
+            transparent 100%
+          )`
+        }} />
+        {/* Color blending overlay */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          filter: `blur(${chromatic.aberration * 1.5}px)`,
+          mixBlendMode: 'overlay',
+          opacity: 0.15,
+          pointerEvents: 'none',
+          zIndex: 3,
+          background: `linear-gradient(45deg, 
+            ${chromatic.aberrationColors.red}22,
+            ${chromatic.aberrationColors.green}22,
+            ${chromatic.aberrationColors.blue}22
+          )`
+        }} />
+      </>
+    );
+  }, [chromatic]);
 
-  // Separate style for the canvas container to handle blend modes
-  const containerStyle = {
-    position: 'relative' as const,
-    width: '100%',
-    height: '100%',
-    isolation: 'isolate' as const,
-  };
+  // Create rainbow effect layer
+  const rainbowLayer = useMemo(() => {
+    if (!chromatic.enabled || !chromatic.rainbow.enabled || chromatic.rainbow.intensity <= 0) return null;
+    return (
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: `linear-gradient(${chromatic.rainbow.rotation}deg, ${chromatic.rainbow.colors.join(', ')})`,
+        mixBlendMode: chromatic.rainbow.blendMode,
+        opacity: chromatic.rainbow.opacity * chromatic.rainbow.intensity,
+        pointerEvents: 'none',
+        zIndex: 3,
+        filter: `blur(${chromatic.rainbow.intensity * 5}px)`
+      }} />
+    );
+  }, [chromatic]);
 
-  const canvasStyle = {
-    filter: buildFilterChain(),
-  };
-
-  // Atmospheric blur layers
-  const atmosphericLayers = [];
-  if (globalEffects.atmosphericBlur.enabled) {
-    for (let i = 0; i < globalEffects.atmosphericBlur.layers; i++) {
-      const layerBlur = globalEffects.atmosphericBlur.intensity * (i + 1) * 2;
-      const layerOpacity = 0.3 / (i + 1);
-      atmosphericLayers.push(
-        <div
-          key={i}
-          className={styles['atmospheric-layer']}
-          style={{
-            background: `radial-gradient(circle, transparent 0%, ${background.color}${Math.floor(layerOpacity * 255).toString(16)} 100%)`,
-            backdropFilter: `blur(${layerBlur}px)`,
-          }}
-        />
-      );
-    }
-  }
+  // Create volumetric fog layer
+  const fogLayer = useMemo(() => {
+    if (!volumetric.enabled || volumetric.fog <= 0) return null;
+    return (
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(circle at center, 
+          ${volumetric.color}${Math.floor(volumetric.fog * 50).toString(16).padStart(2, '0')} 0%,
+          transparent 70%
+        )`,
+        backdropFilter: `blur(${volumetric.density * 20}px)`,
+        opacity: volumetric.fog,
+        pointerEvents: 'none',
+        zIndex: 4
+      }} />
+    );
+  }, [volumetric]);
 
   return (
-    <div className={styles['enhanced-canvas-container']} style={containerStyle}>
-      {/* Background layer for color blending */}
-      {globalEffects.colorBlending.enabled && (
-        <div 
-          className={styles['blend-background']}
-          style={{
-            background: `linear-gradient(45deg, 
-              ${globalEffects.colorBlending.mode === 'multiply' ? '#ffffff' : '#000000'},
-              ${globalEffects.colorBlending.mode === 'multiply' ? '#ff00ff' : '#00ffff'}
-            )`,
-            opacity: globalEffects.colorBlending.intensity * 0.5,
-            mixBlendMode: globalEffects.colorBlending.mode as BlendMode,
-          }}
-        />
-      )}
+    <div className={styles.canvasContainer}>
+      {aberrationLayers}
+      {rainbowLayer}
+      {fogLayer}
+      {highBlurLayer}
       
-      {/* Main Canvas */}
-      <div className={styles['canvas-layer']} style={canvasStyle}>
-        <Canvas
-          camera={{ position: [0, 0, 15], fov: 60 }}
-          style={{ 
-            background: background.color, 
-            opacity: background.opacity,
-            // Enhanced prism effect
-            ...(globalEffects.chromatic.prism > 0 && {
-              transform: `
-                scale(${1 + globalEffects.chromatic.prism * 0.3})
-                perspective(1000px)
-                rotateX(${globalEffects.chromatic.prism * 5}deg)
-                rotateY(${globalEffects.chromatic.prism * -5}deg)
-              `,
-              transformOrigin: 'center center',
-              filter: `
-                contrast(${1 + globalEffects.chromatic.prism * 0.5})
-                saturate(${1 + globalEffects.chromatic.prism * 0.3})
-              `
-            })
-          }}
-        >
-          <Scene />
-        </Canvas>
-      </div>
-      
-      {/* Global Glow Layer */}
-      {globalEffects.glowSystem.enabled && globalEffects.glowSystem.intensity > 0 && (
-        <div
-          className={`${styles['glow-layer']} ${globalEffects.glowSystem.pulsing ? styles.pulsing : ''}`}
-          style={{
-            background: `radial-gradient(circle at center, ${globalEffects.glowSystem.color}${Math.floor(globalEffects.glowSystem.intensity * 255).toString(16)} 0%, transparent 70%)`,
-            filter: `blur(${globalEffects.glowSystem.radius * 2}px)`,
-            animationDuration: `${2 / globalEffects.glowSystem.pulseSpeed}s`,
-          }}
-        />
-      )}
-      
-      {/* Atmospheric Layers */}
-      {atmosphericLayers}
-      
-      {/* Vignette Effect */}
-      {effects.vignette > 0 && (
-        <div
-          className={styles['vignette-layer']}
-          style={{
-            background: `radial-gradient(circle at center, transparent 30%, rgba(0,0,0,${effects.vignette}) 100%)`,
-          }}
-        />
-      )}
-      
-      {/* Film Grain Effect */}
-      {effects.filmGrain > 0 && (
-        <div
-          className={styles['film-grain-layer']}
-          style={{
-            opacity: effects.filmGrain,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-            backgroundSize: '50px 50px',
-            backgroundRepeat: 'repeat',
-            mixBlendMode: 'overlay',
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-      
-      {/* Chromatic Aberration Effect */}
-      {globalEffects.chromatic.aberration > 0 && (
-        <div
-          className={styles['chromatic-layer']}
-          style={{
-            background: `
-              radial-gradient(circle at 30% 30%, ${globalEffects.chromatic.aberrationColors.red}${Math.floor(globalEffects.chromatic.aberration * 0.1 * 255).toString(16).padStart(2, '0')} 0%, transparent 50%),
-              radial-gradient(circle at 70% 70%, ${globalEffects.chromatic.aberrationColors.green}${Math.floor(globalEffects.chromatic.aberration * 0.1 * 255).toString(16).padStart(2, '0')} 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, ${globalEffects.chromatic.aberrationColors.blue}${Math.floor(globalEffects.chromatic.aberration * 0.1 * 255).toString(16).padStart(2, '0')} 0%, transparent 50%)
-            `,
-          }}
-        />
-      )}
-      
-      {/* Rainbow Effect */}
-      {globalEffects.chromatic.rainbow.intensity > 0 && (
-        <div
-          className={styles['rainbow-layer']}
-          style={{
-            opacity: globalEffects.chromatic.rainbow.opacity * globalEffects.chromatic.rainbow.intensity,
-            background: `linear-gradient(${globalEffects.chromatic.rainbow.rotation}deg, 
-              ${globalEffects.chromatic.rainbow.colors.map((color, index) => 
-                `${color}${Math.floor(globalEffects.chromatic.rainbow.opacity * 255).toString(16).padStart(2, '0')} ${(index / (globalEffects.chromatic.rainbow.colors.length - 1)) * 100}%`
-              ).join(', ')})`,
-            mixBlendMode: globalEffects.chromatic.rainbow.blendMode,
-            transform: `translate(-50%, -50%) rotate(${rainbowTime}deg)`,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
+      <Canvas
+        style={{
+          filter: `
+            ${atmosphericBlur.enabled ? `blur(${atmosphericBlur.intensity * 0.8}px)` : ''}
+            ${distortion.enabled && distortion.wave > 0 ? `skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)` : ''}
+            ${distortion.enabled && distortion.noise > 0 ? `scale(${1 + distortion.noise * 0.1})` : ''}
+            ${glowSystem.enabled ? `
+              drop-shadow(0 0 ${glowSystem.radius}px ${glowSystem.color})
+              drop-shadow(0 0 ${glowSystem.radius * 0.5}px ${glowSystem.color})
+              brightness(${1 + glowSystem.intensity * 0.2})
+            ` : ''}
+            ${chromatic.enabled && chromatic.prism > 0 ? `saturate(${1 + chromatic.prism * 0.3})` : ''}
+          `,
+          transformOrigin: 'center center',
+          mixBlendMode: colorBlending.enabled ? colorBlending.mode : 'normal',
+          opacity: colorBlending.enabled ? 0.5 + (colorBlending.intensity * 0.5) : 1,
+          willChange: 'transform, filter, opacity',
+          isolation: 'isolate'
+        }}
+      >
+        <Scene />
+      </Canvas>
     </div>
   );
-}; 
+};
+
+export default EnhancedVisualCanvas;

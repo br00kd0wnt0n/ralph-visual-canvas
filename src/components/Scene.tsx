@@ -3,41 +3,10 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Sphere, Box, Torus, PerspectiveCamera } from '@react-three/drei';
 import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
-
-const Particles = () => {
-  const { count, size, color, speed, opacity, spread } = useVisualStore((state) => state.particles);
-  
-  const particles = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < count; i++) {
-      const x = (Math.random() - 0.5) * spread;
-      const y = (Math.random() - 0.5) * spread;
-      const z = (Math.random() - 0.5) * spread;
-      temp.push({ position: [x, y, z], velocity: [0, 0, 0] });
-    }
-    return temp;
-  }, [count, spread]);
-
-  useFrame((state, delta) => {
-    particles.forEach((particle) => {
-      particle.position[1] += particle.velocity[1] * speed * delta;
-      if (particle.position[1] > spread / 2) {
-        particle.position[1] = -spread / 2;
-      }
-    });
-  });
-
-  return (
-    <group>
-      {particles.map((particle, i) => (
-        <mesh key={i} position={particle.position as [number, number, number]}>
-          <sphereGeometry args={[size, 8, 8]} />
-          <meshBasicMaterial color={color} transparent opacity={opacity} />
-        </mesh>
-      ))}
-    </group>
-  );
-};
+import { Spheres } from './Spheres';
+import { Cubes } from './Cubes';
+import { Toruses } from './Toruses';
+import { Particles } from './Particles';
 
 const GeometricShapes = () => {
   const geometric = useVisualStore((state) => state.geometric);
@@ -171,131 +140,105 @@ const ResizeHandler = () => {
 };
 
 export const Scene = () => {
-  const { background, geometric, particles, effects, globalEffects } = useVisualStore();
+  const { background, geometric, particles, effects, globalEffects, updateGlobalEffects } = useVisualStore();
   const { opacity, blur, color } = background;
 
-  // Calculate global effects styles with more pronounced effects
-  const globalEffectsStyle: CSSProperties = {
-    filter: [
-      // Base effects
-      `contrast(${effects.contrast})`,
-      `saturate(${effects.saturation})`,
-      `hue-rotate(${effects.hue}deg)`,
-      `brightness(${effects.brightness})`,
-      // Atmospheric blur - make it more visible
-      globalEffects.atmosphericBlur.enabled ? 
-        `blur(${globalEffects.atmosphericBlur.intensity * 5}px)
-         brightness(${1 + globalEffects.atmosphericBlur.intensity * 0.2})` : '',
-      // Glow system
-      globalEffects.glowSystem.enabled ? 
-        `drop-shadow(0 0 ${globalEffects.glowSystem.intensity * 10}px ${globalEffects.glowSystem.color})
-         drop-shadow(0 0 ${globalEffects.glowSystem.intensity * 5}px ${globalEffects.glowSystem.color})` : '',
-      // Chromatic effects - make them more pronounced
-      globalEffects.chromatic.aberration > 0 ? 
-        `contrast(${1 + globalEffects.chromatic.aberration * 3})
-         hue-rotate(${globalEffects.chromatic.rainbow * 20}deg)
-         saturate(${1 + globalEffects.chromatic.prism * 2})` : '',
-    ].filter(Boolean).join(' '),
-    mixBlendMode: globalEffects.colorBlending.enabled ? 
-      (globalEffects.colorBlending.mode as CSSProperties['mixBlendMode']) : 
-      'normal',
-    // Add intensity to color blending
-    ...(globalEffects.colorBlending.enabled && {
-      opacity: 0.5 + (globalEffects.colorBlending.intensity * 0.5),
-    }),
+  // Container style with no transforms
+  const containerStyle: CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+    transform: 'none',
+    willChange: 'transform',
+    isolation: 'isolate'
   };
 
-  // Create a wrapper for effects that need to be applied to the entire scene
-  const wrapperStyle: CSSProperties = {
-    position: 'absolute',
-    inset: 0,
-    pointerEvents: 'none',
-    // Depth of field - make it more visible
-    ...(globalEffects.depthOfField.enabled && {
-      backdropFilter: `
-        blur(${globalEffects.depthOfField.blurRadius * 4}px)
-        contrast(${1 + globalEffects.depthOfField.blurRadius * 0.1})
-      `,
-    }),
-    // Distortion effects - make them more pronounced
-    ...(globalEffects.distortion.wave > 0 && {
-      transform: `
-        skew(${globalEffects.distortion.wave * 10}deg, ${globalEffects.distortion.ripple * 10}deg)
-        scale(${1 + globalEffects.distortion.noise * 0.1})
-      `,
-      filter: `contrast(${1 + globalEffects.distortion.frequency * 0.2})`,
-    }),
-    // Volumetric effects - add fog and light shafts
-    ...(globalEffects.volumetric.fog > 0 && {
-      background: `linear-gradient(
-        to bottom,
-        ${globalEffects.volumetric.color}${Math.floor(globalEffects.volumetric.fog * 50).toString(16).padStart(2, '0')},
-        transparent
-      )`,
-      backdropFilter: `blur(${globalEffects.volumetric.density * 10}px)`,
-    }),
-  };
+  // Pure CSS blur layers for bokeh effect
+  const blurLayers = useMemo(() => {
+    if (!globalEffects.atmosphericBlur.enabled) return null;
+    
+    const layers = [];
+    const baseIntensity = globalEffects.atmosphericBlur.intensity;
+    const layerCount = globalEffects.atmosphericBlur.layers;
+    
+    for (let i = 0; i < layerCount; i++) {
+      // Progressive blur intensity for bokeh effect
+      const intensity = baseIntensity * (i + 1) * 2;
+      // Decreasing opacity for each layer
+      const opacity = 0.3 / (i + 1);
+      
+      layers.push(
+        <div
+          key={i}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'none',
+            backdropFilter: `blur(${intensity}px)`,
+            opacity,
+            zIndex: i + 1,
+            mixBlendMode: 'normal',
+            transform: 'none',
+            willChange: 'backdrop-filter',
+            isolation: 'isolate'
+          }}
+        />
+      );
+    }
+    
+    // Add a soft bloom layer for enhanced bokeh effect
+    if (baseIntensity > 0.5) {
+      layers.push(
+        <div
+          key="bloom"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'none',
+            backdropFilter: `blur(${baseIntensity * 8}px)`,
+            opacity: 0.2,
+            zIndex: layerCount + 1,
+            mixBlendMode: 'soft-light',
+            transform: 'none',
+            willChange: 'backdrop-filter',
+            isolation: 'isolate'
+          }}
+        />
+      );
+    }
+    
+    return layers;
+  }, [globalEffects.atmosphericBlur]);
 
-  // Create a group for particle interaction effects
-  const ParticleGroup = () => {
-    const particleStyle = useMemo(() => ({
-      ...(globalEffects.particleInteraction.enabled && {
-        filter: `
-          contrast(${1 + globalEffects.particleInteraction.magnetism * 0.5})
-          brightness(${1 + globalEffects.particleInteraction.repulsion * 0.2})
-        `,
-        transform: globalEffects.particleInteraction.flowField ? 
-          `scale(${1 + globalEffects.particleInteraction.turbulence * 0.1})` : 'none',
-      }),
-    }), [globalEffects.particleInteraction]);
-
-    return (
-      <group>
-        <GeometricShapes />
-        <Particles />
-      </group>
-    );
+  // Canvas container with no transforms
+  const canvasContainerStyle: CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+    transform: 'none',
+    willChange: 'transform',
+    isolation: 'isolate'
   };
 
   return (
-    <div className="scene-container relative w-full h-full">
-      {/* Effects wrapper - outside Canvas */}
-      <div style={wrapperStyle} />
-      
-      {/* Main canvas with enhanced effects */}
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <Canvas
-          style={{
-            background: 'transparent',
-            ...globalEffectsStyle,
-            // Add chromatic aberration transform
-            ...(globalEffects.chromatic.aberration > 0 && {
-              transform: `
-                translateX(${globalEffects.chromatic.aberration * 4}px)
-                scale(${1 + globalEffects.chromatic.prism * 0.1})
-              `,
-            }),
-          }}
-          gl={{
-            antialias: true,
-            alpha: true,
-            powerPreference: 'high-performance',
-          }}
-        >
-          <PerspectiveCamera 
-            makeDefault 
-            position={[0, 0, 10]} 
-            fov={75}
-            // Enhanced depth of field
-            {...(globalEffects.depthOfField.enabled && {
-              focusDistance: globalEffects.depthOfField.focusDistance,
-              bokehScale: globalEffects.depthOfField.bokehEffect ? 4 : 0,
-              focusRange: globalEffects.depthOfField.blurRadius * 2,
-            })}
-          />
-          <ResizeHandler />
-          <Background />
-          <ParticleGroup />
+    <div style={containerStyle}>
+      {blurLayers}
+      <div style={canvasContainerStyle}>
+        <Canvas>
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} intensity={1} />
+          <Spheres />
+          <Cubes />
+          <Toruses />
+          <Particles />
         </Canvas>
       </div>
     </div>

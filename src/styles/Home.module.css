@@ -1,0 +1,38 @@
+.app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+
+.dashboardContainer {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.dashboardContainer > * {
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .dashboardContainer {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .dashboardContainer > * {
+    width: calc(50% - 10px);
+    min-width: 280px;
+  }
+} 

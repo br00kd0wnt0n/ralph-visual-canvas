@@ -81,6 +81,7 @@ export interface VisualState {
     
     // Chromatic Effects
     chromatic: {
+      enabled: boolean;
       aberration: number;
       aberrationColors: {
         red: string;
@@ -88,6 +89,7 @@ export interface VisualState {
         blue: string;
       };
       rainbow: {
+        enabled: boolean;
         intensity: number;
         speed: number;
         rotation: number;
@@ -100,6 +102,7 @@ export interface VisualState {
     
     // Distortion Effects
     distortion: {
+      enabled: boolean;
       wave: number;
       ripple: number;
       noise: number;
@@ -180,26 +183,26 @@ const defaultState: VisualState = {
     },
   },
   particles: {
-    count: 200,
-    size: 0.1,
+    count: 500,
+    size: 0.2,
     color: '#ff1493',
-    speed: 1.5,
-    opacity: 0.8,
-    spread: 10,
+    speed: 1.0,
+    opacity: 0.9,
+    spread: 15,
   },
   globalEffects: {
     atmosphericBlur: {
-      enabled: false, // Disabled by default for backward compatibility
-      intensity: 0.3,
-      layers: 3,
+      enabled: false,
+      intensity: 0.5,
+      layers: 5,
     },
     colorBlending: {
-      enabled: false, // Disabled by default for backward compatibility
+      enabled: false,
       mode: 'screen',
       intensity: 0.5,
     },
     glowSystem: {
-      enabled: false, // Disabled by default for backward compatibility
+      enabled: false,
       intensity: 0.4,
       radius: 20,
       color: '#ffffff',
@@ -213,6 +216,7 @@ const defaultState: VisualState = {
       bokehEffect: true,
     },
     chromatic: {
+      enabled: false,
       aberration: 0,
       aberrationColors: {
         red: '#ff0000',
@@ -220,6 +224,7 @@ const defaultState: VisualState = {
         blue: '#0000ff',
       },
       rainbow: {
+        enabled: false,
         intensity: 0,
         speed: 1,
         rotation: 0,
@@ -238,6 +243,7 @@ const defaultState: VisualState = {
       prism: 0,
     },
     distortion: {
+      enabled: false,
       wave: 0,
       ripple: 0,
       noise: 0,
