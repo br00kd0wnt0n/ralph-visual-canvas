@@ -364,79 +364,107 @@ const EnhancedVisualCanvas = () => {
     );
   }, [atmosphericBlur]);
 
-  // Create chromatic aberration layers
+  // Create chromatic aberration layers with RGB separation
   const aberrationLayers = useMemo(() => {
     if (!chromatic.enabled || chromatic.aberration <= 0) return null;
-    const baseOffset = chromatic.aberration * 10; // Increased for more visible separation
     
     return (
       <>
-        {/* Red channel */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          transform: `translate(${baseOffset}px, 0)`,
-          filter: `blur(${chromatic.aberration * 0.3}px)`,
-          mixBlendMode: 'screen',
-          opacity: 0.5,
-          pointerEvents: 'none',
-          zIndex: 2,
-          background: `linear-gradient(to right, 
-            transparent 0%,
-            ${chromatic.aberrationColors.red} 20%,
-            ${chromatic.aberrationColors.red} 80%,
-            transparent 100%
-          )`
-        }} />
-        {/* Green channel */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          transform: 'translate(0, 0)',
-          filter: `blur(${chromatic.aberration * 0.3}px)`,
-          mixBlendMode: 'screen',
-          opacity: 0.5,
-          pointerEvents: 'none',
-          zIndex: 1,
-          background: `linear-gradient(to right, 
-            transparent 0%,
-            ${chromatic.aberrationColors.green} 20%,
-            ${chromatic.aberrationColors.green} 80%,
-            transparent 100%
-          )`
-        }} />
-        {/* Blue channel */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          transform: `translate(${-baseOffset}px, 0)`,
-          filter: `blur(${chromatic.aberration * 0.3}px)`,
-          mixBlendMode: 'screen',
-          opacity: 0.5,
-          pointerEvents: 'none',
-          zIndex: 2,
-          background: `linear-gradient(to right, 
-            transparent 0%,
-            ${chromatic.aberrationColors.blue} 20%,
-            ${chromatic.aberrationColors.blue} 80%,
-            transparent 100%
-          )`
-        }} />
-        {/* Color blending overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          filter: `blur(${chromatic.aberration * 1.5}px)`,
-          mixBlendMode: 'overlay',
-          opacity: 0.15,
-          pointerEvents: 'none',
-          zIndex: 3,
-          background: `linear-gradient(45deg, 
-            ${chromatic.aberrationColors.red}22,
-            ${chromatic.aberrationColors.green}22,
-            ${chromatic.aberrationColors.blue}22
-          )`
-        }} />
+        {/* Red channel - top right */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'transparent',
+            filter: `blur(${chromatic.aberration * 0.8}px)`,
+            mixBlendMode: 'screen',
+            transform: `translate(${chromatic.aberration * 0.5}px, -${chromatic.aberration * 0.3}px)`,
+            pointerEvents: 'none',
+            zIndex: 201,
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(circle at 70% 30%, 
+                ${chromatic.aberrationColors.red}${Math.floor(chromatic.aberration * 25).toString(16).padStart(2, '0')} 0%,
+                transparent 60%
+              )`,
+              mixBlendMode: 'screen',
+            }}
+          />
+        </div>
+        
+        {/* Green channel - center */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'transparent',
+            filter: `blur(${chromatic.aberration * 0.6}px)`,
+            mixBlendMode: 'screen',
+            pointerEvents: 'none',
+            zIndex: 202,
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(circle at 50% 50%, 
+                ${chromatic.aberrationColors.green}${Math.floor(chromatic.aberration * 20).toString(16).padStart(2, '0')} 0%,
+                transparent 60%
+              )`,
+              mixBlendMode: 'screen',
+            }}
+          />
+        </div>
+        
+        {/* Blue channel - bottom left */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'transparent',
+            filter: `blur(${chromatic.aberration * 1.0}px)`,
+            mixBlendMode: 'screen',
+            transform: `translate(-${chromatic.aberration * 0.5}px, ${chromatic.aberration * 0.3}px)`,
+            pointerEvents: 'none',
+            zIndex: 203,
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(circle at 30% 70%, 
+                ${chromatic.aberrationColors.blue}${Math.floor(chromatic.aberration * 22).toString(16).padStart(2, '0')} 0%,
+                transparent 60%
+              )`,
+              mixBlendMode: 'screen',
+            }}
+          />
+        </div>
+
+        {/* Additional color blending overlay for enhanced effect */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            filter: `blur(${chromatic.aberration * 1.5}px)`,
+            mixBlendMode: 'overlay',
+            opacity: 0.15,
+            pointerEvents: 'none',
+            zIndex: 204,
+            background: `radial-gradient(circle at 50% 50%, 
+              ${chromatic.aberrationColors.red}22 0%,
+              ${chromatic.aberrationColors.green}22 33%,
+              ${chromatic.aberrationColors.blue}22 66%,
+              transparent 100%
+            )`,
+          }}
+        />
       </>
     );
   }, [chromatic]);
