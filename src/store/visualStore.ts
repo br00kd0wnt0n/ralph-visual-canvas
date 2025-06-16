@@ -138,6 +138,13 @@ export interface VisualState {
     brightness: number;
     vignette: number;
   };
+
+  // Camera state
+  camera: {
+    distance: number;
+    height: number;
+    fov: number;
+  };
 }
 
 export interface VisualActions {
@@ -146,6 +153,7 @@ export interface VisualActions {
   updateParticles: (updates: Partial<VisualState['particles']>) => void;
   updateGlobalEffects: (updates: Partial<VisualState['globalEffects']>) => void;
   updateEffects: (updates: Partial<VisualState['effects']>) => void;
+  updateCamera: (updates: Partial<VisualState['camera']>) => void;
   resetToDefaults: () => void;
   savePreset: (name: string) => void;
   loadPreset: (name: string) => void;
@@ -272,6 +280,11 @@ const defaultState: VisualState = {
     brightness: 1.0,
     vignette: 0,
   },
+  camera: {
+    distance: 25,
+    height: 0,
+    fov: 60,
+  },
 };
 
 type Store = VisualState & VisualActions;
@@ -315,6 +328,11 @@ export const useVisualStore = create<Store>((set, get) => {
         effects: { ...state.effects, ...updates },
       })),
     
+    updateCamera: (updates: Partial<VisualState['camera']>) =>
+      set((state: VisualState) => ({
+        camera: { ...state.camera, ...updates },
+      })),
+    
     resetToDefaults: () => set(defaultState),
     
     savePreset: (name: string) => {
@@ -326,6 +344,7 @@ export const useVisualStore = create<Store>((set, get) => {
         particles: state.particles,
         globalEffects: state.globalEffects,
         effects: state.effects,
+        camera: state.camera,
       };
       localStorage.setItem('visualPresets', JSON.stringify(presets));
     },

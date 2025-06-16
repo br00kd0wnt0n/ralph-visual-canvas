@@ -1,66 +1,8 @@
 import React from 'react';
 import { useVisualStore } from '../store/visualStore';
 import styles from './GlobalEffectsDashboard.module.css';
-
-const SliderControl = ({ 
-  label, 
-  value, 
-  min, 
-  max, 
-  step = 0.1, 
-  onChange,
-  disabled = false 
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  onChange: (value: number) => void;
-  disabled?: boolean;
-}) => (
-  <div className={styles.controlGroup}>
-    <label className={disabled ? styles.disabled : ''}>
-      {label}
-      <span>{value.toFixed(2)}</span>
-    </label>
-    <input
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) => onChange(parseFloat(e.target.value))}
-      className={styles.slider}
-      disabled={disabled}
-    />
-  </div>
-);
-
-const ToggleControl = ({ 
-  label, 
-  value, 
-  onChange,
-  disabled = false 
-}: {
-  label: string;
-  value: boolean;
-  onChange: (value: boolean) => void;
-  disabled?: boolean;
-}) => (
-  <div className={styles.controlGroup}>
-    <label className={disabled ? styles.disabled : ''}>
-      {label}
-      <button
-        className={`${styles.toggleButton} ${value ? styles.active : ''}`}
-        onClick={() => onChange(!value)}
-        disabled={disabled}
-      >
-        {value ? 'On' : 'Off'}
-      </button>
-    </label>
-  </div>
-);
+import SliderControl from './SliderControl';
+import ToggleControl from './ToggleControl';
 
 const SelectControl = ({ 
   label, 
@@ -93,7 +35,7 @@ const SelectControl = ({
 );
 
 export const GlobalEffectsDashboard = () => {
-  const { globalEffects, effects, updateGlobalEffects, updateEffects } = useVisualStore();
+  const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera } = useVisualStore();
 
   const blendModeOptions = [
     { value: 'screen', label: 'Screen' },
@@ -116,7 +58,7 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.atmosphericBlur.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             atmosphericBlur: { ...globalEffects.atmosphericBlur, enabled: value }
           })}
         />
@@ -126,10 +68,9 @@ export const GlobalEffectsDashboard = () => {
           min={0}
           max={25}
           step={0.5}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             atmosphericBlur: { ...globalEffects.atmosphericBlur, intensity: value }
           })}
-          disabled={!globalEffects.atmosphericBlur.enabled}
         />
         <SliderControl
           label="Layers"
@@ -137,10 +78,9 @@ export const GlobalEffectsDashboard = () => {
           min={1}
           max={20}
           step={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             atmosphericBlur: { ...globalEffects.atmosphericBlur, layers: value }
           })}
-          disabled={!globalEffects.atmosphericBlur.enabled}
         />
       </div>
 
@@ -150,7 +90,7 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.colorBlending.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             colorBlending: { ...globalEffects.colorBlending, enabled: value }
           })}
         />
@@ -161,7 +101,6 @@ export const GlobalEffectsDashboard = () => {
           onChange={(value) => updateGlobalEffects({ 
             colorBlending: { ...globalEffects.colorBlending, mode: value as any }
           })}
-          disabled={!globalEffects.colorBlending.enabled}
         />
         <SliderControl
           label="Intensity"
@@ -169,10 +108,9 @@ export const GlobalEffectsDashboard = () => {
           min={0}
           max={2}
           step={0.1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             colorBlending: { ...globalEffects.colorBlending, intensity: value }
           })}
-          disabled={!globalEffects.colorBlending.enabled}
         />
       </div>
 
@@ -182,17 +120,16 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.shapeGlow.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             shapeGlow: { ...globalEffects.shapeGlow, enabled: value }
           })}
         />
         <ToggleControl
           label="Use Object Color"
           value={globalEffects.shapeGlow.useObjectColor}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             shapeGlow: { ...globalEffects.shapeGlow, useObjectColor: value }
           })}
-          disabled={!globalEffects.shapeGlow.enabled}
         />
         {!globalEffects.shapeGlow.useObjectColor && (
           <div className={styles.colorControls}>
@@ -206,7 +143,6 @@ export const GlobalEffectsDashboard = () => {
                   customColor: e.target.value
                 }
               })}
-              disabled={!globalEffects.shapeGlow.enabled}
             />
           </div>
         )}
@@ -215,28 +151,25 @@ export const GlobalEffectsDashboard = () => {
           value={globalEffects.shapeGlow.intensity}
           min={0}
           max={3}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             shapeGlow: { ...globalEffects.shapeGlow, intensity: value }
           })}
-          disabled={!globalEffects.shapeGlow.enabled}
         />
         <SliderControl
           label="Radius"
           value={globalEffects.shapeGlow.radius}
           min={5}
           max={100}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             shapeGlow: { ...globalEffects.shapeGlow, radius: value }
           })}
-          disabled={!globalEffects.shapeGlow.enabled}
         />
         <ToggleControl
           label="Pulsing"
           value={globalEffects.shapeGlow.pulsing}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             shapeGlow: { ...globalEffects.shapeGlow, pulsing: value }
           })}
-          disabled={!globalEffects.shapeGlow.enabled}
         />
         {globalEffects.shapeGlow.pulsing && (
           <SliderControl
@@ -244,10 +177,9 @@ export const GlobalEffectsDashboard = () => {
             value={globalEffects.shapeGlow.pulseSpeed}
             min={0.1}
             max={5}
-            onChange={(value) => updateGlobalEffects({ 
+            onChange={(value: number) => updateGlobalEffects({ 
               shapeGlow: { ...globalEffects.shapeGlow, pulseSpeed: value }
             })}
-            disabled={!globalEffects.shapeGlow.enabled}
           />
         )}
       </div>
@@ -258,7 +190,7 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             chromatic: { ...globalEffects.chromatic, enabled: value }
           })}
         />
@@ -267,10 +199,9 @@ export const GlobalEffectsDashboard = () => {
           value={globalEffects.chromatic.aberration}
           min={0}
           max={10}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             chromatic: { ...globalEffects.chromatic, aberration: value }
           })}
-          disabled={!globalEffects.chromatic.enabled}
         />
         <div className={styles.colorControls}>
           <label>Red Channel</label>
@@ -286,7 +217,6 @@ export const GlobalEffectsDashboard = () => {
                 }
               }
             })}
-            disabled={!globalEffects.chromatic.enabled || globalEffects.chromatic.aberration === 0}
           />
           <label>Green Channel</label>
           <input
@@ -301,7 +231,6 @@ export const GlobalEffectsDashboard = () => {
                 }
               }
             })}
-            disabled={!globalEffects.chromatic.enabled || globalEffects.chromatic.aberration === 0}
           />
           <label>Blue Channel</label>
           <input
@@ -316,7 +245,6 @@ export const GlobalEffectsDashboard = () => {
                 }
               }
             })}
-            disabled={!globalEffects.chromatic.enabled || globalEffects.chromatic.aberration === 0}
           />
         </div>
         <SliderControl
@@ -324,10 +252,9 @@ export const GlobalEffectsDashboard = () => {
           value={globalEffects.chromatic.prism}
           min={0}
           max={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             chromatic: { ...globalEffects.chromatic, prism: value }
           })}
-          disabled={!globalEffects.chromatic.enabled}
         />
       </div>
 
@@ -337,7 +264,7 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.rainbow.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             chromatic: { 
               ...globalEffects.chromatic, 
               rainbow: { ...globalEffects.chromatic.rainbow, enabled: value }
@@ -349,26 +276,24 @@ export const GlobalEffectsDashboard = () => {
           value={globalEffects.chromatic.rainbow.intensity}
           min={0}
           max={2}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             chromatic: { 
               ...globalEffects.chromatic, 
               rainbow: { ...globalEffects.chromatic.rainbow, intensity: value }
             }
           })}
-          disabled={!globalEffects.chromatic.rainbow.enabled}
         />
         <SliderControl
           label="Speed"
           value={globalEffects.chromatic.rainbow.speed}
           min={0}
           max={5}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             chromatic: { 
               ...globalEffects.chromatic, 
               rainbow: { ...globalEffects.chromatic.rainbow, speed: value }
             }
           })}
-          disabled={!globalEffects.chromatic.rainbow.enabled}
         />
         <SliderControl
           label="Rotation"
@@ -376,13 +301,12 @@ export const GlobalEffectsDashboard = () => {
           min={0}
           max={360}
           step={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             chromatic: { 
               ...globalEffects.chromatic, 
               rainbow: { ...globalEffects.chromatic.rainbow, rotation: value }
             }
           })}
-          disabled={!globalEffects.chromatic.rainbow.enabled}
         />
         <SliderControl
           label="Opacity"
@@ -390,13 +314,12 @@ export const GlobalEffectsDashboard = () => {
           min={0}
           max={1}
           step={0.01}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             chromatic: { 
               ...globalEffects.chromatic, 
               rainbow: { ...globalEffects.chromatic.rainbow, opacity: value }
             }
           })}
-          disabled={!globalEffects.chromatic.rainbow.enabled}
         />
         <SelectControl
           label="Blend Mode"
@@ -418,7 +341,6 @@ export const GlobalEffectsDashboard = () => {
               rainbow: { ...globalEffects.chromatic.rainbow, blendMode: value as any }
             }
           })}
-          disabled={!globalEffects.chromatic.rainbow.enabled}
         />
         <div className={styles.colorControls}>
           <label>Rainbow Colors</label>
@@ -437,7 +359,6 @@ export const GlobalEffectsDashboard = () => {
                     }
                   });
                 }}
-                disabled={!globalEffects.chromatic.rainbow.enabled || globalEffects.chromatic.rainbow.intensity === 0}
               />
               <button
                 className={styles.removeColor}
@@ -452,7 +373,6 @@ export const GlobalEffectsDashboard = () => {
                     });
                   }
                 }}
-                disabled={!globalEffects.chromatic.rainbow.enabled || globalEffects.chromatic.rainbow.colors.length <= 2}
               >
                 ×
               </button>
@@ -469,7 +389,6 @@ export const GlobalEffectsDashboard = () => {
                 }
               });
             }}
-            disabled={!globalEffects.chromatic.rainbow.enabled || globalEffects.chromatic.rainbow.colors.length >= 10}
           >
             Add Color
           </button>
@@ -482,7 +401,7 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.distortion.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             distortion: { ...globalEffects.distortion, enabled: value }
           })}
         />
@@ -491,40 +410,36 @@ export const GlobalEffectsDashboard = () => {
           value={globalEffects.distortion.wave}
           min={0}
           max={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             distortion: { ...globalEffects.distortion, wave: value }
           })}
-          disabled={!globalEffects.distortion.enabled}
         />
         <SliderControl
           label="Ripple"
           value={globalEffects.distortion.ripple}
           min={0}
           max={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             distortion: { ...globalEffects.distortion, ripple: value }
           })}
-          disabled={!globalEffects.distortion.enabled}
         />
         <SliderControl
           label="Noise"
           value={globalEffects.distortion.noise}
           min={0}
           max={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             distortion: { ...globalEffects.distortion, noise: value }
           })}
-          disabled={!globalEffects.distortion.enabled}
         />
         <SliderControl
           label="Frequency"
           value={globalEffects.distortion.frequency}
           min={0.1}
           max={5}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             distortion: { ...globalEffects.distortion, frequency: value }
           })}
-          disabled={!globalEffects.distortion.enabled}
         />
       </div>
 
@@ -534,7 +449,7 @@ export const GlobalEffectsDashboard = () => {
         <ToggleControl
           label="Enable"
           value={globalEffects.volumetric.enabled}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: boolean) => updateGlobalEffects({ 
             volumetric: { ...globalEffects.volumetric, enabled: value }
           })}
         />
@@ -543,56 +458,72 @@ export const GlobalEffectsDashboard = () => {
           value={globalEffects.volumetric.fog}
           min={0}
           max={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             volumetric: { ...globalEffects.volumetric, fog: value }
           })}
-          disabled={!globalEffects.volumetric.enabled}
         />
         <SliderControl
           label="Light Shafts"
           value={globalEffects.volumetric.lightShafts}
           min={0}
           max={1}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             volumetric: { ...globalEffects.volumetric, lightShafts: value }
           })}
-          disabled={!globalEffects.volumetric.enabled}
         />
         <SliderControl
           label="Density"
           value={globalEffects.volumetric.density}
           min={0}
           max={2}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value: number) => updateGlobalEffects({ 
             volumetric: { ...globalEffects.volumetric, density: value }
           })}
-          disabled={!globalEffects.volumetric.enabled}
         />
       </div>
 
       {/* Enhanced Post-Processing */}
       <div className={styles.controlSection}>
         <h3>🎬 Enhanced Post-FX</h3>
-        <ToggleControl
-          label="Enable"
-          value={effects.enabled}
-          onChange={(value) => updateEffects({ enabled: value })}
-        />
         <SliderControl
           label="Brightness"
           value={effects.brightness}
           min={0.3}
           max={2}
-          onChange={(value) => updateEffects({ brightness: value })}
-          disabled={!effects.enabled}
+          onChange={(value: number) => updateEffects({ brightness: value })}
         />
         <SliderControl
           label="Vignette"
           value={effects.vignette}
           min={0}
           max={1}
-          onChange={(value) => updateEffects({ vignette: value })}
-          disabled={!effects.enabled}
+          onChange={(value: number) => updateEffects({ vignette: value })}
+        />
+      </div>
+
+      {/* Camera */}
+      <div className="control-section">
+        <h3>📷 Camera</h3>
+        <SliderControl
+          label="Distance"
+          value={camera.distance}
+          min={10}
+          max={50}
+          onChange={(value: number) => updateCamera({ distance: value })}
+        />
+        <SliderControl
+          label="Height"
+          value={camera.height}
+          min={-15}
+          max={15}
+          onChange={(value: number) => updateCamera({ height: value })}
+        />
+        <SliderControl
+          label="Field of View"
+          value={camera.fov}
+          min={30}
+          max={90}
+          onChange={(value: number) => updateCamera({ fov: value })}
         />
       </div>
     </div>

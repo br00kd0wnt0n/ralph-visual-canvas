@@ -403,6 +403,9 @@ const Particles = () => {
   const pointsRef = useRef<THREE.Points>(null);
   const { particles, globalEffects } = useVisualStore();
 
+  // Calculate a smaller base size for particles
+  const baseParticleSize = Math.max(0.1, particles.size * 0.3); // Ensure minimum size of 0.1
+
   const particlePositions = useMemo(() => {
     const positions = new Float32Array(particles.count * 3);
     for (let i = 0; i < particles.count; i++) {
@@ -448,12 +451,30 @@ const Particles = () => {
       </bufferGeometry>
       <pointsMaterial
         color={particles.color}
-        size={particles.size * 2}
+        size={baseParticleSize}
         transparent
         opacity={particles.opacity}
         sizeAttenuation={true}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
+        map={(() => {
+          // Create a circular particle texture
+          const canvas = document.createElement('canvas');
+          canvas.width = 32;
+          canvas.height = 32;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 32, 32);
+          }
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.needsUpdate = true;
+          return texture;
+        })()}
       />
     </points>
   );
@@ -535,15 +556,26 @@ const Scene = () => {
   );
 };
 
+// Move the camera sync logic into a separate component
+const CameraSync = () => {
+  const { camera } = useVisualStore();
+  const three = useThree();
+  
+  useEffect(() => {
+    if (!three || !three.camera) return;
+    three.camera.position.set(0, camera.height, camera.distance);
+    if (three.camera instanceof THREE.PerspectiveCamera) {
+      three.camera.fov = camera.fov;
+      three.camera.updateProjectionMatrix();
+    }
+  }, [camera.distance, camera.height, camera.fov, three]);
+
+  return null;
+};
+
 const EnhancedVisualCanvas = () => {
-  const { globalEffects, effects } = useVisualStore();
-  const { 
-    chromatic, 
-    volumetric, 
-    atmosphericBlur, 
-    colorBlending, 
-    distortion 
-  } = globalEffects;
+  const { globalEffects, effects, camera } = useVisualStore();
+  const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
   const [forceRender, setForceRender] = useState(0);
 
   console.log('=== ENHANCED VISUAL CANVAS DEBUG ===');
@@ -751,7 +783,8 @@ const EnhancedVisualCanvas = () => {
         {postProcessingOverlay}
         
         <Canvas
-          key={forceRender} // Force canvas re-render when button is clicked
+          key={forceRender}
+          camera={{ position: [0, camera.height, camera.distance], fov: camera.fov }}
           style={{
             filter: `
               ${effects.brightness !== 1 ? `brightness(${effects.brightness})` : ''}
@@ -767,6 +800,7 @@ const EnhancedVisualCanvas = () => {
             isolation: 'isolate'
           }}
         >
+          <CameraSync />
           <Scene />
         </Canvas>
       </div>
