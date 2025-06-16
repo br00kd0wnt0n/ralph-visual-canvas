@@ -558,22 +558,6 @@ export const GlobalEffectsDashboard = () => {
           onChange={(value) => updateEffects({ vignette: value })}
           disabled={!effects.enabled}
         />
-        <SliderControl
-          label="Film Grain"
-          value={effects.filmGrain}
-          min={0}
-          max={1}
-          onChange={(value) => updateEffects({ filmGrain: value })}
-          disabled={!effects.enabled}
-        />
-        <SliderControl
-          label="Scanlines"
-          value={effects.scanlines}
-          min={0}
-          max={1}
-          onChange={(value) => updateEffects({ scanlines: value })}
-          disabled={!effects.enabled}
-        />
       </div>
     </div>
   );

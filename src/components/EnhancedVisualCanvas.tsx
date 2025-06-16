@@ -335,7 +335,7 @@ const Scene = () => {
 };
 
 const EnhancedVisualCanvas = () => {
-  const { globalEffects } = useVisualStore();
+  const { globalEffects, effects } = useVisualStore();
   const { 
     chromatic, 
     volumetric, 
@@ -505,16 +505,43 @@ const EnhancedVisualCanvas = () => {
     );
   }, [volumetric]);
 
+  // Create post-processing overlay for brightness and vignette
+  const postProcessingOverlay = useMemo(() => {
+    if (!effects.enabled) return null;
+    
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 300, // Highest z-index to ensure it's on top
+          background: `
+            radial-gradient(circle at center, 
+              transparent ${(1 - effects.vignette) * 70}%, 
+              rgba(0, 0, 0, ${effects.vignette * 0.8}) 100%
+            )
+          `,
+          mixBlendMode: 'normal',
+          willChange: 'background',
+          isolation: 'isolate'
+        }}
+      />
+    );
+  }, [effects]);
+
   return (
     <div className={styles.canvasContainer}>
       {aberrationLayers}
       {rainbowLayer}
       {fogLayer}
       {highBlurLayer}
+      {postProcessingOverlay}
       
       <Canvas
         style={{
           filter: `
+            ${effects.enabled ? `brightness(${effects.brightness})` : ''}
             ${atmosphericBlur.enabled ? `blur(${atmosphericBlur.intensity * 0.8}px)` : ''}
             ${distortion.enabled && distortion.wave > 0 ? `skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)` : ''}
             ${distortion.enabled && distortion.noise > 0 ? `scale(${1 + distortion.noise * 0.1})` : ''}

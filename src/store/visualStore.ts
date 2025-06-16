@@ -136,8 +136,6 @@ export interface VisualState {
     hue: number;
     brightness: number;
     vignette: number;
-    filmGrain: number;
-    scanlines: number;
   };
 }
 
@@ -271,8 +269,6 @@ const defaultState: VisualState = {
     hue: 0,
     brightness: 1.0,
     vignette: 0,
-    filmGrain: 0,
-    scanlines: 0,
   },
 };
 
