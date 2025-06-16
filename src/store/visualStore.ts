@@ -157,7 +157,19 @@ export interface VisualActions {
   resetToDefaults: () => void;
   savePreset: (name: string) => void;
   loadPreset: (name: string) => void;
+  getAvailablePresets: () => string[];
+  deletePreset: (name: string) => void;
 }
+
+// Update the VisualPreset type to use VisualState
+type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset'> & {
+  savedAt: string;
+  version: string;
+};
+
+type PresetStorage = {
+  [key: string]: VisualPreset;
+};
 
 const defaultState: VisualState = {
   background: {
@@ -337,22 +349,70 @@ export const useVisualStore = create<Store>((set, get) => {
     
     savePreset: (name: string) => {
       const state = get();
-      const presets: Record<string, Partial<VisualState>> = JSON.parse(localStorage.getItem('visualPresets') || '{}');
-      presets[name] = {
+      const preset: VisualPreset = {
         background: state.background,
         geometric: state.geometric,
         particles: state.particles,
         globalEffects: state.globalEffects,
         effects: state.effects,
         camera: state.camera,
+        savedAt: new Date().toISOString(),
+        version: '1.0'
       };
-      localStorage.setItem('visualPresets', JSON.stringify(presets));
+      
+      try {
+        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+        presets[name] = preset;
+        localStorage.setItem('visualPresets', JSON.stringify(presets));
+        console.log('Preset saved:', name, preset);
+      } catch (error) {
+        console.error('Error saving preset:', error);
+      }
     },
     
     loadPreset: (name: string) => {
-      const presets: Record<string, Partial<VisualState>> = JSON.parse(localStorage.getItem('visualPresets') || '{}');
-      if (presets[name]) {
-        set((state: VisualState) => ({ ...state, ...presets[name] }));
+      try {
+        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+        if (presets[name]) {
+          const preset = presets[name];
+          
+          set((state) => ({
+            ...state,
+            background: { ...state.background, ...preset.background },
+            geometric: { ...state.geometric, ...preset.geometric },
+            particles: { ...state.particles, ...preset.particles },
+            globalEffects: { ...state.globalEffects, ...preset.globalEffects },
+            effects: { ...state.effects, ...preset.effects },
+            camera: { ...state.camera, ...preset.camera },
+          }));
+          
+          console.log('Preset loaded:', name, preset);
+        } else {
+          console.warn('Preset not found:', name);
+        }
+      } catch (error) {
+        console.error('Error loading preset:', error);
+      }
+    },
+
+    getAvailablePresets: () => {
+      try {
+        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+        return Object.keys(presets).sort();
+      } catch (error) {
+        console.error('Error getting presets:', error);
+        return [];
+      }
+    },
+
+    deletePreset: (name: string) => {
+      try {
+        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+        delete presets[name];
+        localStorage.setItem('visualPresets', JSON.stringify(presets));
+        console.log('Preset deleted:', name);
+      } catch (error) {
+        console.error('Error deleting preset:', error);
       }
     },
   };

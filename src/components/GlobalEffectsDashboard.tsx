@@ -3,6 +3,7 @@ import { useVisualStore } from '../store/visualStore';
 import styles from './GlobalEffectsDashboard.module.css';
 import SliderControl from './SliderControl';
 import ToggleControl from './ToggleControl';
+import PresetControls from './PresetControls';
 
 const SelectControl = ({ 
   label, 
@@ -48,6 +49,7 @@ export const GlobalEffectsDashboard = () => {
 
   return (
     <div className={styles.dashboard}>
+      <PresetControls />
       <div className={styles.dashboardHeader}>
         <h2>Global Effects</h2>
       </div>
@@ -528,4 +530,6 @@ export const GlobalEffectsDashboard = () => {
       </div>
     </div>
   );
-}; 
+};
+
+export default GlobalEffectsDashboard; 
