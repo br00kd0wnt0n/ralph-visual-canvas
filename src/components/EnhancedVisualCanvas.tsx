@@ -28,18 +28,11 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     setMounted(true);
-    // Force store hydration on mount
-    console.log('Store state on mount:', useVisualStore.getState());
   }, []);
 
   if (!mounted) return null;
   return <>{children}</>;
 };
-
-// Add debug logging to store initialization
-const store = useVisualStore;
-console.log('=== STORE INITIALIZATION ===');
-console.log('Initial store state:', store.getState());
 
 const Spheres = () => {
   const { geometric, globalEffects } = useVisualStore();
@@ -49,20 +42,12 @@ const Spheres = () => {
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `spheres-${spheres.count}-${Date.now()}`, [spheres.count]);
 
-  console.log('=== SPHERES COMPONENT DEBUG ===');
-  console.log('Spheres count:', spheres?.count);
-  console.log('Spheres object:', spheres);
-  console.log('Geometric object:', geometric);
-  console.log('Full store state:', useVisualStore.getState());
-
   if (!spheres || spheres.count === 0) {
-    console.log('Spheres component: No spheres to render - spheres:', spheres);
     return null;
   }
 
   // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
-    console.log('Generating sphere positions for count:', spheres.count);
     const newPositions: THREE.Vector3[] = [];
     for (let i = 0; i < spheres.count; i++) {
       newPositions.push(new THREE.Vector3(
@@ -71,7 +56,6 @@ const Spheres = () => {
         (Math.random() - 0.5) * 20
       ));
     }
-    console.log('Generated sphere positions:', newPositions.length);
     return newPositions;
   }, [spheres.count, spheres.size]);
 
@@ -115,18 +99,14 @@ const Spheres = () => {
     });
   });
 
-  console.log('Rendering spheres with positions:', positions);
-
   // Don't render until positions are available
   if (positions.length === 0) {
-    console.log('Waiting for sphere positions to be generated...');
     return null;
   }
 
   return (
     <group ref={groupRef} key={renderKey}>
       {positions.map((pos, i) => {
-        console.log(`Rendering sphere ${i} at position:`, pos);
         return (
           <group key={`sphere-${i}-${spheres.count}`} position={pos}>
             {/* Main sphere */}
@@ -171,20 +151,12 @@ const Cubes = () => {
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `cubes-${cubes.count}-${Date.now()}`, [cubes.count]);
 
-  console.log('=== CUBES COMPONENT DEBUG ===');
-  console.log('Cubes count:', cubes?.count);
-  console.log('Cubes object:', cubes);
-  console.log('Geometric object:', geometric);
-  console.log('Full store state:', useVisualStore.getState());
-
   if (!cubes || cubes.count === 0) {
-    console.log('Cubes component: No cubes to render - cubes:', cubes);
     return null;
   }
 
   // Generate positions using useMemo
   const generatedPositions = useMemo(() => {
-    console.log('Generating cube positions for count:', cubes.count);
     const newPositions: THREE.Vector3[] = [];
     for (let i = 0; i < cubes.count; i++) {
       newPositions.push(new THREE.Vector3(
@@ -193,7 +165,6 @@ const Cubes = () => {
         (Math.random() - 0.5) * 20
       ));
     }
-    console.log('Generated cube positions:', newPositions.length);
     return newPositions;
   }, [cubes.count, cubes.size]);
 
@@ -234,18 +205,14 @@ const Cubes = () => {
     });
   });
 
-  console.log('Rendering cubes with positions:', positions);
-
   // Don't render until positions are available
   if (positions.length === 0) {
-    console.log('Waiting for cube positions to be generated...');
     return null;
   }
 
   return (
     <group ref={groupRef} key={renderKey}>
       {positions.map((pos, i) => {
-        console.log(`Rendering cube ${i} at position:`, pos);
         return (
           <group key={`cube-${i}-${cubes.count}`} position={pos}>
             {/* Main cube */}
@@ -290,20 +257,12 @@ const Toruses = () => {
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `toruses-${toruses.count}-${Date.now()}`, [toruses.count]);
 
-  console.log('=== TORUSES COMPONENT DEBUG ===');
-  console.log('Toruses count:', toruses?.count);
-  console.log('Toruses object:', toruses);
-  console.log('Geometric object:', geometric);
-  console.log('Full store state:', useVisualStore.getState());
-
   if (!toruses || toruses.count === 0) {
-    console.log('Toruses component: No toruses to render - toruses:', toruses);
     return null;
   }
 
   // Generate positions using useMemo
   const generatedPositions = useMemo(() => {
-    console.log('Generating torus positions for count:', toruses.count);
     const newPositions: THREE.Vector3[] = [];
     for (let i = 0; i < toruses.count; i++) {
       newPositions.push(new THREE.Vector3(
@@ -312,7 +271,6 @@ const Toruses = () => {
         (Math.random() - 0.5) * 20
       ));
     }
-    console.log('Generated torus positions:', newPositions.length);
     return newPositions;
   }, [toruses.count, toruses.size]);
 
@@ -351,18 +309,14 @@ const Toruses = () => {
     });
   });
 
-  console.log('Rendering toruses with positions:', positions);
-
   // Don't render until positions are available
   if (positions.length === 0) {
-    console.log('Waiting for torus positions to be generated...');
     return null;
   }
 
   return (
     <group ref={groupRef} key={renderKey}>
       {positions.map((pos, i) => {
-        console.log(`Rendering torus ${i} at position:`, pos);
         return (
           <group key={`torus-${i}-${toruses.count}`} position={pos}>
             {/* Main torus */}
@@ -484,50 +438,27 @@ const VolumetricFog = () => {
   const { globalEffects } = useVisualStore();
   const { volumetric } = globalEffects;
 
-  if (!volumetric.enabled || volumetric.density === 0) return null;
+  if (!volumetric.enabled || volumetric.fog <= 0) {
+    return null;
+  }
 
+  // Calculate fog distance with better scaling
+  // Fog: 0-1 range, Density: 0-2 range
+  // Lower fog distance = more fog (objects fade out sooner)
+  const baseDistance = 50;
+  const fogMultiplier = 1 + (volumetric.fog * 4); // 1 to 5
+  const densityMultiplier = 1 + (volumetric.density * 2); // 1 to 5
+  const fogDistance = baseDistance / (fogMultiplier * densityMultiplier);
+  
   return (
     <>
       <fog
         attach="fog"
-        args={[volumetric.color, 1, 50 / (volumetric.density * 0.5)]}
+        args={[volumetric.color, 1, fogDistance]}
         near={1}
         far={50}
       />
-      {/* Volumetric light shafts */}
-      {volumetric.lightShafts > 0 && (
-        <>
-          {/* Main light shaft */}
-          <mesh position={[0, 5, -5]} rotation={[-Math.PI / 4, 0, 0]}>
-            <planeGeometry args={[20, 20]} />
-            <meshBasicMaterial
-              color={volumetric.color}
-              transparent
-              opacity={volumetric.lightShafts * 0.2}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-          {/* Secondary light shafts */}
-          <mesh position={[-5, 3, -4]} rotation={[-Math.PI / 6, Math.PI / 6, 0]}>
-            <planeGeometry args={[15, 15]} />
-            <meshBasicMaterial
-              color={volumetric.color}
-              transparent
-              opacity={volumetric.lightShafts * 0.15}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-          <mesh position={[5, 3, -4]} rotation={[-Math.PI / 6, -Math.PI / 6, 0]}>
-            <planeGeometry args={[15, 15]} />
-            <meshBasicMaterial
-              color={volumetric.color}
-              transparent
-              opacity={volumetric.lightShafts * 0.15}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        </>
-      )}
+      {/* Light shafts removed - they don't look good */}
     </>
   );
 };
@@ -536,13 +467,10 @@ const Scene = () => {
   const { globalEffects } = useVisualStore();
   const { volumetric, shapeGlow } = globalEffects;
 
-  console.log('=== SCENE COMPONENT DEBUG ===');
-  console.log('Scene rendering with store state:', useVisualStore.getState());
-
   return (
     <>
       <VolumetricFog />
-      <ambientLight intensity={0.5 + (volumetric.lightShafts * 0.5)} />
+      <ambientLight intensity={0.5} />
       <pointLight 
         position={[10, 10, 10]} 
         intensity={1 + (shapeGlow?.intensity || 0)}
@@ -576,29 +504,60 @@ const CameraSync = () => {
 const EnhancedVisualCanvas = () => {
   const { globalEffects, effects, camera } = useVisualStore();
   const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
-  const [forceRender, setForceRender] = useState(0);
 
-  console.log('=== ENHANCED VISUAL CANVAS DEBUG ===');
-  console.log('Canvas rendering with store state:', useVisualStore.getState());
-  console.log('Force render count:', forceRender);
-
-  // Create high blur layer for extreme settings
-  const highBlurLayer = useMemo(() => {
-    if (!atmosphericBlur.enabled || atmosphericBlur.intensity <= 15) return null;
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backdropFilter: `blur(${(atmosphericBlur.intensity - 15) * 2}px)`,
-          pointerEvents: 'none',
-          zIndex: 50,
-          mixBlendMode: 'normal',
-          willChange: 'backdrop-filter',
-          isolation: 'isolate'
-        }}
-      />
-    );
+  // Create atmospheric blur layers
+  const atmosphericBlurLayers = useMemo(() => {
+    if (!atmosphericBlur.enabled || atmosphericBlur.intensity <= 0) return null;
+    
+    const layers = [];
+    const baseIntensity = atmosphericBlur.intensity;
+    const layerCount = atmosphericBlur.layers;
+    
+    for (let i = 0; i < layerCount; i++) {
+      // Progressive blur intensity for bokeh effect
+      const intensity = baseIntensity * (i + 1) * 0.5;
+      // Decreasing opacity for each layer
+      const opacity = 0.4 / (i + 1);
+      
+      layers.push(
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            backdropFilter: `blur(${intensity}px)`,
+            opacity,
+            zIndex: 50 + i,
+            mixBlendMode: 'normal',
+            willChange: 'backdrop-filter',
+            isolation: 'isolate'
+          }}
+        />
+      );
+    }
+    
+    // Add a soft bloom layer for enhanced bokeh effect
+    if (baseIntensity > 2) {
+      layers.push(
+        <div
+          key="bloom"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            backdropFilter: `blur(${baseIntensity * 3}px)`,
+            opacity: 0.3,
+            zIndex: 50 + layerCount,
+            mixBlendMode: 'soft-light',
+            willChange: 'backdrop-filter',
+            isolation: 'isolate'
+          }}
+        />
+      );
+    }
+    
+    return layers;
   }, [atmosphericBlur]);
 
   // Create chromatic aberration layers with RGB separation
@@ -726,16 +685,34 @@ const EnhancedVisualCanvas = () => {
   // Create volumetric fog layer
   const fogLayer = useMemo(() => {
     if (!volumetric.enabled || volumetric.fog <= 0) return null;
+    
+    // Convert hex color to RGB for CSS
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 255, g: 255, b: 255 };
+    };
+    
+    const rgb = hexToRgb(volumetric.color);
+    
+    // Calculate CSS fog opacity based on fog and density
+    const cssOpacity = Math.min(0.8, volumetric.fog * 0.8 + volumetric.density * 0.2);
+    const blurAmount = volumetric.density * 15; // 0 to 30px blur
+    
     return (
       <div style={{
         position: 'absolute',
         inset: 0,
         background: `radial-gradient(circle at center, 
-          ${volumetric.color}${Math.floor(volumetric.fog * 50).toString(16).padStart(2, '0')} 0%,
-          transparent 70%
+          rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${cssOpacity * 0.3}) 0%,
+          rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${cssOpacity * 0.1}) 50%,
+          transparent 100%
         )`,
-        backdropFilter: `blur(${volumetric.density * 20}px)`,
-        opacity: volumetric.fog,
+        backdropFilter: `blur(${blurAmount}px)`,
+        opacity: cssOpacity,
         pointerEvents: 'none',
         zIndex: 4
       }} />
@@ -743,47 +720,40 @@ const EnhancedVisualCanvas = () => {
   }, [volumetric]);
 
   // Post-processing overlay for brightness and vignette
-  const postProcessingOverlay = useMemo(() => (
-    <div
-      className={styles.postProcessingOverlay}
-      style={{
-        background: effects.vignette > 0 ? `radial-gradient(circle at center, transparent ${100 - (effects.vignette * 30)}%, rgba(0, 0, 0, ${effects.vignette * 0.8}) 100%)` : 'none',
-        mixBlendMode: 'multiply',
-        pointerEvents: 'none',
-        zIndex: 300
-      }}
-    />
-  ), [effects.vignette]);
+  const postProcessingOverlay = useMemo(() => {
+    if (effects.vignette <= 0) {
+      return null;
+    }
+    
+    const gradientStart = Math.max(20, 100 - (effects.vignette * 60));
+    const gradientEnd = 100;
+    const opacity = Math.min(1, effects.vignette * 1.5);
+    
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(circle at center, transparent ${gradientStart}%, rgba(0, 0, 0, ${opacity}) ${gradientEnd}%)`,
+          mixBlendMode: 'multiply',
+          pointerEvents: 'none',
+          zIndex: 9998,
+        }}
+      />
+    );
+  }, [effects.vignette]);
 
   return (
     <ClientOnly>
       <div className={styles.canvasContainer}>
-        <button 
-          onClick={() => setForceRender(prev => prev + 1)}
-          style={{
-            position: 'absolute',
-            top: 10,
-            right: 10,
-            zIndex: 1000,
-            padding: '8px 16px',
-            background: 'rgba(255, 255, 255, 0.2)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '4px',
-            color: 'white',
-            cursor: 'pointer'
-          }}
-        >
-          Force Re-render (Test): {forceRender}
-        </button>
-        
         {aberrationLayers}
         {rainbowLayer}
         {fogLayer}
-        {highBlurLayer}
+        {atmosphericBlurLayers}
         {postProcessingOverlay}
         
         <Canvas
-          key={forceRender}
+          key={Date.now()}
           camera={{ position: [0, camera.height, camera.distance], fov: camera.fov }}
           style={{
             filter: `

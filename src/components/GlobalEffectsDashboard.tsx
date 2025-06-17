@@ -465,15 +465,6 @@ export const GlobalEffectsDashboard = () => {
           })}
         />
         <SliderControl
-          label="Light Shafts"
-          value={globalEffects.volumetric.lightShafts}
-          min={0}
-          max={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            volumetric: { ...globalEffects.volumetric, lightShafts: value }
-          })}
-        />
-        <SliderControl
           label="Density"
           value={globalEffects.volumetric.density}
           min={0}
@@ -482,6 +473,19 @@ export const GlobalEffectsDashboard = () => {
             volumetric: { ...globalEffects.volumetric, density: value }
           })}
         />
+        <div className={styles.colorControls}>
+          <label>Fog Color</label>
+          <input
+            type="color"
+            value={globalEffects.volumetric.color}
+            onChange={(e) => updateGlobalEffects({
+              volumetric: {
+                ...globalEffects.volumetric,
+                color: e.target.value
+              }
+            })}
+          />
+        </div>
       </div>
 
       {/* Enhanced Post-Processing */}
