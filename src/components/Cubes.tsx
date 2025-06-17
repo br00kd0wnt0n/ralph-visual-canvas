@@ -41,7 +41,7 @@ export const Cubes = () => {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} userData={{ objectType: 'cubes' }}>
       {cubePositions.map((position, i) => (
         <mesh key={i} position={position as [number, number, number]}>
           <boxGeometry args={[cubes.size, cubes.size, cubes.size]} />

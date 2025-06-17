@@ -4,7 +4,11 @@ import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
 import styles from './EnhancedVisualCanvas.module.css';
 import { Blobs } from './Blobs';
-import { Ribbons } from './Ribbons';
+import { ObjectTrails } from './ObjectTrails';
+import { RadialGrowth } from './RadialGrowth';
+import { WaveInterference } from './WaveInterference';
+import { Metamorphosis } from './Metamorphosis';
+import { Fireflies } from './Fireflies';
 
 // Utility function to convert hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
@@ -581,12 +585,16 @@ const Scene = () => {
         intensity={1 + (shapeGlow?.intensity || 0)}
         color={shapeGlow?.useObjectColor ? '#ffffff' : shapeGlow?.customColor || '#ffffff'}
       />
+      <Metamorphosis />
       <Spheres />
       <Cubes />
       <Toruses />
       <Blobs />
-      <Ribbons />
       <Particles />
+      <ObjectTrails />
+      <RadialGrowth />
+      <WaveInterference />
+      <Fireflies />
     </>
   );
 };

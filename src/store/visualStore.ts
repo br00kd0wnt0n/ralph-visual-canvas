@@ -68,6 +68,18 @@ export interface VisualState {
       complexity: number;
       organicness: number;
     };
+    radialGrowth: {
+      color: string;
+    };
+    waveInterference: {
+      color: string;
+    };
+    metamorphosis: {
+      color: string;
+    };
+    fireflies: {
+      color: string;
+    };
   };
   
   // Particles Layer
@@ -161,6 +173,72 @@ export interface VisualState {
       lightShafts: number;
       density: number;
       color: string;
+    };
+
+    // Object Trail System
+    trails: {
+      enabled: boolean;
+      sphereTrails: {
+        enabled: boolean;
+        length: number;      // Trail length (number of trail points)
+        opacity: number;     // Trail opacity
+        width: number;       // Trail thickness
+        fadeRate: number;    // How quickly trail fades
+      };
+      cubeTrails: {
+        enabled: boolean;
+        length: number;
+        opacity: number;
+        width: number;
+        fadeRate: number;
+      };
+      blobTrails: {
+        enabled: boolean;
+        length: number;
+        opacity: number;
+        width: number;
+        fadeRate: number;
+      };
+      ribbonTrails: {
+        enabled: boolean;
+        length: number;
+        opacity: number;
+        width: number;
+        fadeRate: number;
+      };
+    };
+
+    // Radial Growth System
+    radialGrowth: {
+      enabled: boolean;
+      maxRadiators: number;
+      spawnRate: number;
+      growthSpeed: number;
+    };
+
+    // Wave Interference System
+    waveInterference: {
+      enabled: boolean;
+      speed: number;
+      amplitude: number;
+      contourLevels: number;
+    };
+
+    // Metamorphosis System
+    metamorphosis: {
+      enabled: boolean;
+      morphSpeed: number;
+      rotationSpeed: number;
+      wireframeOpacity: number;
+    };
+
+    // Fireflies System
+    fireflies: {
+      enabled: boolean;
+      count: number;
+      speed: number;
+      glowIntensity: number;
+      swarmRadius: number;
     };
   };
   
@@ -272,6 +350,18 @@ const defaultState: VisualState = {
       complexity: 12,
       organicness: 0,
     },
+    radialGrowth: {
+      color: '#ff0000',
+    },
+    waveInterference: {
+      color: '#ff0000',
+    },
+    metamorphosis: {
+      color: '#ff0000',
+    },
+    fireflies: {
+      color: '#ff0000',
+    },
   },
   particles: {
     count: 500,
@@ -354,6 +444,62 @@ const defaultState: VisualState = {
       lightShafts: 0,
       density: 0.5,
       color: '#4169e1',
+    },
+    trails: {
+      enabled: true,
+      sphereTrails: {
+        enabled: false,
+        length: 20,
+        opacity: 0.6,
+        width: 0.1,
+        fadeRate: 0.95,
+      },
+      cubeTrails: {
+        enabled: false,
+        length: 15,
+        opacity: 0.5,
+        width: 0.08,
+        fadeRate: 0.94,
+      },
+      blobTrails: {
+        enabled: false,
+        length: 25,
+        opacity: 0.7,
+        width: 0.12,
+        fadeRate: 0.96,
+      },
+      ribbonTrails: {
+        enabled: false,
+        length: 30,
+        opacity: 0.8,
+        width: 0.15,
+        fadeRate: 0.97,
+      },
+    },
+    radialGrowth: {
+      enabled: false,
+      maxRadiators: 10,
+      spawnRate: 0.5,
+      growthSpeed: 0.1,
+    },
+    waveInterference: {
+      enabled: false,
+      speed: 0.5,
+      amplitude: 0.5,
+      contourLevels: 5,
+    },
+    metamorphosis: {
+      enabled: false,
+      morphSpeed: 0.5,
+      rotationSpeed: 0.5,
+      wireframeOpacity: 0.5,
+    },
+    fireflies: {
+      enabled: false,
+      count: 100,
+      speed: 0.5,
+      glowIntensity: 0.5,
+      swarmRadius: 20,
     },
   },
   effects: {

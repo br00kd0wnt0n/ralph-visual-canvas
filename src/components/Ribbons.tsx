@@ -89,7 +89,7 @@ export const Ribbons = () => {
   }
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} userData={{ objectType: 'ribbons' }}>
       {ribbonData.map((data, i) => {
         const geometry = data.geometry;
         // Safety check: only render if geometry exists

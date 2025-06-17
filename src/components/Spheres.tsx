@@ -49,7 +49,7 @@ export const Spheres = () => {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} userData={{ objectType: 'spheres' }}>
       {spherePositions.map((position, i) => (
         <mesh key={i} position={position as [number, number, number]}>
           <sphereGeometry args={[spheres.size, 16, 16]} />

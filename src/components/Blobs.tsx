@@ -69,7 +69,7 @@ export const Blobs = () => {
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} userData={{ objectType: 'blobs' }}>
       {blobPositions.map((position, i) => {
         const geometry = useMemo(() => createOrganicGeometry(blobs.organicness), [blobs.organicness, i, blobs.count]);
         return (

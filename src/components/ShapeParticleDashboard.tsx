@@ -300,60 +300,6 @@ export const ShapeParticleDashboard = React.memo(() => {
             onChange={(value) => updateGeometric('blobs', { color: value })}
           />
         </div>
-
-        {/* Flowing Ribbons Controls */}
-        <div className={styles.controlSection}>
-          <h3>🎀 Flowing Ribbons</h3>
-          <SliderControl
-            label="Count"
-            value={geometric.ribbons.count || 0}
-            min={0}
-            max={10}
-            step={1}
-            onChange={(value) => updateGeometric('ribbons', { count: value })}
-          />
-          <SliderControl
-            label="Length"
-            value={geometric.ribbons.length || 8}
-            min={3}
-            max={15}
-            onChange={(value) => updateGeometric('ribbons', { length: value })}
-          />
-          <SliderControl
-            label="Width"
-            value={geometric.ribbons.width || 0.3}
-            min={0.1}
-            max={1}
-            onChange={(value) => updateGeometric('ribbons', { width: value })}
-          />
-          <SliderControl
-            label="Flow (Curve Intensity)"
-            value={geometric.ribbons.flow || 0.8}
-            min={0.1}
-            max={2}
-            step={0.1}
-            onChange={(value) => updateGeometric('ribbons', { flow: value })}
-          />
-          <SliderControl
-            label="Speed"
-            value={geometric.ribbons.speed || 1.2}
-            min={0}
-            max={3}
-            onChange={(value) => updateGeometric('ribbons', { speed: value })}
-          />
-          <SliderControl
-            label="Opacity"
-            value={geometric.ribbons.opacity || 0.6}
-            min={0}
-            max={1}
-            onChange={(value) => updateGeometric('ribbons', { opacity: value })}
-          />
-          <ColorControl
-            label="Color"
-            value={geometric.ribbons.color || '#ff6b6b'}
-            onChange={(value) => updateGeometric('ribbons', { color: value })}
-          />
-        </div>
       </div>
     </div>
   );

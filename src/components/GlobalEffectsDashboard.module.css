@@ -63,6 +63,23 @@
   gap: 0.5rem;
 }
 
+.subSection {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.subSection h4 {
+  margin: 0 0 0.8rem 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .controlGroup {
   margin-bottom: 1rem;
   display: flex;
