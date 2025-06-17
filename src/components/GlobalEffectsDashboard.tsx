@@ -49,18 +49,45 @@ export const GlobalEffectsDashboard = () => {
 
   return (
     <div className={styles.dashboard}>
-      <PresetControls />
       <div className={styles.dashboardHeader}>
         <h2>Global Effects</h2>
       </div>
 
-      {/* REDESIGNED: Clean Background Mode Controls */}
-      <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 space-y-4 border border-white/10">
-        
-        <div className="space-y-4">
-          {/* Main Enable Toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-white font-medium">Enable Artistic Mode</span>
+      {/* Enhanced Preset Controls */}
+      <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 backdrop-blur-sm rounded-lg p-4 mb-6 border border-purple-500/20">
+        <PresetControls />
+      </div>
+
+      {/* Spacer with visual separator */}
+      <div style={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '96px', height: '2px', background: '#6b7280' }}></div>
+      </div>
+
+      {/* Enhanced Artistic Mode Controls */}
+      <div className="bg-gradient-to-r from-emerald-900/30 to-teal-900/30 backdrop-blur-sm rounded-lg p-4 mb-6 border border-emerald-500/20">
+        <div className="flex items-center justify-between mb-4">
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '8px',
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%'
+          }}>
+            <div>
+              <h3 style={{
+                color: 'white',
+                fontWeight: '600',
+                fontSize: '18px',
+                marginBottom: '4px'
+              }}>Artistic Mode</h3>
+              <p style={{
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '14px'
+              }}>Background & camera controls</p>
+            </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
                 type="checkbox" 
@@ -68,114 +95,155 @@ export const GlobalEffectsDashboard = () => {
                 onChange={(e) => updateBackgroundConfig({ enabled: e.target.checked })}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <div className="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </label>
           </div>
-          
-          {backgroundConfig.enabled && (
-            <div className="space-y-4 pl-4 border-l-2 border-blue-400/50">
-              
-              {/* Camera Control */}
-              <div>
-                <h3 className="text-white font-medium mb-2">Camera Control</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => updateBackgroundConfig({ 
-                      camera: { ...backgroundConfig.camera, fixed: false }
-                    })}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${
-                      !backgroundConfig.camera.fixed 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                    }`}
-                  >
-                    🎮 Free Control
-                  </button>
-                  <button
-                    onClick={() => updateBackgroundConfig({ 
-                      camera: { ...backgroundConfig.camera, fixed: true }
-                    })}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${
-                      backgroundConfig.camera.fixed 
-                        ? 'bg-red-600 text-white' 
-                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                    }`}
-                  >
-                    🔒 Fixed View
-                  </button>
-                </div>
+        </div>
+        
+        {backgroundConfig.enabled && (
+          <div className="space-y-4 pl-4 border-l-2 border-emerald-400/50">
+            
+            {/* Camera Control */}
+            <div className="bg-black/20 rounded-lg p-3">
+              <h4 className="text-white font-medium mb-3">Camera Control</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => updateBackgroundConfig({ 
+                    camera: { ...backgroundConfig.camera, fixed: false }
+                  })}
+                  className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    !backgroundConfig.camera.fixed 
+                      ? 'bg-green-600 text-white shadow-lg shadow-green-600/30' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  }`}
+                >
+                  Free Control
+                </button>
+                <button
+                  onClick={() => updateBackgroundConfig({ 
+                    camera: { ...backgroundConfig.camera, fixed: true }
+                  })}
+                  className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    backgroundConfig.camera.fixed 
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-600/30' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  }`}
+                >
+                  Fixed View
+                </button>
               </div>
-              
-              {/* Visual Style */}
-              <div>
-                <h3 className="text-white font-medium mb-2">Visual Style</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => updateBackgroundConfig({ mode: 'full3D' })}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${
-                      backgroundConfig.mode === 'full3D' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                    }`}
-                  >
-                    ☀️ Bright
-                  </button>
-                  <button
-                    onClick={() => updateBackgroundConfig({ mode: 'modalFriendly' })}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${
-                      backgroundConfig.mode === 'modalFriendly'
-                        ? 'bg-purple-600 text-white' 
-                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                    }`}
-                  >
-                    🎨 Modal-Friendly
-                  </button>
-                </div>
+            </div>
+            
+            {/* Visual Style */}
+            <div className="bg-black/20 rounded-lg p-3">
+              <h4 className="text-white font-medium mb-3">Visual Style</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => updateBackgroundConfig({ mode: 'full3D' })}
+                  className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    backgroundConfig.mode === 'full3D' 
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  }`}
+                >
+                  Bright
+                </button>
+                <button
+                  onClick={() => updateBackgroundConfig({ mode: 'modalFriendly' })}
+                  className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    backgroundConfig.mode === 'modalFriendly'
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                  }`}
+                >
+                  Modal-Friendly
+                </button>
               </div>
-              
-              {/* Animation Speed */}
-              <div>
-                <h3 className="text-white font-medium mb-2">
-                  Animation Speed: {backgroundConfig.timeScale.toFixed(2)}x
-                </h3>
-                <input
-                  type="range"
-                  min="0.01"
-                  max="2.0"
-                  step="0.01"
-                  value={backgroundConfig.timeScale}
-                  onChange={(e) => updateBackgroundConfig({ timeScale: parseFloat(e.target.value) })}
-                  className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>Ultra Slow (24h evolution)</span>
-                  <span>Normal</span>
-                  <span>Fast</span>
-                </div>
+            </div>
+            
+            {/* Animation Speed */}
+            <div className="bg-black/20 rounded-lg p-3">
+              <h4 className="text-white font-medium mb-3">Animation Speed: {backgroundConfig.timeScale.toFixed(2)}x</h4>
+              <input
+                type="range"
+                min="0.01"
+                max="2.0"
+                step="0.01"
+                value={backgroundConfig.timeScale}
+                onChange={(e) => updateBackgroundConfig({ timeScale: parseFloat(e.target.value) })}
+                className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-2">
+                <span>Ultra Slow</span>
+                <span>Normal</span>
+                <span>Fast</span>
               </div>
-              
-              {/* Current Status - Clean */}
-              <div className="bg-gray-800/50 rounded p-3 text-sm">
-                <div className="text-gray-300">
-                  Camera: <span className={`font-medium ${backgroundConfig.camera.fixed ? 'text-red-400' : 'text-green-400'}`}>
-                    {backgroundConfig.camera.fixed ? '🔒 Fixed' : '🎮 Free'}
+            </div>
+            
+            {/* Current Status - Enhanced */}
+            <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-lg p-4 text-sm border border-gray-600/30">
+              <div className="text-gray-300 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span>Camera:</span>
+                  <span className={`font-medium px-2 py-1 rounded ${backgroundConfig.camera.fixed ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                    {backgroundConfig.camera.fixed ? 'Fixed' : 'Free'}
                   </span>
-                  {' • '}
-                  Style: <span className={`font-medium ${backgroundConfig.mode === 'modalFriendly' ? 'text-purple-400' : 'text-blue-400'}`}>
-                    {backgroundConfig.mode === 'modalFriendly' ? '🎨 Modal-Friendly' : '☀️ Bright'}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Style:</span>
+                  <span className={`font-medium px-2 py-1 rounded ${backgroundConfig.mode === 'modalFriendly' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                    {backgroundConfig.mode === 'modalFriendly' ? 'Modal-Friendly' : 'Bright'}
                   </span>
-                  {' • '}
-                  Speed: <span className="font-medium text-white">{backgroundConfig.timeScale.toFixed(2)}x</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Speed:</span>
+                  <span className="font-medium text-white bg-gray-600/30 px-2 py-1 rounded">
+                    {backgroundConfig.timeScale.toFixed(2)}x
+                  </span>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Manual Camera Controls */}
+            <div className="bg-black/20 rounded-lg p-3">
+              <h4 className="text-white font-medium mb-3">Manual Camera Controls</h4>
+              {backgroundConfig.enabled && backgroundConfig.camera.fixed && (
+                <div className="bg-yellow-500/20 p-2 rounded text-xs text-yellow-200 mb-3 border border-yellow-400">
+                  Camera controls overridden by Background Mode
+                </div>
+              )}
+              <SliderControl
+                label={`Distance ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 150)' : ''}`}
+                value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 150 : (camera.distance || 25)}
+                min={10}
+                max={50}
+                onChange={(value: number) => updateCamera({ distance: value })}
+                disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
+              />
+              <SliderControl
+                label={`Height ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 0)' : ''}`}
+                value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 0 : (camera.height || 0)}
+                min={-15}
+                max={15}
+                onChange={(value: number) => updateCamera({ height: value })}
+                disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
+              />
+              <SliderControl
+                label={`Field of View ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 30°)' : ''}`}
+                value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 30 : (camera.fov || 60)}
+                min={30}
+                max={90}
+                onChange={(value: number) => updateCamera({ fov: value })}
+                disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Atmospheric Blur */}
       <div className={styles.controlSection}>
-        <h3>🌫️ Atmospheric Blur</h3>
+        <h3>Atmospheric Blur</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.atmosphericBlur.enabled}
@@ -207,7 +275,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Color Blending */}
       <div className={styles.controlSection}>
-        <h3>🎨 Color Blending</h3>
+        <h3>Color Blending</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.colorBlending.enabled}
@@ -237,7 +305,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Shape Glow */}
       <div className={styles.controlSection}>
-        <h3>✨ Shape Glow</h3>
+        <h3>Shape Glow</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.shapeGlow.enabled}
@@ -307,7 +375,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Chromatic Effects */}
       <div className={styles.controlSection}>
-        <h3>🌈 Chromatic Effects</h3>
+        <h3>Chromatic Effects</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.enabled}
@@ -381,7 +449,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Rainbow Effect */}
       <div className={styles.controlSection}>
-        <h3>🌈 Rainbow Effect</h3>
+        <h3>Rainbow Effect</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.rainbow.enabled}
@@ -518,7 +586,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Distortion */}
       <div className={styles.controlSection}>
-        <h3>🌊 Distortion</h3>
+        <h3>Distortion</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.distortion.enabled}
@@ -566,7 +634,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Volumetric Effects */}
       <div className={styles.controlSection}>
-        <h3>🌫️ Volumetric</h3>
+        <h3>Volumetric</h3>
         <ToggleControl
           label="Enable"
           value={globalEffects.volumetric.enabled}
@@ -609,7 +677,7 @@ export const GlobalEffectsDashboard = () => {
 
       {/* Enhanced Post-Processing */}
       <div className={styles.controlSection}>
-        <h3>🎬 Enhanced Post-FX</h3>
+        <h3>Enhanced Post-FX</h3>
         <SliderControl
           label="Brightness"
           value={effects.brightness || 1.0}
@@ -623,40 +691,6 @@ export const GlobalEffectsDashboard = () => {
           min={0}
           max={1}
           onChange={(value: number) => updateEffects({ vignette: value })}
-        />
-      </div>
-
-      {/* Camera */}
-      <div className="control-section">
-        <h3>📷 Camera</h3>
-        {backgroundConfig.enabled && backgroundConfig.camera.fixed && (
-          <div className="bg-yellow-500/20 p-2 rounded text-xs text-yellow-200 mb-2 border border-yellow-400">
-            🔒 Camera controls overridden by Background Mode
-          </div>
-        )}
-        <SliderControl
-          label={`Distance ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 150)' : ''}`}
-          value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 150 : (camera.distance || 25)}
-          min={10}
-          max={50}
-          onChange={(value: number) => updateCamera({ distance: value })}
-          disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
-        />
-        <SliderControl
-          label={`Height ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 0)' : ''}`}
-          value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 0 : (camera.height || 0)}
-          min={-15}
-          max={15}
-          onChange={(value: number) => updateCamera({ height: value })}
-          disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
-        />
-        <SliderControl
-          label={`Field of View ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 30°)' : ''}`}
-          value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 30 : (camera.fov || 60)}
-          min={30}
-          max={90}
-          onChange={(value: number) => updateCamera({ fov: value })}
-          disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
         />
       </div>
     </div>

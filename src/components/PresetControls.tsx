@@ -62,12 +62,10 @@ const PresetControls: React.FC = React.memo(() => {
   }, [selectedPreset, deletePreset, refreshPresets]);
 
   return (
-    <div className={styles.controlSection}>
-      <h3>💾 Presets</h3>
-      
+    <div>
       {/* Save New Preset */}
-      <div className={styles.controlGroup}>
-        <label>Save Current Settings</label>
+      <div className="bg-black/20 rounded-lg p-3 mb-4">
+        <h4 className="text-white font-medium mb-3">Save Current Settings</h4>
         <div className={styles.inputGroup}>
           <input
             type="text"
@@ -80,17 +78,17 @@ const PresetControls: React.FC = React.memo(() => {
           <button 
             onClick={handleSave}
             disabled={!presetName.trim() || isSaving}
-            className={`${styles.button} ${isSaving ? styles.buttonDisabled : ''}`}
+            className={styles.saveButton}
           >
-            {isSaving ? 'Saving...' : 'Save Preset'}
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
 
       {/* Load/Delete Existing Presets */}
       {availablePresets.length > 0 && (
-        <div className={styles.controlGroup}>
-          <label>Manage Presets</label>
+        <div className="bg-black/20 rounded-lg p-3">
+          <h4 className="text-white font-medium mb-3">Manage Presets</h4>
           <select
             value={selectedPreset}
             onChange={(e) => setSelectedPreset(e.target.value)}
@@ -124,8 +122,10 @@ const PresetControls: React.FC = React.memo(() => {
       )}
 
       {availablePresets.length === 0 && (
-        <div className={styles.emptyState}>
-          No presets saved yet. Save your current settings to create a preset.
+        <div className="bg-black/20 rounded-lg p-4 text-center">
+          <p className="text-gray-400 text-sm">
+            No presets saved yet. Save your current settings to create a preset.
+          </p>
         </div>
       )}
     </div>

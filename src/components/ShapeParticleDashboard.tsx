@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useVisualStore } from '../store/visualStore';
 import styles from './ShapeParticleDashboard.module.css';
 
@@ -24,6 +24,11 @@ interface ToggleControlProps {
   value: boolean;
   onChange: (value: boolean) => void;
   disabled?: boolean;
+}
+
+interface ControlSectionProps {
+  title: string;
+  children: React.ReactNode;
 }
 
 const SliderControl: React.FC<SliderControlProps> = React.memo(({ 
@@ -86,6 +91,20 @@ const ToggleControl: React.FC<ToggleControlProps> = React.memo(({
   </div>
 ));
 
+const ControlSection: React.FC<ControlSectionProps> = React.memo(({ 
+  title, 
+  children 
+}) => {
+  return (
+    <div className={styles.controlSection}>
+      <h3>{title}</h3>
+      <div className={styles.controlContent}>
+        {children}
+      </div>
+    </div>
+  );
+});
+
 export const ShapeParticleDashboard = React.memo(() => {
   const { geometric, particles, globalEffects, updateGeometric, updateParticles, updateGlobalEffects } = useVisualStore();
 
@@ -97,8 +116,7 @@ export const ShapeParticleDashboard = React.memo(() => {
 
       <div className={styles.tabContent}>
         {/* Particles Controls */}
-        <div className={styles.controlSection}>
-          <h3>✨ Particles</h3>
+        <ControlSection title="Particles">
           <SliderControl
             label="Count"
             value={particles.count || 0}
@@ -140,11 +158,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             max={20}
             onChange={(value) => updateParticles({ spread: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Spheres Controls */}
-        <div className={styles.controlSection}>
-          <h3>🔵 Spheres</h3>
+        <ControlSection title="Spheres">
           <SliderControl
             label="Count"
             value={geometric.spheres.count || 0}
@@ -186,11 +203,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             max={1}
             onChange={(value) => updateGeometric('spheres', { opacity: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Cubes Controls */}
-        <div className={styles.controlSection}>
-          <h3>⬛ Cubes</h3>
+        <ControlSection title="Cubes">
           <SliderControl
             label="Count"
             value={geometric.cubes.count || 0}
@@ -232,11 +248,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             max={1}
             onChange={(value) => updateGeometric('cubes', { opacity: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Toruses Controls */}
-        <div className={styles.controlSection}>
-          <h3>⭕ Toruses</h3>
+        <ControlSection title="Toruses">
           <SliderControl
             label="Count"
             value={geometric.toruses.count || 0}
@@ -278,11 +293,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             max={1}
             onChange={(value) => updateGeometric('toruses', { opacity: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Organic Blobs Controls */}
-        <div className={styles.controlSection}>
-          <h3>🫧 Organic Blobs</h3>
+        <ControlSection title="Organic Blobs">
           <SliderControl
             label="Count"
             value={geometric.blobs.count || 0}
@@ -324,11 +338,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.blobs.color || '#9370db'}
             onChange={(value) => updateGeometric('blobs', { color: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Metamorphosis Controls */}
-        <div className={styles.controlSection}>
-          <h3>🔄 Metamorphosis</h3>
+        <ControlSection title="Metamorphosis">
           <ToggleControl
             label="Enable"
             value={globalEffects.metamorphosis.enabled}
@@ -391,11 +404,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.metamorphosis?.color || '#333333'}
             onChange={(value) => updateGeometric('metamorphosis', { color: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Fireflies Controls */}
-        <div className={styles.controlSection}>
-          <h3>🦟 Fireflies</h3>
+        <ControlSection title="Fireflies">
           <ToggleControl
             label="Enable"
             value={globalEffects.fireflies.enabled}
@@ -448,11 +460,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.fireflies?.color || '#ffff88'}
             onChange={(value) => updateGeometric('fireflies', { color: value })}
           />
-        </div>
+        </ControlSection>
 
         {/* Wave Interference Controls */}
-        <div className={styles.controlSection}>
-          <h3>🌊 Wave Interference</h3>
+        <ControlSection title="Wave Interference">
           <ToggleControl
             label="Enable"
             value={globalEffects.waveInterference.enabled}
@@ -495,7 +506,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.waveInterference?.color || '#333333'}
             onChange={(value) => updateGeometric('waveInterference', { color: value })}
           />
-        </div>
+        </ControlSection>
       </div>
     </div>
   );
