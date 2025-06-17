@@ -18,6 +18,7 @@ export interface VisualState {
       color: string;
       speed: number;
       opacity: number;
+      organicness: number;
     };
     cubes: {
       count: number;
@@ -25,6 +26,7 @@ export interface VisualState {
       color: string;
       rotation: number;
       opacity: number;
+      organicness: number;
     };
     toruses: {
       count: number;
@@ -32,6 +34,34 @@ export interface VisualState {
       color: string;
       speed: number;
       opacity: number;
+      organicness: number;
+    };
+    blobs: {
+      count: number;
+      size: number;
+      color: string;
+      speed: number;
+      opacity: number;
+      organicness: number;
+    };
+    ribbons: {
+      count: number;
+      length: number;
+      width: number;
+      color: string;
+      speed: number;
+      opacity: number;
+      flow: number;
+      organicness: number;
+    };
+    crystals: {
+      count: number;
+      size: number;
+      color: string;
+      rotation: number;
+      opacity: number;
+      complexity: number;
+      organicness: number;
     };
   };
   
@@ -185,6 +215,7 @@ const defaultState: VisualState = {
       color: '#00ff88',
       speed: 1.0,
       opacity: 0.7,
+      organicness: 0,
     },
     cubes: {
       count: 5,
@@ -192,6 +223,7 @@ const defaultState: VisualState = {
       color: '#4169e1',
       rotation: 1.0,
       opacity: 0.6,
+      organicness: 0,
     },
     toruses: {
       count: 3,
@@ -199,6 +231,34 @@ const defaultState: VisualState = {
       color: '#ffa500',
       speed: 0.8,
       opacity: 0.5,
+      organicness: 0,
+    },
+    blobs: {
+      count: 4,
+      size: 1.5,
+      color: '#9370db',
+      speed: 0.6,
+      opacity: 0.8,
+      organicness: 0.7,
+    },
+    ribbons: {
+      count: 3,
+      length: 8,
+      width: 0.3,
+      color: '#ff6b6b',
+      speed: 1.2,
+      opacity: 0.6,
+      flow: 0.8,
+      organicness: 0,
+    },
+    crystals: {
+      count: 6,
+      size: 0.8,
+      color: '#4ecdc4',
+      rotation: 1.5,
+      opacity: 0.7,
+      complexity: 12,
+      organicness: 0,
     },
   },
   particles: {
@@ -301,122 +361,107 @@ const defaultState: VisualState = {
 
 type Store = VisualState & VisualActions;
 
-export const useVisualStore = create<Store>((set, get) => {
-  console.log('=== STORE INITIALIZATION ===');
-  console.log('Creating store with default state:', defaultState);
-  
-  const store = {
-    ...defaultState,
-    
-    updateBackground: (updates: Partial<VisualState['background']>) => {
-      console.log('Updating background:', updates);
-      set((state: VisualState) => ({
-        background: { ...state.background, ...updates },
-      }));
-    },
-    
-    updateGeometric: (shape: keyof VisualState['geometric'], updates: Partial<VisualState['geometric'][keyof VisualState['geometric']]>) => {
-      console.log('Updating geometric shape:', shape, updates);
-      set((state: VisualState) => ({
-        geometric: {
-          ...state.geometric,
-          [shape]: { ...state.geometric[shape], ...updates },
-        },
-      }));
-    },
-    
-    updateParticles: (updates: Partial<VisualState['particles']>) =>
-      set((state: VisualState) => ({
-        particles: { ...state.particles, ...updates },
-      })),
-    
-    updateGlobalEffects: (updates: Partial<VisualState['globalEffects']>) =>
-      set((state: VisualState) => ({
-        globalEffects: { ...state.globalEffects, ...updates },
-      })),
-    
-    updateEffects: (updates: Partial<VisualState['effects']>) =>
-      set((state: VisualState) => ({
-        effects: { ...state.effects, ...updates },
-      })),
-    
-    updateCamera: (updates: Partial<VisualState['camera']>) =>
-      set((state: VisualState) => ({
-        camera: { ...state.camera, ...updates },
-      })),
-    
-    resetToDefaults: () => set(defaultState),
-    
-    savePreset: (name: string) => {
-      const state = get();
-      const preset: VisualPreset = {
-        background: state.background,
-        geometric: state.geometric,
-        particles: state.particles,
-        globalEffects: state.globalEffects,
-        effects: state.effects,
-        camera: state.camera,
-        savedAt: new Date().toISOString(),
-        version: '1.0'
-      };
-      
-      try {
-        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-        presets[name] = preset;
-        localStorage.setItem('visualPresets', JSON.stringify(presets));
-        console.log('Preset saved:', name, preset);
-      } catch (error) {
-        console.error('Error saving preset:', error);
-      }
-    },
-    
-    loadPreset: (name: string) => {
-      try {
-        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-        if (presets[name]) {
-          const preset = presets[name];
-          
-          set((state) => ({
-            ...state,
-            background: { ...state.background, ...preset.background },
-            geometric: { ...state.geometric, ...preset.geometric },
-            particles: { ...state.particles, ...preset.particles },
-            globalEffects: { ...state.globalEffects, ...preset.globalEffects },
-            effects: { ...state.effects, ...preset.effects },
-            camera: { ...state.camera, ...preset.camera },
-          }));
-          
-          console.log('Preset loaded:', name, preset);
-        } else {
-          console.warn('Preset not found:', name);
-        }
-      } catch (error) {
-        console.error('Error loading preset:', error);
-      }
-    },
+export const useVisualStore = create<Store>((set, get) => ({
+  ...defaultState,
 
-    getAvailablePresets: () => {
-      try {
-        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-        return Object.keys(presets).sort();
-      } catch (error) {
-        console.error('Error getting presets:', error);
-        return [];
-      }
-    },
+  updateBackground: (updates) => {
+    set((state) => ({
+      background: { ...state.background, ...updates }
+    }));
+  },
 
-    deletePreset: (name: string) => {
-      try {
-        const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-        delete presets[name];
-        localStorage.setItem('visualPresets', JSON.stringify(presets));
-        console.log('Preset deleted:', name);
-      } catch (error) {
-        console.error('Error deleting preset:', error);
+  updateGeometric: (shape, updates) => {
+    set((state) => ({
+      geometric: {
+        ...state.geometric,
+        [shape]: { ...state.geometric[shape], ...updates }
       }
-    },
-  };
+    }));
+  },
 
-  console.log('Store created with initial state:', store);
-  return store;
-}); 
+  updateParticles: (updates) => {
+    set((state) => ({
+      particles: { ...state.particles, ...updates }
+    }));
+  },
+
+  updateGlobalEffects: (updates) => {
+    set((state) => ({
+      globalEffects: { ...state.globalEffects, ...updates }
+    }));
+  },
+
+  updateEffects: (updates) => {
+    set((state) => ({
+      effects: { ...state.effects, ...updates }
+    }));
+  },
+
+  updateCamera: (updates) => {
+    set((state) => ({
+      camera: { ...state.camera, ...updates }
+    }));
+  },
+
+  resetToDefaults: () => set(defaultState),
+
+  savePreset: (name) => {
+    const state = get();
+    const preset: VisualPreset = {
+      background: state.background,
+      geometric: state.geometric,
+      particles: state.particles,
+      globalEffects: state.globalEffects,
+      effects: state.effects,
+      camera: state.camera,
+      savedAt: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    try {
+      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+      presets[name] = preset;
+      localStorage.setItem('visualPresets', JSON.stringify(presets));
+    } catch (error) {
+    }
+  },
+
+  loadPreset: (name) => {
+    try {
+      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+      if (presets[name]) {
+        const preset = presets[name];
+        
+        set((state) => ({
+          ...state,
+          background: { ...state.background, ...preset.background },
+          geometric: { ...state.geometric, ...preset.geometric },
+          particles: { ...state.particles, ...preset.particles },
+          globalEffects: { ...state.globalEffects, ...preset.globalEffects },
+          effects: { ...state.effects, ...preset.effects },
+          camera: { ...state.camera, ...preset.camera },
+        }));
+      } else {
+      }
+    } catch (error) {
+    }
+  },
+
+  getAvailablePresets: () => {
+    try {
+      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+      return Object.keys(presets).sort();
+    } catch (error) {
+      return [];
+    }
+  },
+
+  deletePreset: (name) => {
+    try {
+      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+      delete presets[name];
+      localStorage.setItem('visualPresets', JSON.stringify(presets));
+    } catch (error) {
+    }
+  },
+})); 

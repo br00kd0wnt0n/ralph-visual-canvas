@@ -11,7 +11,7 @@ interface SliderControlProps {
   disabled?: boolean;
 }
 
-const SliderControl: React.FC<SliderControlProps> = ({
+const SliderControl: React.FC<SliderControlProps> = React.memo(({
   label,
   value,
   min,
@@ -36,6 +36,6 @@ const SliderControl: React.FC<SliderControlProps> = ({
       disabled={disabled}
     />
   </div>
-);
+));
 
 export default SliderControl; 

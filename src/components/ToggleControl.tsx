@@ -7,7 +7,7 @@ interface ToggleControlProps {
   onChange: (value: boolean) => void;
 }
 
-const ToggleControl: React.FC<ToggleControlProps> = ({
+const ToggleControl: React.FC<ToggleControlProps> = React.memo(({
   label,
   value,
   onChange,
@@ -24,6 +24,6 @@ const ToggleControl: React.FC<ToggleControlProps> = ({
       {label}
     </label>
   </div>
-);
+));
 
 export default ToggleControl; 

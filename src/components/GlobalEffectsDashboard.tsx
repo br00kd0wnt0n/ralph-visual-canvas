@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useVisualStore } from '../store/visualStore';
 import styles from './GlobalEffectsDashboard.module.css';
 import SliderControl from './SliderControl';
 import ToggleControl from './ToggleControl';
 import PresetControls from './PresetControls';
 
-const SelectControl = ({ 
+const SelectControl = React.memo(({ 
   label, 
   value, 
   options, 
@@ -33,19 +33,19 @@ const SelectControl = ({
       ))}
     </select>
   </div>
-);
+));
 
 export const GlobalEffectsDashboard = () => {
   const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera } = useVisualStore();
 
-  const blendModeOptions = [
+  const blendModeOptions = useMemo(() => [
     { value: 'screen', label: 'Screen' },
     { value: 'multiply', label: 'Multiply' },
     { value: 'overlay', label: 'Overlay' },
     { value: 'soft-light', label: 'Soft Light' },
     { value: 'hard-light', label: 'Hard Light' },
     { value: 'color-dodge', label: 'Color Dodge' },
-  ];
+  ], []);
 
   return (
     <div className={styles.dashboard}>
@@ -66,7 +66,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Intensity"
-          value={globalEffects.atmosphericBlur.intensity}
+          value={globalEffects.atmosphericBlur.intensity || 0.5}
           min={0}
           max={25}
           step={0.5}
@@ -76,7 +76,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Layers"
-          value={globalEffects.atmosphericBlur.layers}
+          value={globalEffects.atmosphericBlur.layers || 5}
           min={1}
           max={20}
           step={1}
@@ -106,7 +106,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Intensity"
-          value={globalEffects.colorBlending.intensity}
+          value={globalEffects.colorBlending.intensity || 0.5}
           min={0}
           max={2}
           step={0.1}
@@ -138,7 +138,7 @@ export const GlobalEffectsDashboard = () => {
             <label>Glow Color</label>
             <input
               type="color"
-              value={globalEffects.shapeGlow.customColor}
+              value={globalEffects.shapeGlow.customColor || '#ffffff'}
               onChange={(e) => updateGlobalEffects({
                 shapeGlow: {
                   ...globalEffects.shapeGlow,
@@ -150,7 +150,7 @@ export const GlobalEffectsDashboard = () => {
         )}
         <SliderControl
           label="Intensity"
-          value={globalEffects.shapeGlow.intensity}
+          value={globalEffects.shapeGlow.intensity || 0.4}
           min={0}
           max={3}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -159,7 +159,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Radius"
-          value={globalEffects.shapeGlow.radius}
+          value={globalEffects.shapeGlow.radius || 20}
           min={5}
           max={100}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -176,7 +176,7 @@ export const GlobalEffectsDashboard = () => {
         {globalEffects.shapeGlow.pulsing && (
           <SliderControl
             label="Pulse Speed"
-            value={globalEffects.shapeGlow.pulseSpeed}
+            value={globalEffects.shapeGlow.pulseSpeed || 1.0}
             min={0.1}
             max={5}
             onChange={(value: number) => updateGlobalEffects({ 
@@ -198,7 +198,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Aberration"
-          value={globalEffects.chromatic.aberration}
+          value={globalEffects.chromatic.aberration || 0}
           min={0}
           max={10}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -209,7 +209,7 @@ export const GlobalEffectsDashboard = () => {
           <label>Red Channel</label>
           <input
             type="color"
-            value={globalEffects.chromatic.aberrationColors.red}
+            value={globalEffects.chromatic.aberrationColors.red || '#ff0000'}
             onChange={(e) => updateGlobalEffects({
               chromatic: {
                 ...globalEffects.chromatic,
@@ -223,7 +223,7 @@ export const GlobalEffectsDashboard = () => {
           <label>Green Channel</label>
           <input
             type="color"
-            value={globalEffects.chromatic.aberrationColors.green}
+            value={globalEffects.chromatic.aberrationColors.green || '#00ff00'}
             onChange={(e) => updateGlobalEffects({
               chromatic: {
                 ...globalEffects.chromatic,
@@ -237,7 +237,7 @@ export const GlobalEffectsDashboard = () => {
           <label>Blue Channel</label>
           <input
             type="color"
-            value={globalEffects.chromatic.aberrationColors.blue}
+            value={globalEffects.chromatic.aberrationColors.blue || '#0000ff'}
             onChange={(e) => updateGlobalEffects({
               chromatic: {
                 ...globalEffects.chromatic,
@@ -251,7 +251,7 @@ export const GlobalEffectsDashboard = () => {
         </div>
         <SliderControl
           label="Prism"
-          value={globalEffects.chromatic.prism}
+          value={globalEffects.chromatic.prism || 0}
           min={0}
           max={1}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -275,7 +275,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Intensity"
-          value={globalEffects.chromatic.rainbow.intensity}
+          value={globalEffects.chromatic.rainbow.intensity || 0}
           min={0}
           max={2}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -287,7 +287,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Speed"
-          value={globalEffects.chromatic.rainbow.speed}
+          value={globalEffects.chromatic.rainbow.speed || 1}
           min={0}
           max={5}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -299,7 +299,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Rotation"
-          value={globalEffects.chromatic.rainbow.rotation}
+          value={globalEffects.chromatic.rainbow.rotation || 0}
           min={0}
           max={360}
           step={1}
@@ -312,7 +312,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Opacity"
-          value={globalEffects.chromatic.rainbow.opacity}
+          value={globalEffects.chromatic.rainbow.opacity || 0.3}
           min={0}
           max={1}
           step={0.01}
@@ -397,7 +397,7 @@ export const GlobalEffectsDashboard = () => {
         </div>
       </div>
 
-      {/* Distortion Effects */}
+      {/* Distortion */}
       <div className={styles.controlSection}>
         <h3>🌊 Distortion</h3>
         <ToggleControl
@@ -409,7 +409,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Wave"
-          value={globalEffects.distortion.wave}
+          value={globalEffects.distortion.wave || 0}
           min={0}
           max={1}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -418,7 +418,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Ripple"
-          value={globalEffects.distortion.ripple}
+          value={globalEffects.distortion.ripple || 0}
           min={0}
           max={1}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -427,7 +427,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Noise"
-          value={globalEffects.distortion.noise}
+          value={globalEffects.distortion.noise || 0}
           min={0}
           max={1}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -436,7 +436,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Frequency"
-          value={globalEffects.distortion.frequency}
+          value={globalEffects.distortion.frequency || 1}
           min={0.1}
           max={5}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -457,7 +457,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Fog"
-          value={globalEffects.volumetric.fog}
+          value={globalEffects.volumetric.fog || 0}
           min={0}
           max={1}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -466,7 +466,7 @@ export const GlobalEffectsDashboard = () => {
         />
         <SliderControl
           label="Density"
-          value={globalEffects.volumetric.density}
+          value={globalEffects.volumetric.density || 0.5}
           min={0}
           max={2}
           onChange={(value: number) => updateGlobalEffects({ 
@@ -477,7 +477,7 @@ export const GlobalEffectsDashboard = () => {
           <label>Fog Color</label>
           <input
             type="color"
-            value={globalEffects.volumetric.color}
+            value={globalEffects.volumetric.color || '#4169e1'}
             onChange={(e) => updateGlobalEffects({
               volumetric: {
                 ...globalEffects.volumetric,
@@ -493,14 +493,14 @@ export const GlobalEffectsDashboard = () => {
         <h3>🎬 Enhanced Post-FX</h3>
         <SliderControl
           label="Brightness"
-          value={effects.brightness}
+          value={effects.brightness || 1.0}
           min={0.3}
           max={2}
           onChange={(value: number) => updateEffects({ brightness: value })}
         />
         <SliderControl
           label="Vignette"
-          value={effects.vignette}
+          value={effects.vignette || 0}
           min={0}
           max={1}
           onChange={(value: number) => updateEffects({ vignette: value })}
@@ -512,21 +512,21 @@ export const GlobalEffectsDashboard = () => {
         <h3>📷 Camera</h3>
         <SliderControl
           label="Distance"
-          value={camera.distance}
+          value={camera.distance || 25}
           min={10}
           max={50}
           onChange={(value: number) => updateCamera({ distance: value })}
         />
         <SliderControl
           label="Height"
-          value={camera.height}
+          value={camera.height || 0}
           min={-15}
           max={15}
           onChange={(value: number) => updateCamera({ height: value })}
         />
         <SliderControl
           label="Field of View"
-          value={camera.fov}
+          value={camera.fov || 60}
           min={30}
           max={90}
           onChange={(value: number) => updateCamera({ fov: value })}

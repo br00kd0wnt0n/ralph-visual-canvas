@@ -19,7 +19,7 @@ interface ColorControlProps {
   disabled?: boolean;
 }
 
-const SliderControl: React.FC<SliderControlProps> = ({ 
+const SliderControl: React.FC<SliderControlProps> = React.memo(({ 
   label, 
   value, 
   min, 
@@ -41,9 +41,9 @@ const SliderControl: React.FC<SliderControlProps> = ({
       disabled={disabled}
     />
   </div>
-);
+));
 
-const ColorControl: React.FC<ColorControlProps> = ({ 
+const ColorControl: React.FC<ColorControlProps> = React.memo(({ 
   label, 
   value, 
   onChange, 
@@ -59,9 +59,9 @@ const ColorControl: React.FC<ColorControlProps> = ({
       disabled={disabled}
     />
   </div>
-);
+));
 
-export const ShapeParticleDashboard = () => {
+export const ShapeParticleDashboard = React.memo(() => {
   const { geometric, particles, updateGeometric, updateParticles } = useVisualStore();
 
   return (
@@ -76,7 +76,7 @@ export const ShapeParticleDashboard = () => {
           <h3>✨ Particles</h3>
           <SliderControl
             label="Count"
-            value={particles.count}
+            value={particles.count || 0}
             min={0}
             max={1000}
             step={1}
@@ -84,33 +84,33 @@ export const ShapeParticleDashboard = () => {
           />
           <SliderControl
             label="Size"
-            value={particles.size}
+            value={particles.size || 0.2}
             min={0.1}
             max={2}
             onChange={(value) => updateParticles({ size: value })}
           />
           <ColorControl
             label="Color"
-            value={particles.color}
+            value={particles.color || '#ff1493'}
             onChange={(value) => updateParticles({ color: value })}
           />
           <SliderControl
             label="Speed"
-            value={particles.speed}
+            value={particles.speed || 1.0}
             min={0}
             max={5}
             onChange={(value) => updateParticles({ speed: value })}
           />
           <SliderControl
             label="Opacity"
-            value={particles.opacity}
+            value={particles.opacity || 0.9}
             min={0}
             max={1}
             onChange={(value) => updateParticles({ opacity: value })}
           />
           <SliderControl
             label="Spread"
-            value={particles.spread}
+            value={particles.spread || 15}
             min={1}
             max={20}
             onChange={(value) => updateParticles({ spread: value })}
@@ -122,7 +122,7 @@ export const ShapeParticleDashboard = () => {
           <h3>🔵 Spheres</h3>
           <SliderControl
             label="Count"
-            value={geometric.spheres.count}
+            value={geometric.spheres.count || 0}
             min={0}
             max={20}
             step={1}
@@ -130,26 +130,33 @@ export const ShapeParticleDashboard = () => {
           />
           <SliderControl
             label="Size"
-            value={geometric.spheres.size}
+            value={geometric.spheres.size || 1.0}
             min={0.1}
             max={3}
             onChange={(value) => updateGeometric('spheres', { size: value })}
           />
+          <SliderControl
+            label="Organicness"
+            value={geometric.spheres.organicness || 0}
+            min={0}
+            max={2}
+            onChange={(value) => updateGeometric('spheres', { organicness: value })}
+          />
           <ColorControl
             label="Color"
-            value={geometric.spheres.color}
+            value={geometric.spheres.color || '#00ff88'}
             onChange={(value) => updateGeometric('spheres', { color: value })}
           />
           <SliderControl
             label="Speed"
-            value={geometric.spheres.speed}
+            value={geometric.spheres.speed || 1.0}
             min={0}
             max={5}
             onChange={(value) => updateGeometric('spheres', { speed: value })}
           />
           <SliderControl
             label="Opacity"
-            value={geometric.spheres.opacity}
+            value={geometric.spheres.opacity || 0.7}
             min={0}
             max={1}
             onChange={(value) => updateGeometric('spheres', { opacity: value })}
@@ -161,7 +168,7 @@ export const ShapeParticleDashboard = () => {
           <h3>⬛ Cubes</h3>
           <SliderControl
             label="Count"
-            value={geometric.cubes.count}
+            value={geometric.cubes.count || 0}
             min={0}
             max={20}
             step={1}
@@ -169,26 +176,33 @@ export const ShapeParticleDashboard = () => {
           />
           <SliderControl
             label="Size"
-            value={geometric.cubes.size}
+            value={geometric.cubes.size || 0.8}
             min={0.1}
             max={3}
             onChange={(value) => updateGeometric('cubes', { size: value })}
           />
+          <SliderControl
+            label="Organicness"
+            value={geometric.cubes.organicness || 0}
+            min={0}
+            max={2}
+            onChange={(value) => updateGeometric('cubes', { organicness: value })}
+          />
           <ColorControl
             label="Color"
-            value={geometric.cubes.color}
+            value={geometric.cubes.color || '#4169e1'}
             onChange={(value) => updateGeometric('cubes', { color: value })}
           />
           <SliderControl
             label="Rotation"
-            value={geometric.cubes.rotation}
+            value={geometric.cubes.rotation || 1.0}
             min={0}
             max={5}
             onChange={(value) => updateGeometric('cubes', { rotation: value })}
           />
           <SliderControl
             label="Opacity"
-            value={geometric.cubes.opacity}
+            value={geometric.cubes.opacity || 0.6}
             min={0}
             max={1}
             onChange={(value) => updateGeometric('cubes', { opacity: value })}
@@ -200,7 +214,7 @@ export const ShapeParticleDashboard = () => {
           <h3>⭕ Toruses</h3>
           <SliderControl
             label="Count"
-            value={geometric.toruses.count}
+            value={geometric.toruses.count || 0}
             min={0}
             max={20}
             step={1}
@@ -208,32 +222,85 @@ export const ShapeParticleDashboard = () => {
           />
           <SliderControl
             label="Size"
-            value={geometric.toruses.size}
+            value={geometric.toruses.size || 1.2}
             min={0.1}
             max={3}
             onChange={(value) => updateGeometric('toruses', { size: value })}
           />
+          <SliderControl
+            label="Organicness"
+            value={geometric.toruses.organicness || 0}
+            min={0}
+            max={2}
+            onChange={(value) => updateGeometric('toruses', { organicness: value })}
+          />
           <ColorControl
             label="Color"
-            value={geometric.toruses.color}
+            value={geometric.toruses.color || '#ffa500'}
             onChange={(value) => updateGeometric('toruses', { color: value })}
           />
           <SliderControl
             label="Speed"
-            value={geometric.toruses.speed}
+            value={geometric.toruses.speed || 0.8}
             min={0}
             max={5}
             onChange={(value) => updateGeometric('toruses', { speed: value })}
           />
           <SliderControl
             label="Opacity"
-            value={geometric.toruses.opacity}
+            value={geometric.toruses.opacity || 0.5}
             min={0}
             max={1}
             onChange={(value) => updateGeometric('toruses', { opacity: value })}
           />
         </div>
+
+        {/* Organic Blobs Controls */}
+        <div className={styles.controlSection}>
+          <h3>🫧 Organic Blobs</h3>
+          <SliderControl
+            label="Count"
+            value={geometric.blobs.count || 0}
+            min={0}
+            max={15}
+            step={1}
+            onChange={(value) => updateGeometric('blobs', { count: value })}
+          />
+          <SliderControl
+            label="Size"
+            value={geometric.blobs.size || 1.5}
+            min={0.2}
+            max={3}
+            onChange={(value) => updateGeometric('blobs', { size: value })}
+          />
+          <SliderControl
+            label="Organicness"
+            value={geometric.blobs.organicness || 0.7}
+            min={0}
+            max={2}
+            onChange={(value) => updateGeometric('blobs', { organicness: value })}
+          />
+          <SliderControl
+            label="Speed"
+            value={geometric.blobs.speed || 0.6}
+            min={0}
+            max={3}
+            onChange={(value) => updateGeometric('blobs', { speed: value })}
+          />
+          <SliderControl
+            label="Opacity"
+            value={geometric.blobs.opacity || 0.8}
+            min={0}
+            max={1}
+            onChange={(value) => updateGeometric('blobs', { opacity: value })}
+          />
+          <ColorControl
+            label="Color"
+            value={geometric.blobs.color || '#9370db'}
+            onChange={(value) => updateGeometric('blobs', { color: value })}
+          />
+        </div>
       </div>
     </div>
   );
-}; 
+}); 

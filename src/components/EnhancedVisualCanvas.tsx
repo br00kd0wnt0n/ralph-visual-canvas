@@ -1,29 +1,22 @@
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
 import styles from './EnhancedVisualCanvas.module.css';
+import { Blobs } from './Blobs';
 
-// Update blend mode type to match React's CSS properties
-type BlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 
-  'color-dodge' | 'color-burn' | 'hard-light' | 'soft-light' | 'difference' | 'exclusion' | 
-  'hue' | 'saturation' | 'color' | 'luminosity';
-
-const useRainbowAnimation = (speed: number, rotation: number) => {
-  const [time, setTime] = React.useState(0);
-  
-  React.useEffect(() => {
-    const animationFrame = requestAnimationFrame(() => {
-      setTime(prev => (prev + speed * 0.01) % 360);
-    });
-    return () => cancelAnimationFrame(animationFrame);
-  }, [speed]);
-
-  return time;
+// Utility function to convert hex color to RGB
+const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 255, g: 255, b: 255 };
 };
 
 // Add client-side only rendering wrapper
-const ClientOnly = ({ children }: { children: React.ReactNode }) => {
+const ClientOnly = React.memo(({ children }: { children: React.ReactNode }) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,9 +25,28 @@ const ClientOnly = ({ children }: { children: React.ReactNode }) => {
 
   if (!mounted) return null;
   return <>{children}</>;
-};
+});
 
 const Spheres = () => {
+  // Helper to create unique organic geometry for each sphere - MUST BE FIRST
+  const createOrganicSphereGeometry = (size: number, organicness: number) => {
+    // Safety checks to prevent NaN values
+    const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
+    const safeOrganicness = isNaN(organicness) || organicness < 0 ? 0 : organicness;
+    
+    const geometry = new THREE.SphereGeometry(safeSize, 32, 32);
+    const positions = geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      const noise = (Math.random() - 0.5) * safeOrganicness;
+      positions[i] += noise;
+      positions[i + 1] += noise;
+      positions[i + 2] += noise;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  };
+
   const { geometric, globalEffects } = useVisualStore();
   const { spheres } = geometric;
   const { shapeGlow } = globalEffects;
@@ -42,14 +54,11 @@ const Spheres = () => {
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `spheres-${spheres.count}-${Date.now()}`, [spheres.count]);
 
-  if (!spheres || spheres.count === 0) {
-    return null;
-  }
-
   // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
-    for (let i = 0; i < spheres.count; i++) {
+    const safeCount = isNaN(spheres.count) || spheres.count < 0 ? 0 : spheres.count;
+    for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 20,
         (Math.random() - 0.5) * 20,
@@ -59,10 +68,28 @@ const Spheres = () => {
     return newPositions;
   }, [spheres.count, spheres.size]);
 
+  // FIX: Memoize all geometries at once, BEFORE any conditional returns
+  const geometries = useMemo(
+    () => {
+      const safeCount = isNaN(spheres.count) || spheres.count < 0 ? 0 : spheres.count;
+      const safeSize = isNaN(spheres.size) || spheres.size <= 0 ? 1.0 : spheres.size;
+      const safeOrganicness = isNaN(spheres.organicness) || spheres.organicness < 0 ? 0 : spheres.organicness;
+      
+      return Array.from({ length: safeCount }, () => 
+        createOrganicSphereGeometry(safeSize, safeOrganicness)
+      );
+    },
+    [spheres.count, spheres.size, spheres.organicness]
+  );
+
   // Update positions state when generated positions change
   useEffect(() => {
     setPositions(generatedPositions);
   }, [generatedPositions]);
+
+  if (!spheres || spheres.count === 0) {
+    return null;
+  }
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -107,11 +134,15 @@ const Spheres = () => {
   return (
     <group ref={groupRef} key={renderKey}>
       {positions.map((pos, i) => {
+        const geometry = geometries[i];
+        // Safety check: only render if geometry exists
+        if (!geometry) return null;
+        
         return (
           <group key={`sphere-${i}-${spheres.count}`} position={pos}>
             {/* Main sphere */}
             <mesh>
-              <sphereGeometry args={[spheres.size, 32, 32]} />
+              <primitive object={geometry} />
               <meshBasicMaterial 
                 color={spheres.color} 
                 transparent 
@@ -120,11 +151,10 @@ const Spheres = () => {
                 side={THREE.DoubleSide}
               />
             </mesh>
-            
             {/* Single glow layer */}
             {shapeGlow.enabled && (
               <mesh>
-                <sphereGeometry args={[spheres.size * 1.5, 32, 32]} />
+                <primitive object={geometry} />
                 <meshBasicMaterial
                   color={shapeGlow.useObjectColor ? spheres.color : shapeGlow.customColor}
                   transparent
@@ -144,6 +174,25 @@ const Spheres = () => {
 };
 
 const Cubes = () => {
+  // Helper to create unique organic geometry for each cube - MUST BE FIRST
+  const createOrganicCubeGeometry = (size: number, organicness: number) => {
+    // Safety checks to prevent NaN values
+    const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
+    const safeOrganicness = isNaN(organicness) || organicness < 0 ? 0 : organicness;
+    
+    const geometry = new THREE.BoxGeometry(safeSize, safeSize, safeSize);
+    const positions = geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      const noise = (Math.random() - 0.5) * safeOrganicness;
+      positions[i] += noise;
+      positions[i + 1] += noise;
+      positions[i + 2] += noise;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  };
+
   const { geometric, globalEffects } = useVisualStore();
   const { cubes } = geometric;
   const { shapeGlow } = globalEffects;
@@ -151,14 +200,11 @@ const Cubes = () => {
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `cubes-${cubes.count}-${Date.now()}`, [cubes.count]);
 
-  if (!cubes || cubes.count === 0) {
-    return null;
-  }
-
   // Generate positions using useMemo
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
-    for (let i = 0; i < cubes.count; i++) {
+    const safeCount = isNaN(cubes.count) || cubes.count < 0 ? 0 : cubes.count;
+    for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 20,
         (Math.random() - 0.5) * 20,
@@ -168,10 +214,28 @@ const Cubes = () => {
     return newPositions;
   }, [cubes.count, cubes.size]);
 
+  // FIX: Memoize all geometries at once, BEFORE any conditional returns
+  const geometries = useMemo(
+    () => {
+      const safeCount = isNaN(cubes.count) || cubes.count < 0 ? 0 : cubes.count;
+      const safeSize = isNaN(cubes.size) || cubes.size <= 0 ? 1.0 : cubes.size;
+      const safeOrganicness = isNaN(cubes.organicness) || cubes.organicness < 0 ? 0 : cubes.organicness;
+      
+      return Array.from({ length: safeCount }, () => 
+        createOrganicCubeGeometry(safeSize, safeOrganicness)
+      );
+    },
+    [cubes.count, cubes.size, cubes.organicness]
+  );
+
   // Update positions state when generated positions change
   useEffect(() => {
     setPositions(generatedPositions);
   }, [generatedPositions]);
+
+  if (!cubes || cubes.count === 0) {
+    return null;
+  }
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -213,11 +277,15 @@ const Cubes = () => {
   return (
     <group ref={groupRef} key={renderKey}>
       {positions.map((pos, i) => {
+        const geometry = geometries[i];
+        // Safety check: only render if geometry exists
+        if (!geometry) return null;
+        
         return (
           <group key={`cube-${i}-${cubes.count}`} position={pos}>
             {/* Main cube */}
             <mesh>
-              <boxGeometry args={[cubes.size, cubes.size, cubes.size]} />
+              <primitive object={geometry} />
               <meshBasicMaterial 
                 color={cubes.color} 
                 transparent 
@@ -226,11 +294,10 @@ const Cubes = () => {
                 side={THREE.DoubleSide}
               />
             </mesh>
-            
             {/* Single glow layer */}
             {shapeGlow.enabled && (
               <mesh>
-                <boxGeometry args={[cubes.size * 1.5, cubes.size * 1.5, cubes.size * 1.5]} />
+                <primitive object={geometry} />
                 <meshBasicMaterial
                   color={shapeGlow.useObjectColor ? cubes.color : shapeGlow.customColor}
                   transparent
@@ -250,6 +317,25 @@ const Cubes = () => {
 };
 
 const Toruses = () => {
+  // Helper to create unique organic geometry for each torus - MUST BE FIRST
+  const createOrganicTorusGeometry = (size: number, organicness: number) => {
+    // Safety checks to prevent NaN values
+    const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
+    const safeOrganicness = isNaN(organicness) || organicness < 0 ? 0 : organicness;
+    
+    const geometry = new THREE.TorusGeometry(safeSize, safeSize * 0.3, 16, 32);
+    const positions = geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      const noise = (Math.random() - 0.5) * safeOrganicness;
+      positions[i] += noise;
+      positions[i + 1] += noise;
+      positions[i + 2] += noise;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  };
+
   const { geometric, globalEffects } = useVisualStore();
   const { toruses } = geometric;
   const { shapeGlow } = globalEffects;
@@ -257,14 +343,11 @@ const Toruses = () => {
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `toruses-${toruses.count}-${Date.now()}`, [toruses.count]);
 
-  if (!toruses || toruses.count === 0) {
-    return null;
-  }
-
   // Generate positions using useMemo
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
-    for (let i = 0; i < toruses.count; i++) {
+    const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
+    for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 20,
         (Math.random() - 0.5) * 20,
@@ -274,10 +357,28 @@ const Toruses = () => {
     return newPositions;
   }, [toruses.count, toruses.size]);
 
+  // FIX: Memoize all geometries at once, BEFORE any conditional returns
+  const geometries = useMemo(
+    () => {
+      const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
+      const safeSize = isNaN(toruses.size) || toruses.size <= 0 ? 1.0 : toruses.size;
+      const safeOrganicness = isNaN(toruses.organicness) || toruses.organicness < 0 ? 0 : toruses.organicness;
+      
+      return Array.from({ length: safeCount }, () => 
+        createOrganicTorusGeometry(safeSize, safeOrganicness)
+      );
+    },
+    [toruses.count, toruses.size, toruses.organicness]
+  );
+
   // Update positions state when generated positions change
   useEffect(() => {
     setPositions(generatedPositions);
   }, [generatedPositions]);
+
+  if (!toruses || toruses.count === 0) {
+    return null;
+  }
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -317,11 +418,15 @@ const Toruses = () => {
   return (
     <group ref={groupRef} key={renderKey}>
       {positions.map((pos, i) => {
+        const geometry = geometries[i];
+        // Safety check: only render if geometry exists
+        if (!geometry) return null;
+        
         return (
           <group key={`torus-${i}-${toruses.count}`} position={pos}>
             {/* Main torus */}
             <mesh>
-              <torusGeometry args={[toruses.size, toruses.size * 0.3, 16, 32]} />
+              <primitive object={geometry} />
               <meshBasicMaterial 
                 color={toruses.color} 
                 transparent 
@@ -330,11 +435,10 @@ const Toruses = () => {
                 side={THREE.DoubleSide}
               />
             </mesh>
-            
             {/* Single glow layer */}
             {shapeGlow.enabled && (
               <mesh>
-                <torusGeometry args={[toruses.size * 1.5, toruses.size * 0.45, 16, 32]} />
+                <primitive object={geometry} />
                 <meshBasicMaterial
                   color={shapeGlow.useObjectColor ? toruses.color : shapeGlow.customColor}
                   transparent
@@ -479,6 +583,7 @@ const Scene = () => {
       <Spheres />
       <Cubes />
       <Toruses />
+      <Blobs />
       <Particles />
     </>
   );
@@ -505,6 +610,16 @@ const EnhancedVisualCanvas = () => {
   const { globalEffects, effects, camera } = useVisualStore();
   const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
   const [canvasReady, setCanvasReady] = useState(false);
+  
+  // WebGL context event handlers
+  const handleWebGLContextLost = useCallback((event: Event) => {
+    console.error('🚨 WebGL context lost!', event);
+    event.preventDefault();
+  }, []);
+
+  const handleWebGLContextRestored = useCallback(() => {
+    console.log('✅ WebGL context restored');
+  }, []);
   
   useEffect(() => {
     console.log('🎨 EnhancedVisualCanvas: Component mounted');
@@ -695,16 +810,6 @@ const EnhancedVisualCanvas = () => {
   const fogLayer = useMemo(() => {
     if (!volumetric.enabled || volumetric.fog <= 0) return null;
     
-    // Convert hex color to RGB for CSS
-    const hexToRgb = (hex: string) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : { r: 255, g: 255, b: 255 };
-    };
-    
     const rgb = hexToRgb(volumetric.color);
     
     // Calculate CSS fog opacity based on fog and density
@@ -752,6 +857,45 @@ const EnhancedVisualCanvas = () => {
     );
   }, [effects.vignette]);
 
+  // Optimize Canvas style calculation
+  const canvasStyle: React.CSSProperties = useMemo(() => {
+    const filters = [];
+    const transforms = [];
+    
+    // Add brightness filter (should always work)
+    if (effects.brightness !== 1) {
+      filters.push(`brightness(${effects.brightness})`);
+    }
+    
+    // Add atmospheric blur filter
+    if (atmosphericBlur.enabled) {
+      filters.push(`blur(${atmosphericBlur.intensity * 0.8}px)`);
+    }
+    
+    // Add chromatic prism filter
+    if (chromatic.enabled && chromatic.prism > 0) {
+      filters.push(`saturate(${1 + chromatic.prism * 0.3})`);
+    }
+    
+    // Add distortion transforms (not filters)
+    if (distortion.enabled && distortion.wave > 0) {
+      transforms.push(`skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)`);
+    }
+    if (distortion.enabled && distortion.noise > 0) {
+      transforms.push(`scale(${1 + distortion.noise * 0.1})`);
+    }
+    
+    return {
+      filter: filters.length > 0 ? filters.join(' ') : undefined,
+      transform: transforms.length > 0 ? transforms.join(' ') : undefined,
+      transformOrigin: 'center center',
+      mixBlendMode: colorBlending.enabled ? colorBlending.mode : 'normal',
+      opacity: colorBlending.enabled ? 0.5 + (colorBlending.intensity * 0.5) : 1,
+      willChange: 'transform, filter, opacity',
+      isolation: 'isolate'
+    };
+  }, [effects.brightness, atmosphericBlur.enabled, atmosphericBlur.intensity, distortion.enabled, distortion.wave, distortion.ripple, distortion.noise, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
+  
   if (!canvasReady) {
     return <div>Initializing Canvas...</div>;
   }
@@ -770,28 +914,10 @@ const EnhancedVisualCanvas = () => {
           onCreated={({ gl }) => {
             console.log('🎨 WebGL context created');
             const canvas = gl.domElement;
-            canvas.addEventListener('webglcontextlost', (event: Event) => {
-              console.error('🚨 WebGL context lost!', event);
-              event.preventDefault();
-            });
-            canvas.addEventListener('webglcontextrestored', () => {
-              console.log('✅ WebGL context restored');
-            });
+            canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
+            canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
           }}
-          style={{
-            filter: `
-              ${effects.brightness !== 1 ? `brightness(${effects.brightness})` : ''}
-              ${atmosphericBlur.enabled ? `blur(${atmosphericBlur.intensity * 0.8}px)` : ''}
-              ${distortion.enabled && distortion.wave > 0 ? `skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)` : ''}
-              ${distortion.enabled && distortion.noise > 0 ? `scale(${1 + distortion.noise * 0.1})` : ''}
-              ${chromatic.enabled && chromatic.prism > 0 ? `saturate(${1 + chromatic.prism * 0.3})` : ''}
-            `,
-            transformOrigin: 'center center',
-            mixBlendMode: colorBlending.enabled ? colorBlending.mode : 'normal',
-            opacity: colorBlending.enabled ? 0.5 + (colorBlending.intensity * 0.5) : 1,
-            willChange: 'transform, filter, opacity',
-            isolation: 'isolate'
-          }}
+          style={canvasStyle}
         >
           <CameraSync />
           <Scene />

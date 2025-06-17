@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useVisualStore } from '../store/visualStore';
 import styles from './GlobalEffectsDashboard.module.css';
 
-const PresetControls: React.FC = () => {
+const PresetControls: React.FC = React.memo(() => {
   const { savePreset, loadPreset, getAvailablePresets, deletePreset } = useVisualStore();
   const [presetName, setPresetName] = useState('');
   const [availablePresets, setAvailablePresets] = useState<string[]>([]);
@@ -11,15 +11,15 @@ const PresetControls: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Refresh available presets when component mounts or after operations
-  const refreshPresets = () => {
+  const refreshPresets = useCallback(() => {
     setAvailablePresets(getAvailablePresets());
-  };
+  }, [getAvailablePresets]);
 
   useEffect(() => {
     refreshPresets();
-  }, [getAvailablePresets]);
+  }, [refreshPresets]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!presetName.trim()) return;
     
     setIsSaving(true);
@@ -32,9 +32,9 @@ const PresetControls: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [presetName, savePreset, refreshPresets]);
 
-  const handleLoad = async () => {
+  const handleLoad = useCallback(async () => {
     if (!selectedPreset) return;
     
     setIsLoading(true);
@@ -45,9 +45,9 @@ const PresetControls: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedPreset, loadPreset]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!selectedPreset) return;
     
     if (window.confirm(`Are you sure you want to delete the preset "${selectedPreset}"?`)) {
@@ -59,7 +59,7 @@ const PresetControls: React.FC = () => {
         console.error('Error deleting preset:', error);
       }
     }
-  };
+  }, [selectedPreset, deletePreset, refreshPresets]);
 
   return (
     <div className={styles.controlSection}>
@@ -130,6 +130,6 @@ const PresetControls: React.FC = () => {
       )}
     </div>
   );
-};
+});
 
 export default PresetControls; 
