@@ -17,6 +17,15 @@
   padding: 20px;
   z-index: 1000;
   pointer-events: none;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+.dashboardContainer.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
 }
 
 .dashboardContainer > *:first-child {

@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import type { StateCreator } from 'zustand';
 
 export interface VisualState {
+  // UI State
+  ui: {
+    showDashboards: boolean;
+  };
+  
   // Background Layer
   background: {
     opacity: number;
@@ -178,6 +183,10 @@ export interface VisualState {
 }
 
 export interface VisualActions {
+  // UI Actions
+  toggleDashboards: () => void;
+  setDashboardsVisible: (visible: boolean) => void;
+  
   updateBackground: (updates: Partial<VisualState['background']>) => void;
   updateGeometric: (shape: keyof VisualState['geometric'], updates: Partial<VisualState['geometric'][keyof VisualState['geometric']]>) => void;
   updateParticles: (updates: Partial<VisualState['particles']>) => void;
@@ -202,6 +211,9 @@ type PresetStorage = {
 };
 
 const defaultState: VisualState = {
+  ui: {
+    showDashboards: true,
+  },
   background: {
     opacity: 0.8,
     blur: 2,
@@ -364,6 +376,18 @@ type Store = VisualState & VisualActions;
 export const useVisualStore = create<Store>((set, get) => ({
   ...defaultState,
 
+  toggleDashboards: () => {
+    set((state) => ({
+      ui: { ...state.ui, showDashboards: !state.ui.showDashboards }
+    }));
+  },
+
+  setDashboardsVisible: (visible: boolean) => {
+    set((state) => ({
+      ui: { ...state.ui, showDashboards: visible }
+    }));
+  },
+
   updateBackground: (updates) => {
     set((state) => ({
       background: { ...state.background, ...updates }
@@ -408,6 +432,7 @@ export const useVisualStore = create<Store>((set, get) => ({
   savePreset: (name) => {
     const state = get();
     const preset: VisualPreset = {
+      ui: state.ui,
       background: state.background,
       geometric: state.geometric,
       particles: state.particles,
@@ -434,6 +459,7 @@ export const useVisualStore = create<Store>((set, get) => ({
         
         set((state) => ({
           ...state,
+          ui: { ...state.ui, ...preset.ui },
           background: { ...state.background, ...preset.background },
           geometric: { ...state.geometric, ...preset.geometric },
           particles: { ...state.particles, ...preset.particles },

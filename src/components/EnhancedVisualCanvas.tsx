@@ -4,6 +4,7 @@ import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
 import styles from './EnhancedVisualCanvas.module.css';
 import { Blobs } from './Blobs';
+import { Ribbons } from './Ribbons';
 
 // Utility function to convert hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
@@ -584,6 +585,7 @@ const Scene = () => {
       <Cubes />
       <Toruses />
       <Blobs />
+      <Ribbons />
       <Particles />
     </>
   );
