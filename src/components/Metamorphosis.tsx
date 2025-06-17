@@ -12,6 +12,8 @@ export const Metamorphosis = () => {
   const { metamorphosis } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
   const timeRef = useRef(2000);
+  const frameCountRef = useRef(0);
+  const lastUpdateRef = useRef(0);
 
   // Define the three morphing forms
   const forms = useMemo((): FormFunction[] => [
@@ -114,53 +116,91 @@ export const Metamorphosis = () => {
     }), [geometric.metamorphosis?.color, metamorphosis?.wireframeOpacity]
   );
 
+  // Pre-allocate geometry objects for reuse
+  const geometryPoolRef = useRef<THREE.BufferGeometry[]>([]);
+  const linePoolRef = useRef<THREE.Line[]>([]);
+
   useFrame((state, delta) => {
     if (!metamorphosis?.enabled || !groupRef.current) return;
 
     const morphSpeed = metamorphosis.morphSpeed || 1;
+    const size = metamorphosis.size || 1.0;
+    const blur = metamorphosis.blur || 0.0;
     timeRef.current += delta * 30 * morphSpeed; // Animation speed
 
-    // Clear previous geometry
-    groupRef.current.clear();
+    // PERFORMANCE OPTIMIZATION: Only update geometry every 3 frames
+    frameCountRef.current++;
+    const shouldUpdateGeometry = frameCountRef.current % 3 === 0;
+    
+    if (shouldUpdateGeometry) {
+      // Clear previous geometry
+      groupRef.current.clear();
 
-    // Create wireframe geometry
-    const numLines = 60; // Reduced for performance
-    const lineSegments = 90;
+      // PERFORMANCE OPTIMIZATION: Reduced geometry complexity
+      const numLines = 30; // Reduced from 60
+      const lineSegments = 45; // Reduced from 90
 
-    // Horizontal contour lines
-    for (let i = 0; i < numLines; i++) {
-      const v = i / (numLines - 1);
-      const points: THREE.Vector3[] = [];
-      
-      for (let j = 0; j <= lineSegments; j++) {
-        const u = j / lineSegments;
-        const point = getCurrentForm(u, v, timeRef.current);
-        points.push(point);
+      // Ensure we have enough pooled objects
+      const totalLines = numLines + Math.floor(numLines * 0.3);
+      while (geometryPoolRef.current.length < totalLines) {
+        geometryPoolRef.current.push(new THREE.BufferGeometry());
       }
-      
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geometry, wireframeMaterial);
-      groupRef.current.add(line);
+      while (linePoolRef.current.length < totalLines) {
+        const geometry = geometryPoolRef.current[linePoolRef.current.length];
+        linePoolRef.current.push(new THREE.Line(geometry, wireframeMaterial));
+      }
+
+      let lineIndex = 0;
+
+      // Horizontal contour lines
+      for (let i = 0; i < numLines; i++) {
+        const v = i / (numLines - 1);
+        const points: THREE.Vector3[] = [];
+        
+        for (let j = 0; j <= lineSegments; j++) {
+          const u = j / lineSegments;
+          const point = getCurrentForm(u, v, timeRef.current);
+          // Apply size scaling
+          point.multiplyScalar(size);
+          points.push(point);
+        }
+        
+        const geometry = geometryPoolRef.current[lineIndex];
+        geometry.setFromPoints(points);
+        geometry.attributes.position.needsUpdate = true;
+        
+        const line = linePoolRef.current[lineIndex];
+        line.geometry = geometry;
+        groupRef.current.add(line);
+        lineIndex++;
+      }
+
+      // Vertical contour lines (fewer)
+      const verticalLines = Math.floor(numLines * 0.3);
+      for (let i = 0; i < verticalLines; i++) {
+        const u = i / (verticalLines - 1);
+        const points: THREE.Vector3[] = [];
+        
+        for (let j = 0; j <= Math.floor(lineSegments * 0.5); j++) {
+          const v = j / Math.floor(lineSegments * 0.5);
+          const point = getCurrentForm(u, v, timeRef.current);
+          // Apply size scaling
+          point.multiplyScalar(size);
+          points.push(point);
+        }
+        
+        const geometry = geometryPoolRef.current[lineIndex];
+        geometry.setFromPoints(points);
+        geometry.attributes.position.needsUpdate = true;
+        
+        const line = linePoolRef.current[lineIndex];
+        line.geometry = geometry;
+        groupRef.current.add(line);
+        lineIndex++;
+      }
     }
 
-    // Vertical contour lines (fewer)
-    const verticalLines = Math.floor(numLines * 0.3);
-    for (let i = 0; i < verticalLines; i++) {
-      const u = i / (verticalLines - 1);
-      const points: THREE.Vector3[] = [];
-      
-      for (let j = 0; j <= Math.floor(lineSegments * 0.5); j++) {
-        const v = j / Math.floor(lineSegments * 0.5);
-        const point = getCurrentForm(u, v, timeRef.current);
-        points.push(point);
-      }
-      
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(geometry, wireframeMaterial);
-      groupRef.current.add(line);
-    }
-
-    // Apply rotation
+    // Apply rotation (every frame)
     const rotationSpeed = metamorphosis.rotationSpeed || 1;
     const rotateSpeed = 0.00025 * rotationSpeed;
     const rotateX = Math.sin(timeRef.current * rotateSpeed) * 0.5;
@@ -168,6 +208,14 @@ export const Metamorphosis = () => {
     const rotateZ = timeRef.current * rotateSpeed * 0.1;
     
     groupRef.current.rotation.set(rotateX, rotateY, rotateZ);
+    
+    // Apply blur effect by adjusting material properties
+    if (blur > 0) {
+      wireframeMaterial.opacity = (metamorphosis.wireframeOpacity || 0.4) * (1 - blur * 0.5);
+      wireframeMaterial.transparent = true;
+    } else {
+      wireframeMaterial.opacity = metamorphosis.wireframeOpacity || 0.4;
+    }
   });
 
   if (!metamorphosis?.enabled) return null;

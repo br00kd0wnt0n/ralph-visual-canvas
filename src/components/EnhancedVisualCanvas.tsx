@@ -1,11 +1,14 @@
 import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import { Html } from '@react-three/drei';
 import { useVisualStore } from '../store/visualStore';
+import { getArtisticCameraConfig, constrainToViewport } from '../utils/backgroundLayout';
+import { performanceMonitor } from '../utils/performanceMonitor';
 import * as THREE from 'three';
 import styles from './EnhancedVisualCanvas.module.css';
 import { Blobs } from './Blobs';
 import { ObjectTrails } from './ObjectTrails';
-import { RadialGrowth } from './RadialGrowth';
 import { WaveInterference } from './WaveInterference';
 import { Metamorphosis } from './Metamorphosis';
 import { Fireflies } from './Fireflies';
@@ -52,12 +55,18 @@ const Spheres = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
   const { spheres } = geometric;
   const { shapeGlow } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `spheres-${spheres.count}-${Date.now()}`, [spheres.count]);
+
+  // Get layer configuration for background mode
+  const layerConfig = backgroundConfig.enabled ? 
+    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+  const layerZ = layerConfig?.zPosition || 0;
+  const layerOpacity = layerConfig?.opacity || 1.0;
 
   // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
@@ -65,9 +74,9 @@ const Spheres = () => {
     const safeCount = isNaN(spheres.count) || spheres.count < 0 ? 0 : spheres.count;
     for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 30,
+        (Math.random() - 0.5) * 40
       ));
     }
     return newPositions;
@@ -100,11 +109,13 @@ const Spheres = () => {
     if (!groupRef.current) return;
     
     const time = state.clock.elapsedTime;
+    const timeScale = backgroundConfig.timeScale;
+    const scaledTime = time * timeScale;
     const waveIntensity = globalEffects.distortion.wave * 2;
     const rippleIntensity = globalEffects.distortion.ripple * 3;
     
     // Rotate the entire group
-    groupRef.current.rotation.y += spheres.speed * 0.01;
+    groupRef.current.rotation.y += spheres.speed * 0.01 * timeScale;
     
     // Animate individual spheres
     groupRef.current.children.forEach((child, i) => {
@@ -112,12 +123,12 @@ const Spheres = () => {
       if (!pos) return;
       
       // Base movement
-      child.position.y = pos.y + Math.sin(time + i) * 2 * spheres.speed;
+      child.position.y = pos.y + Math.sin(scaledTime + i) * 2 * spheres.speed;
       
       // Add wave distortion
       if (waveIntensity > 0) {
-        child.position.x = pos.x + Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
-        child.position.z = pos.z + Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+        child.position.x = pos.x + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
+        child.position.z = pos.z + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
       } else {
         child.position.x = pos.x;
         child.position.z = pos.z;
@@ -126,7 +137,18 @@ const Spheres = () => {
       // Add ripple effect
       if (rippleIntensity > 0) {
         const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
-        child.position.y += Math.sin(time * 2 + distance * 0.5) * rippleIntensity;
+        child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
+      }
+      
+      // Apply layer Z position when in background mode
+      if (backgroundConfig.enabled) {
+        // Apply viewport constraints for background mode
+        const constrainedPosition = constrainToViewport({
+          x: child.position.x,
+          y: child.position.y,
+          z: child.position.z
+        }, layerZ);
+        child.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
       }
     });
   });
@@ -151,7 +173,7 @@ const Spheres = () => {
               <meshBasicMaterial 
                 color={spheres.color} 
                 transparent 
-                opacity={spheres.opacity}
+                opacity={spheres.opacity * layerOpacity}
                 visible={true}
                 side={THREE.DoubleSide}
               />
@@ -163,7 +185,7 @@ const Spheres = () => {
                 <meshBasicMaterial
                   color={shapeGlow.useObjectColor ? spheres.color : shapeGlow.customColor}
                   transparent
-                  opacity={shapeGlow.intensity * 0.3}
+                  opacity={shapeGlow.intensity * 0.3 * layerOpacity}
                   blending={THREE.AdditiveBlending}
                   depthWrite={false}
                   visible={true}
@@ -198,22 +220,28 @@ const Cubes = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
   const { cubes } = geometric;
   const { shapeGlow } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `cubes-${cubes.count}-${Date.now()}`, [cubes.count]);
 
-  // Generate positions using useMemo
+  // Get layer configuration for background mode
+  const layerConfig = backgroundConfig.enabled ? 
+    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+  const layerZ = layerConfig?.zPosition || 0;
+  const layerOpacity = layerConfig?.opacity || 1.0;
+
+  // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
     const safeCount = isNaN(cubes.count) || cubes.count < 0 ? 0 : cubes.count;
     for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 30,
+        (Math.random() - 0.5) * 40,
       ));
     }
     return newPositions;
@@ -246,30 +274,46 @@ const Cubes = () => {
     if (!groupRef.current) return;
     
     const time = state.clock.elapsedTime;
-    const noiseIntensity = globalEffects.distortion.noise;
+    const timeScale = backgroundConfig.timeScale;
+    const scaledTime = time * timeScale;
+    const waveIntensity = globalEffects.distortion.wave * 2;
+    const rippleIntensity = globalEffects.distortion.ripple * 3;
     
     // Rotate the entire group
-    groupRef.current.rotation.y += cubes.rotation * 0.01;
+    groupRef.current.rotation.y += cubes.rotation * 0.01 * timeScale;
     
     // Animate individual cubes
     groupRef.current.children.forEach((child, i) => {
       const pos = positions[i];
       if (!pos) return;
       
-      // Rotate individual cubes
-      child.rotation.x += cubes.rotation * 0.01;
-      child.rotation.y += cubes.rotation * 0.015;
-      
       // Base movement
-      child.position.x = pos.x + Math.sin(time + i) * 2;
-      child.position.y = pos.y + Math.cos(time * 0.5 + i) * 2;
-      child.position.z = pos.z + Math.sin(time * 0.3 + i) * 2;
+      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * cubes.rotation;
       
-      // Add noise distortion
-      if (noiseIntensity > 0) {
-        child.position.x += (Math.random() - 0.5) * noiseIntensity;
-        child.position.y += (Math.random() - 0.5) * noiseIntensity;
-        child.position.z += (Math.random() - 0.5) * noiseIntensity;
+      // Add wave distortion
+      if (waveIntensity > 0) {
+        child.position.x = pos.x + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
+        child.position.z = pos.z + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+      } else {
+        child.position.x = pos.x;
+        child.position.z = pos.z;
+      }
+      
+      // Add ripple effect
+      if (rippleIntensity > 0) {
+        const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
+        child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
+      }
+      
+      // Apply layer Z position when in background mode
+      if (backgroundConfig.enabled) {
+        // Apply viewport constraints for background mode
+        const constrainedPosition = constrainToViewport({
+          x: child.position.x,
+          y: child.position.y,
+          z: child.position.z
+        }, layerZ);
+        child.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
       }
     });
   });
@@ -294,7 +338,7 @@ const Cubes = () => {
               <meshBasicMaterial 
                 color={cubes.color} 
                 transparent 
-                opacity={cubes.opacity}
+                opacity={cubes.opacity * layerOpacity}
                 visible={true}
                 side={THREE.DoubleSide}
               />
@@ -306,7 +350,7 @@ const Cubes = () => {
                 <meshBasicMaterial
                   color={shapeGlow.useObjectColor ? cubes.color : shapeGlow.customColor}
                   transparent
-                  opacity={shapeGlow.intensity * 0.3}
+                  opacity={shapeGlow.intensity * 0.3 * layerOpacity}
                   blending={THREE.AdditiveBlending}
                   depthWrite={false}
                   visible={true}
@@ -341,22 +385,28 @@ const Toruses = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
   const { toruses } = geometric;
   const { shapeGlow } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `toruses-${toruses.count}-${Date.now()}`, [toruses.count]);
 
-  // Generate positions using useMemo
+  // Get layer configuration for background mode
+  const layerConfig = backgroundConfig.enabled ? 
+    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+  const layerZ = layerConfig?.zPosition || 0;
+  const layerOpacity = layerConfig?.opacity || 1.0;
+
+  // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
     const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
     for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20,
-        (Math.random() - 0.5) * 20
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 30,
+        (Math.random() - 0.5) * 40,
       ));
     }
     return newPositions;
@@ -389,28 +439,46 @@ const Toruses = () => {
     if (!groupRef.current) return;
     
     const time = state.clock.elapsedTime;
+    const timeScale = backgroundConfig.timeScale;
+    const scaledTime = time * timeScale;
     const waveIntensity = globalEffects.distortion.wave * 2;
+    const rippleIntensity = globalEffects.distortion.ripple * 3;
     
     // Rotate the entire group
-    groupRef.current.rotation.z += toruses.speed * 0.008;
+    groupRef.current.rotation.y += toruses.speed * 0.01 * timeScale;
     
     // Animate individual toruses
     groupRef.current.children.forEach((child, i) => {
       const pos = positions[i];
       if (!pos) return;
       
-      // Rotate individual toruses
-      child.rotation.x += toruses.speed * 0.02;
-      
       // Base movement
-      child.position.x = pos.x + Math.cos(time * 0.02 + i * 0.5) * toruses.speed * 2;
-      child.position.y = pos.y + Math.sin(time * 0.01 + i * 0.5) * toruses.speed * 2;
-      child.position.z = pos.z + Math.cos(time * 0.03 + i * 0.5) * toruses.speed * 2;
+      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * toruses.speed;
       
-      // Add wave effects
+      // Add wave distortion
       if (waveIntensity > 0) {
-        child.position.x += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
-        child.position.y += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+        child.position.x = pos.x + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
+        child.position.z = pos.z + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+      } else {
+        child.position.x = pos.x;
+        child.position.z = pos.z;
+      }
+      
+      // Add ripple effect
+      if (rippleIntensity > 0) {
+        const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
+        child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
+      }
+      
+      // Apply layer Z position when in background mode
+      if (backgroundConfig.enabled) {
+        // Apply viewport constraints for background mode
+        const constrainedPosition = constrainToViewport({
+          x: child.position.x,
+          y: child.position.y,
+          z: child.position.z
+        }, layerZ);
+        child.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
       }
     });
   });
@@ -435,7 +503,7 @@ const Toruses = () => {
               <meshBasicMaterial 
                 color={toruses.color} 
                 transparent 
-                opacity={toruses.opacity}
+                opacity={toruses.opacity * layerOpacity}
                 visible={true}
                 side={THREE.DoubleSide}
               />
@@ -447,7 +515,7 @@ const Toruses = () => {
                 <meshBasicMaterial
                   color={shapeGlow.useObjectColor ? toruses.color : shapeGlow.customColor}
                   transparent
-                  opacity={shapeGlow.intensity * 0.3}
+                  opacity={shapeGlow.intensity * 0.3 * layerOpacity}
                   blending={THREE.AdditiveBlending}
                   depthWrite={false}
                   visible={true}
@@ -464,32 +532,78 @@ const Toruses = () => {
 
 const Particles = () => {
   const pointsRef = useRef<THREE.Points>(null);
-  const { particles, globalEffects } = useVisualStore();
+  const { particles, globalEffects, backgroundConfig } = useVisualStore();
+
+  // Get layer configuration for background mode - with proper fallbacks
+  const layerConfig = backgroundConfig.enabled ? 
+    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+  const layerZ = layerConfig?.zPosition || 0;
+  const layerOpacity = layerConfig?.opacity || 1.0;
+
+  // Safety checks
+  const safeCount = isNaN(particles.count) || particles.count < 0 ? 0 : particles.count;
+  const safeSize = isNaN(particles.size) || particles.size <= 0 ? 0.3 : particles.size;
+  const safeSpeed = isNaN(particles.speed) || particles.speed < 0 ? 1.0 : particles.speed;
+  const safeOpacity = isNaN(particles.opacity) || particles.opacity < 0 ? 1.0 : particles.opacity;
+  const safeSpread = isNaN(particles.spread) || particles.spread <= 0 ? 20 : particles.spread;
+
+  // Early return if no particles
+  if (safeCount === 0) {
+    return null;
+  }
 
   // Calculate a smaller base size for particles
-  const baseParticleSize = Math.max(0.1, particles.size * 0.3); // Ensure minimum size of 0.1
+  const baseParticleSize = Math.max(0.1, safeSize * 0.3); // Ensure minimum size of 0.1
+
+  // Create particle texture once
+  const particleTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 32, 32);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, []);
 
   const particlePositions = useMemo(() => {
-    const positions = new Float32Array(particles.count * 3);
-    for (let i = 0; i < particles.count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * particles.spread;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * particles.spread;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * particles.spread;
+    const positions = new Float32Array(safeCount * 3);
+    for (let i = 0; i < safeCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * safeSpread * 2;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * safeSpread * 1.5;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * safeSpread * 2;
     }
     return positions;
-  }, [particles.count, particles.spread]);
+  }, [safeCount, safeSpread]);
+
+  // Frame counter for performance optimization
+  const frameCountRef = useRef(0);
 
   useFrame((state) => {
     if (pointsRef.current) {
       const time = state.clock.elapsedTime;
-      pointsRef.current.rotation.y += particles.speed * 0.005;
+      const timeScale = backgroundConfig.timeScale;
+      const scaledTime = time * timeScale;
+      pointsRef.current.rotation.y += safeSpeed * 0.005 * timeScale;
       
       const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
       const turbulence = globalEffects.particleInteraction.turbulence;
       
+      // PERFORMANCE OPTIMIZATION: Only apply viewport constraints every 5 frames
+      frameCountRef.current++;
+      const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 5 === 0;
+      
       for (let i = 0; i < positions.length; i += 3) {
         // Base movement
-        positions[i + 1] += Math.sin(time + i) * 0.01 * particles.speed;
+        positions[i + 1] += Math.sin(scaledTime + i) * 0.01 * safeSpeed;
         
         // Add turbulence
         if (turbulence > 0) {
@@ -497,17 +611,30 @@ const Particles = () => {
           positions[i + 1] += (Math.random() - 0.5) * turbulence * 0.1;
           positions[i + 2] += (Math.random() - 0.5) * turbulence * 0.1;
         }
+        
+        // Apply viewport constraints when in background mode (less frequently)
+        if (shouldApplyConstraints) {
+          const currentPosition = {
+            x: positions[i],
+            y: positions[i + 1],
+            z: positions[i + 2]
+          };
+          const constrainedPosition = constrainToViewport(currentPosition, layerZ);
+          positions[i] = constrainedPosition.x;
+          positions[i + 1] = constrainedPosition.y;
+          positions[i + 2] = constrainedPosition.z;
+        }
       }
       pointsRef.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
   return (
-    <points ref={pointsRef}>
+    <points ref={pointsRef} key={`particles-${backgroundConfig.enabled}-${safeCount}`}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
-          count={particles.count}
+          count={safeCount}
           array={particlePositions}
           itemSize={3}
         />
@@ -516,28 +643,11 @@ const Particles = () => {
         color={particles.color}
         size={baseParticleSize}
         transparent
-        opacity={particles.opacity}
+        opacity={Math.max(0.1, safeOpacity * layerOpacity)}
         sizeAttenuation={true}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
-        map={(() => {
-          // Create a circular particle texture
-          const canvas = document.createElement('canvas');
-          canvas.width = 32;
-          canvas.height = 32;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
-            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 32, 32);
-          }
-          const texture = new THREE.CanvasTexture(canvas);
-          texture.needsUpdate = true;
-          return texture;
-        })()}
+        map={particleTexture}
       />
     </points>
   );
@@ -573,8 +683,13 @@ const VolumetricFog = () => {
 };
 
 const Scene = () => {
-  const { globalEffects } = useVisualStore();
+  const { globalEffects, backgroundConfig } = useVisualStore();
   const { volumetric, shapeGlow } = globalEffects;
+
+  // Performance monitoring
+  useFrame(() => {
+    performanceMonitor.update();
+  });
 
   return (
     <>
@@ -592,7 +707,6 @@ const Scene = () => {
       <Blobs />
       <Particles />
       <ObjectTrails />
-      <RadialGrowth />
       <WaveInterference />
       <Fireflies />
     </>
@@ -601,23 +715,43 @@ const Scene = () => {
 
 // Move the camera sync logic into a separate component
 const CameraSync = () => {
-  const { camera } = useVisualStore();
+  const { camera, backgroundConfig } = useVisualStore();
   const three = useThree();
   
   useEffect(() => {
     if (!three || !three.camera) return;
-    three.camera.position.set(0, camera.height, camera.distance);
+    
+    // Determine camera values based on background mode
+    let finalDistance, finalHeight, finalFov;
+    
+    if (backgroundConfig.enabled && backgroundConfig.camera.fixed) {
+      // Fixed background mode: use artistic layout camera config
+      const bgCamera = backgroundConfig.artisticLayout?.camera;
+      finalDistance = bgCamera?.position?.[2] || 50;
+      finalHeight = bgCamera?.position?.[1] || 0;
+      finalFov = bgCamera?.fov || 60;
+    } else {
+      // Normal mode: use slider values
+      finalDistance = camera.distance;
+      finalHeight = camera.height;
+      finalFov = camera.fov;
+    }
+    
+    // Apply camera position
+    three.camera.position.set(0, finalHeight, finalDistance);
+    
+    // Apply FOV
     if (three.camera instanceof THREE.PerspectiveCamera) {
-      three.camera.fov = camera.fov;
+      three.camera.fov = finalFov;
       three.camera.updateProjectionMatrix();
     }
-  }, [camera.distance, camera.height, camera.fov, three]);
+  }, [camera.distance, camera.height, camera.fov, backgroundConfig.enabled, backgroundConfig.camera.fixed, backgroundConfig.artisticLayout?.camera, three]);
 
   return null;
 };
 
 const EnhancedVisualCanvas = () => {
-  const { globalEffects, effects, camera } = useVisualStore();
+  const { globalEffects, effects, camera, backgroundConfig } = useVisualStore();
   const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
   const [canvasReady, setCanvasReady] = useState(false);
   
@@ -632,11 +766,9 @@ const EnhancedVisualCanvas = () => {
   }, []);
   
   useEffect(() => {
-    console.log('🎨 EnhancedVisualCanvas: Component mounted');
     setCanvasReady(true);
-    return () => {
-      console.log('🎨 EnhancedVisualCanvas: Component unmounting - THIS SHOULD NOT HAPPEN');
-    };
+    // Enable performance monitoring
+    performanceMonitor.enable();
   }, []);
 
   // Create atmospheric blur layers
@@ -910,6 +1042,12 @@ const EnhancedVisualCanvas = () => {
     return <div>Initializing Canvas...</div>;
   }
 
+  // Calculate canvas style with debug logging
+  const canvasStyleWithBackground = {
+    ...canvasStyle,
+    // Background-specific styles are now applied directly in Canvas style prop
+  };
+
   return (
     <ClientOnly>
       <div className={styles.canvasContainer}>
@@ -920,17 +1058,46 @@ const EnhancedVisualCanvas = () => {
         {postProcessingOverlay}
         
         <Canvas
-          camera={{ position: [0, camera.height, camera.distance], fov: camera.fov }}
+          camera={{ 
+            position: [0, 0, 25], // Default position - CameraSync will override this
+            fov: 60, // Default FOV - CameraSync will override this
+            near: 0.1,
+            far: 2000 // Keep the increased far clipping for the extreme distance
+          }}
           onCreated={({ gl }) => {
             console.log('🎨 WebGL context created');
             const canvas = gl.domElement;
             canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
             canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
           }}
-          style={canvasStyle}
+          style={{
+            ...canvasStyleWithBackground,
+            // Add more obvious visual changes when background mode is active
+            ...(backgroundConfig.enabled && {
+              position: 'fixed' as const,
+              top: 0,
+              left: 0,
+              zIndex: -1,
+              filter: backgroundConfig.mode === 'modalFriendly' ? 'saturate(1.2) contrast(1.1)' : 'none',
+              pointerEvents: backgroundConfig.mode === 'modalFriendly' ? 'none' as const : 'auto' as const,
+              // Add a subtle border when in background mode
+              border: backgroundConfig.camera.fixed ? '4px solid rgba(255, 255, 0, 0.3)' : 'none'
+            })
+          }}
         >
           <CameraSync />
           <Scene />
+          
+          {/* Conditional OrbitControls - disable when in background mode */}
+          {!(backgroundConfig.enabled && backgroundConfig.camera.fixed) && (
+            <OrbitControls 
+              enablePan={true}
+              enableZoom={true}
+              enableRotate={true}
+              minDistance={5}
+              maxDistance={100}
+            />
+          )}
         </Canvas>
       </div>
     </ClientOnly>

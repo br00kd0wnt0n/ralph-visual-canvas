@@ -19,6 +19,13 @@ interface ColorControlProps {
   disabled?: boolean;
 }
 
+interface ToggleControlProps {
+  label: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}
+
 const SliderControl: React.FC<SliderControlProps> = React.memo(({ 
   label, 
   value, 
@@ -61,8 +68,26 @@ const ColorControl: React.FC<ColorControlProps> = React.memo(({
   </div>
 ));
 
+const ToggleControl: React.FC<ToggleControlProps> = React.memo(({ 
+  label, 
+  value, 
+  onChange, 
+  disabled = false 
+}) => (
+  <div className={styles.controlGroup}>
+    <label className={disabled ? styles.disabled : ''}>{label}</label>
+    <input
+      type="checkbox"
+      className={styles.toggle}
+      checked={value}
+      onChange={(e) => onChange(e.target.checked)}
+      disabled={disabled}
+    />
+  </div>
+));
+
 export const ShapeParticleDashboard = React.memo(() => {
-  const { geometric, particles, updateGeometric, updateParticles } = useVisualStore();
+  const { geometric, particles, globalEffects, updateGeometric, updateParticles, updateGlobalEffects } = useVisualStore();
 
   return (
     <div className={styles.dashboard}>
@@ -298,6 +323,177 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Color"
             value={geometric.blobs.color || '#9370db'}
             onChange={(value) => updateGeometric('blobs', { color: value })}
+          />
+        </div>
+
+        {/* Metamorphosis Controls */}
+        <div className={styles.controlSection}>
+          <h3>🔄 Metamorphosis</h3>
+          <ToggleControl
+            label="Enable"
+            value={globalEffects.metamorphosis.enabled}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, enabled: value }
+            })}
+          />
+          <SliderControl
+            label="Morph Speed"
+            value={globalEffects.metamorphosis.morphSpeed || 1}
+            min={0.1}
+            max={3}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, morphSpeed: value }
+            })}
+          />
+          <SliderControl
+            label="Rotation Speed"
+            value={globalEffects.metamorphosis.rotationSpeed || 1}
+            min={0}
+            max={2}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, rotationSpeed: value }
+            })}
+          />
+          <SliderControl
+            label="Wireframe Opacity"
+            value={globalEffects.metamorphosis.wireframeOpacity || 0.4}
+            min={0.1}
+            max={1}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, wireframeOpacity: value }
+            })}
+          />
+          <SliderControl
+            label="Size"
+            value={globalEffects.metamorphosis.size || 1.0}
+            min={0.1}
+            max={3.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, size: value }
+            })}
+          />
+          <SliderControl
+            label="Blur"
+            value={globalEffects.metamorphosis.blur || 0.0}
+            min={0.0}
+            max={1.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, blur: value }
+            })}
+          />
+          <ColorControl
+            label="Color"
+            value={geometric.metamorphosis?.color || '#333333'}
+            onChange={(value) => updateGeometric('metamorphosis', { color: value })}
+          />
+        </div>
+
+        {/* Fireflies Controls */}
+        <div className={styles.controlSection}>
+          <h3>🦟 Fireflies</h3>
+          <ToggleControl
+            label="Enable"
+            value={globalEffects.fireflies.enabled}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, enabled: value }
+            })}
+          />
+          <SliderControl
+            label="Count"
+            value={globalEffects.fireflies.count || 50}
+            min={10}
+            max={100}
+            step={5}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, count: value }
+            })}
+          />
+          <SliderControl
+            label="Speed"
+            value={globalEffects.fireflies.speed || 1}
+            min={0.1}
+            max={3}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, speed: value }
+            })}
+          />
+          <SliderControl
+            label="Glow Intensity"
+            value={globalEffects.fireflies.glowIntensity || 1}
+            min={0.1}
+            max={2}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, glowIntensity: value }
+            })}
+          />
+          <SliderControl
+            label="Swarm Radius"
+            value={globalEffects.fireflies.swarmRadius || 30}
+            min={10}
+            max={50}
+            step={5}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, swarmRadius: value }
+            })}
+          />
+          <ColorControl
+            label="Color"
+            value={geometric.fireflies?.color || '#ffff88'}
+            onChange={(value) => updateGeometric('fireflies', { color: value })}
+          />
+        </div>
+
+        {/* Wave Interference Controls */}
+        <div className={styles.controlSection}>
+          <h3>🌊 Wave Interference</h3>
+          <ToggleControl
+            label="Enable"
+            value={globalEffects.waveInterference.enabled}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              waveInterference: { ...globalEffects.waveInterference, enabled: value }
+            })}
+          />
+          <SliderControl
+            label="Speed"
+            value={globalEffects.waveInterference.speed || 0.5}
+            min={0.1}
+            max={2.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              waveInterference: { ...globalEffects.waveInterference, speed: value }
+            })}
+          />
+          <SliderControl
+            label="Amplitude"
+            value={globalEffects.waveInterference.amplitude || 0.5}
+            min={0.1}
+            max={2.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              waveInterference: { ...globalEffects.waveInterference, amplitude: value }
+            })}
+          />
+          <SliderControl
+            label="Contour Levels"
+            value={globalEffects.waveInterference.contourLevels || 5}
+            min={2}
+            max={20}
+            step={1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              waveInterference: { ...globalEffects.waveInterference, contourLevels: value }
+            })}
+          />
+          <ColorControl
+            label="Color"
+            value={geometric.waveInterference?.color || '#333333'}
+            onChange={(value) => updateGeometric('waveInterference', { color: value })}
           />
         </div>
       </div>

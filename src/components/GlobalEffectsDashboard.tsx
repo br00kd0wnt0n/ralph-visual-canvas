@@ -36,7 +36,7 @@ const SelectControl = React.memo(({
 ));
 
 export const GlobalEffectsDashboard = () => {
-  const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera, geometric, updateGeometric } = useVisualStore();
+  const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera, geometric, updateGeometric, backgroundConfig, updateBackgroundConfig } = useVisualStore();
 
   const blendModeOptions = useMemo(() => [
     { value: 'screen', label: 'Screen' },
@@ -52,6 +52,125 @@ export const GlobalEffectsDashboard = () => {
       <PresetControls />
       <div className={styles.dashboardHeader}>
         <h2>Global Effects</h2>
+      </div>
+
+      {/* REDESIGNED: Clean Background Mode Controls */}
+      <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 space-y-4 border border-white/10">
+        
+        <div className="space-y-4">
+          {/* Main Enable Toggle */}
+          <div className="flex items-center justify-between">
+            <span className="text-white font-medium">Enable Artistic Mode</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={backgroundConfig.enabled}
+                onChange={(e) => updateBackgroundConfig({ enabled: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+          
+          {backgroundConfig.enabled && (
+            <div className="space-y-4 pl-4 border-l-2 border-blue-400/50">
+              
+              {/* Camera Control */}
+              <div>
+                <h3 className="text-white font-medium mb-2">Camera Control</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => updateBackgroundConfig({ 
+                      camera: { ...backgroundConfig.camera, fixed: false }
+                    })}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${
+                      !backgroundConfig.camera.fixed 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                    }`}
+                  >
+                    🎮 Free Control
+                  </button>
+                  <button
+                    onClick={() => updateBackgroundConfig({ 
+                      camera: { ...backgroundConfig.camera, fixed: true }
+                    })}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${
+                      backgroundConfig.camera.fixed 
+                        ? 'bg-red-600 text-white' 
+                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                    }`}
+                  >
+                    🔒 Fixed View
+                  </button>
+                </div>
+              </div>
+              
+              {/* Visual Style */}
+              <div>
+                <h3 className="text-white font-medium mb-2">Visual Style</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => updateBackgroundConfig({ mode: 'full3D' })}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${
+                      backgroundConfig.mode === 'full3D' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                    }`}
+                  >
+                    ☀️ Bright
+                  </button>
+                  <button
+                    onClick={() => updateBackgroundConfig({ mode: 'modalFriendly' })}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${
+                      backgroundConfig.mode === 'modalFriendly'
+                        ? 'bg-purple-600 text-white' 
+                        : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                    }`}
+                  >
+                    🎨 Modal-Friendly
+                  </button>
+                </div>
+              </div>
+              
+              {/* Animation Speed */}
+              <div>
+                <h3 className="text-white font-medium mb-2">
+                  Animation Speed: {backgroundConfig.timeScale.toFixed(2)}x
+                </h3>
+                <input
+                  type="range"
+                  min="0.01"
+                  max="2.0"
+                  step="0.01"
+                  value={backgroundConfig.timeScale}
+                  onChange={(e) => updateBackgroundConfig({ timeScale: parseFloat(e.target.value) })}
+                  className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>Ultra Slow (24h evolution)</span>
+                  <span>Normal</span>
+                  <span>Fast</span>
+                </div>
+              </div>
+              
+              {/* Current Status - Clean */}
+              <div className="bg-gray-800/50 rounded p-3 text-sm">
+                <div className="text-gray-300">
+                  Camera: <span className={`font-medium ${backgroundConfig.camera.fixed ? 'text-red-400' : 'text-green-400'}`}>
+                    {backgroundConfig.camera.fixed ? '🔒 Fixed' : '🎮 Free'}
+                  </span>
+                  {' • '}
+                  Style: <span className={`font-medium ${backgroundConfig.mode === 'modalFriendly' ? 'text-purple-400' : 'text-blue-400'}`}>
+                    {backgroundConfig.mode === 'modalFriendly' ? '🎨 Modal-Friendly' : '☀️ Bright'}
+                  </span>
+                  {' • '}
+                  Speed: <span className="font-medium text-white">{backgroundConfig.timeScale.toFixed(2)}x</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Atmospheric Blur */}
@@ -507,511 +626,37 @@ export const GlobalEffectsDashboard = () => {
         />
       </div>
 
-      {/* Object Trails */}
-      <div className={styles.controlSection}>
-        <h3>✨ Object Trails</h3>
-        <ToggleControl
-          label="Enable Trails"
-          value={globalEffects.trails.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            trails: { ...globalEffects.trails, enabled: value }
-          })}
-        />
-        
-        {/* Sphere Trails */}
-        <div className={styles.subSection}>
-          <h4>Sphere Trails</h4>
-          <ToggleControl
-            label="Enable"
-            value={globalEffects.trails.sphereTrails.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                sphereTrails: { ...globalEffects.trails.sphereTrails, enabled: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Length"
-            value={globalEffects.trails.sphereTrails.length}
-            min={5}
-            max={50}
-            step={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                sphereTrails: { ...globalEffects.trails.sphereTrails, length: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Opacity"
-            value={globalEffects.trails.sphereTrails.opacity}
-            min={0.1}
-            max={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                sphereTrails: { ...globalEffects.trails.sphereTrails, opacity: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Width"
-            value={globalEffects.trails.sphereTrails.width}
-            min={0.01}
-            max={0.5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                sphereTrails: { ...globalEffects.trails.sphereTrails, width: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Fade Rate"
-            value={globalEffects.trails.sphereTrails.fadeRate}
-            min={0.8}
-            max={0.99}
-            step={0.01}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                sphereTrails: { ...globalEffects.trails.sphereTrails, fadeRate: value }
-              }
-            })}
-          />
-        </div>
-
-        {/* Cube Trails */}
-        <div className={styles.subSection}>
-          <h4>Cube Trails</h4>
-          <ToggleControl
-            label="Enable"
-            value={globalEffects.trails.cubeTrails.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                cubeTrails: { ...globalEffects.trails.cubeTrails, enabled: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Length"
-            value={globalEffects.trails.cubeTrails.length}
-            min={5}
-            max={50}
-            step={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                cubeTrails: { ...globalEffects.trails.cubeTrails, length: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Opacity"
-            value={globalEffects.trails.cubeTrails.opacity}
-            min={0.1}
-            max={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                cubeTrails: { ...globalEffects.trails.cubeTrails, opacity: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Width"
-            value={globalEffects.trails.cubeTrails.width}
-            min={0.01}
-            max={0.5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                cubeTrails: { ...globalEffects.trails.cubeTrails, width: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Fade Rate"
-            value={globalEffects.trails.cubeTrails.fadeRate}
-            min={0.8}
-            max={0.99}
-            step={0.01}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                cubeTrails: { ...globalEffects.trails.cubeTrails, fadeRate: value }
-              }
-            })}
-          />
-        </div>
-
-        {/* Blob Trails */}
-        <div className={styles.subSection}>
-          <h4>Blob Trails</h4>
-          <ToggleControl
-            label="Enable"
-            value={globalEffects.trails.blobTrails.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                blobTrails: { ...globalEffects.trails.blobTrails, enabled: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Length"
-            value={globalEffects.trails.blobTrails.length}
-            min={5}
-            max={50}
-            step={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                blobTrails: { ...globalEffects.trails.blobTrails, length: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Opacity"
-            value={globalEffects.trails.blobTrails.opacity}
-            min={0.1}
-            max={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                blobTrails: { ...globalEffects.trails.blobTrails, opacity: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Width"
-            value={globalEffects.trails.blobTrails.width}
-            min={0.01}
-            max={0.5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                blobTrails: { ...globalEffects.trails.blobTrails, width: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Fade Rate"
-            value={globalEffects.trails.blobTrails.fadeRate}
-            min={0.8}
-            max={0.99}
-            step={0.01}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                blobTrails: { ...globalEffects.trails.blobTrails, fadeRate: value }
-              }
-            })}
-          />
-        </div>
-
-        {/* Ribbon Trails */}
-        <div className={styles.subSection}>
-          <h4>Ribbon Trails</h4>
-          <ToggleControl
-            label="Enable"
-            value={globalEffects.trails.ribbonTrails.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                ribbonTrails: { ...globalEffects.trails.ribbonTrails, enabled: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Length"
-            value={globalEffects.trails.ribbonTrails.length}
-            min={5}
-            max={50}
-            step={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                ribbonTrails: { ...globalEffects.trails.ribbonTrails, length: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Opacity"
-            value={globalEffects.trails.ribbonTrails.opacity}
-            min={0.1}
-            max={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                ribbonTrails: { ...globalEffects.trails.ribbonTrails, opacity: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Width"
-            value={globalEffects.trails.ribbonTrails.width}
-            min={0.01}
-            max={0.5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                ribbonTrails: { ...globalEffects.trails.ribbonTrails, width: value }
-              }
-            })}
-          />
-          <SliderControl
-            label="Fade Rate"
-            value={globalEffects.trails.ribbonTrails.fadeRate}
-            min={0.8}
-            max={0.99}
-            step={0.01}
-            onChange={(value: number) => updateGlobalEffects({ 
-              trails: { 
-                ...globalEffects.trails, 
-                ribbonTrails: { ...globalEffects.trails.ribbonTrails, fadeRate: value }
-              }
-            })}
-          />
-        </div>
-      </div>
-
-      {/* Radial Growth */}
-      <div className={styles.controlSection}>
-        <h3>🌱 Radial Growth</h3>
-        <ToggleControl
-          label="Enable"
-          value={globalEffects.radialGrowth.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            radialGrowth: { ...globalEffects.radialGrowth, enabled: value }
-          })}
-        />
-        <SliderControl
-          label="Max Radiators"
-          value={globalEffects.radialGrowth.maxRadiators || 20}
-          min={5}
-          max={50}
-          step={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            radialGrowth: { ...globalEffects.radialGrowth, maxRadiators: value }
-          })}
-        />
-        <SliderControl
-          label="Spawn Rate"
-          value={globalEffects.radialGrowth.spawnRate || 0.5}
-          min={0.1}
-          max={2.0}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            radialGrowth: { ...globalEffects.radialGrowth, spawnRate: value }
-          })}
-        />
-        <SliderControl
-          label="Growth Speed"
-          value={globalEffects.radialGrowth.growthSpeed || 0.1}
-          min={0.01}
-          max={0.5}
-          step={0.01}
-          onChange={(value: number) => updateGlobalEffects({ 
-            radialGrowth: { ...globalEffects.radialGrowth, growthSpeed: value }
-          })}
-        />
-        <div className={styles.colorControls}>
-          <label>Color</label>
-          <input
-            type="color"
-            value={geometric.radialGrowth?.color || '#333333'}
-            onChange={(e) => updateGeometric('radialGrowth', { color: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Wave Interference */}
-      <div className={styles.controlSection}>
-        <h3>🌊 Wave Interference</h3>
-        <ToggleControl
-          label="Enable"
-          value={globalEffects.waveInterference.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            waveInterference: { ...globalEffects.waveInterference, enabled: value }
-          })}
-        />
-        <SliderControl
-          label="Speed"
-          value={globalEffects.waveInterference.speed || 0.5}
-          min={0.1}
-          max={2.0}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            waveInterference: { ...globalEffects.waveInterference, speed: value }
-          })}
-        />
-        <SliderControl
-          label="Amplitude"
-          value={globalEffects.waveInterference.amplitude || 0.5}
-          min={0.1}
-          max={2.0}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            waveInterference: { ...globalEffects.waveInterference, amplitude: value }
-          })}
-        />
-        <SliderControl
-          label="Contour Levels"
-          value={globalEffects.waveInterference.contourLevels || 5}
-          min={2}
-          max={20}
-          step={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            waveInterference: { ...globalEffects.waveInterference, contourLevels: value }
-          })}
-        />
-        <div className={styles.colorControls}>
-          <label>Color</label>
-          <input
-            type="color"
-            value={geometric.waveInterference?.color || '#333333'}
-            onChange={(e) => updateGeometric('waveInterference', { color: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Metamorphosis */}
-      <div className={styles.controlSection}>
-        <h3>🔄 Metamorphosis</h3>
-        <ToggleControl
-          label="Enable"
-          value={globalEffects.metamorphosis.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            metamorphosis: { ...globalEffects.metamorphosis, enabled: value }
-          })}
-        />
-        <SliderControl
-          label="Morph Speed"
-          value={globalEffects.metamorphosis.morphSpeed || 1}
-          min={0.1}
-          max={3}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            metamorphosis: { ...globalEffects.metamorphosis, morphSpeed: value }
-          })}
-        />
-        <SliderControl
-          label="Rotation Speed"
-          value={globalEffects.metamorphosis.rotationSpeed || 1}
-          min={0}
-          max={2}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            metamorphosis: { ...globalEffects.metamorphosis, rotationSpeed: value }
-          })}
-        />
-        <SliderControl
-          label="Wireframe Opacity"
-          value={globalEffects.metamorphosis.wireframeOpacity || 0.4}
-          min={0.1}
-          max={1}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            metamorphosis: { ...globalEffects.metamorphosis, wireframeOpacity: value }
-          })}
-        />
-        <div className={styles.colorControls}>
-          <label>Color</label>
-          <input
-            type="color"
-            value={geometric.metamorphosis?.color || '#333333'}
-            onChange={(e) => updateGeometric('metamorphosis', { color: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Fireflies */}
-      <div className={styles.controlSection}>
-        <h3>🦟 Fireflies</h3>
-        <ToggleControl
-          label="Enable"
-          value={globalEffects.fireflies.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            fireflies: { ...globalEffects.fireflies, enabled: value }
-          })}
-        />
-        <SliderControl
-          label="Count"
-          value={globalEffects.fireflies.count || 50}
-          min={10}
-          max={100}
-          step={5}
-          onChange={(value: number) => updateGlobalEffects({ 
-            fireflies: { ...globalEffects.fireflies, count: value }
-          })}
-        />
-        <SliderControl
-          label="Speed"
-          value={globalEffects.fireflies.speed || 1}
-          min={0.1}
-          max={3}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            fireflies: { ...globalEffects.fireflies, speed: value }
-          })}
-        />
-        <SliderControl
-          label="Glow Intensity"
-          value={globalEffects.fireflies.glowIntensity || 1}
-          min={0.1}
-          max={2}
-          step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            fireflies: { ...globalEffects.fireflies, glowIntensity: value }
-          })}
-        />
-        <SliderControl
-          label="Swarm Radius"
-          value={globalEffects.fireflies.swarmRadius || 30}
-          min={10}
-          max={50}
-          step={5}
-          onChange={(value: number) => updateGlobalEffects({ 
-            fireflies: { ...globalEffects.fireflies, swarmRadius: value }
-          })}
-        />
-        <div className={styles.colorControls}>
-          <label>Color</label>
-          <input
-            type="color"
-            value={geometric.fireflies?.color || '#ffff88'}
-            onChange={(e) => updateGeometric('fireflies', { color: e.target.value })}
-          />
-        </div>
-      </div>
-
       {/* Camera */}
       <div className="control-section">
         <h3>📷 Camera</h3>
+        {backgroundConfig.enabled && backgroundConfig.camera.fixed && (
+          <div className="bg-yellow-500/20 p-2 rounded text-xs text-yellow-200 mb-2 border border-yellow-400">
+            🔒 Camera controls overridden by Background Mode
+          </div>
+        )}
         <SliderControl
-          label="Distance"
-          value={camera.distance || 25}
+          label={`Distance ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 150)' : ''}`}
+          value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 150 : (camera.distance || 25)}
           min={10}
           max={50}
           onChange={(value: number) => updateCamera({ distance: value })}
+          disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
         />
         <SliderControl
-          label="Height"
-          value={camera.height || 0}
+          label={`Height ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 0)' : ''}`}
+          value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 0 : (camera.height || 0)}
           min={-15}
           max={15}
           onChange={(value: number) => updateCamera({ height: value })}
+          disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
         />
         <SliderControl
-          label="Field of View"
-          value={camera.fov || 60}
+          label={`Field of View ${backgroundConfig.enabled && backgroundConfig.camera.fixed ? '(LOCKED: 30°)' : ''}`}
+          value={backgroundConfig.enabled && backgroundConfig.camera.fixed ? 30 : (camera.fov || 60)}
           min={30}
           max={90}
           onChange={(value: number) => updateCamera({ fov: value })}
+          disabled={backgroundConfig.enabled && backgroundConfig.camera.fixed}
         />
       </div>
     </div>

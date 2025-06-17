@@ -5,6 +5,7 @@ import EnhancedVisualCanvas from '../components/EnhancedVisualCanvas';
 import { GlobalEffectsDashboard } from '../components/GlobalEffectsDashboard';
 import { ShapeParticleDashboard } from '../components/ShapeParticleDashboard';
 import { DashboardToggle } from '../components/DashboardToggle';
+import { PerformanceIndicator } from '../components/PerformanceIndicator';
 import { useVisualStore } from '../store/visualStore';
 import styles from './page.module.css';
 
@@ -25,6 +26,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <DashboardToggle />
+      <PerformanceIndicator />
       {isVisible && (
         <div className={`${styles.dashboardContainer} ${!ui.showDashboards ? styles.hidden : ''}`}>
           <GlobalEffectsDashboard />

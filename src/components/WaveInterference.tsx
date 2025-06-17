@@ -19,7 +19,7 @@ export const WaveInterference = () => {
   const waveSources = useMemo((): WaveSource[] => {
     const sources: WaveSource[] = [];
     const gridSize = 4;
-    const size = 40; // World space size
+    const size = 80; // World space size - doubled from 40 to 80
     
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
@@ -39,7 +39,7 @@ export const WaveInterference = () => {
   // Create geometry for the wave surface
   const geometry = useMemo(() => {
     const resolution = 128; // Higher resolution for smooth waves
-    const size = 40;
+    const size = 80; // Doubled from 40 to 80
     return new THREE.PlaneGeometry(size, size, resolution, resolution);
   }, []);
 

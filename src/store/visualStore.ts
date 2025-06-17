@@ -1,6 +1,67 @@
 import { create } from 'zustand';
 import type { StateCreator } from 'zustand';
 
+// Add new interface (doesn't break existing code)
+interface BackgroundConfig {
+  enabled: boolean;
+  mode: 'full3D' | 'modalFriendly';
+  viewport: {
+    bounds: {
+      x: [number, number];
+      y: [number, number]; 
+      z: [number, number];
+    };
+    safeZone: number;
+  };
+  timeScale: number;
+  camera: {
+    fixed: boolean;
+    position: [number, number, number];
+    target: [number, number, number];
+  };
+  // REDESIGNED: Artistic layout system for living digital artpiece
+  artisticLayout: {
+    layers: {
+      farBackground: {
+        zPosition: number;
+        objects: string[];
+        opacity: number;
+        movement: 'minimal' | 'slow' | 'normal' | 'active';
+      };
+      midBackground: {
+        zPosition: number;
+        objects: string[];
+        opacity: number;
+        movement: 'minimal' | 'slow' | 'normal' | 'active';
+      };
+      nearBackground: {
+        zPosition: number;
+        objects: string[];
+        opacity: number;
+        movement: 'minimal' | 'slow' | 'normal' | 'active';
+      };
+      foreground: {
+        zPosition: number;
+        objects: string[];
+        opacity: number;
+        movement: 'minimal' | 'slow' | 'normal' | 'active';
+      };
+    };
+    camera: {
+      position: [number, number, number];
+      target: [number, number, number];
+      fov: number;
+    };
+    viewport: {
+      bounds: {
+        x: [number, number];
+        y: [number, number];
+        z: [number, number];
+      };
+    };
+  };
+}
+
 export interface VisualState {
   // UI State
   ui: {
@@ -14,6 +75,9 @@ export interface VisualState {
     color: string;
     gradient: boolean;
   };
+  
+  // NEW: Background configuration (starts disabled)
+  backgroundConfig: BackgroundConfig;
   
   // Geometric Shapes Layer
   geometric: {
@@ -67,9 +131,6 @@ export interface VisualState {
       opacity: number;
       complexity: number;
       organicness: number;
-    };
-    radialGrowth: {
-      color: string;
     };
     waveInterference: {
       color: string;
@@ -208,14 +269,6 @@ export interface VisualState {
       };
     };
 
-    // Radial Growth System
-    radialGrowth: {
-      enabled: boolean;
-      maxRadiators: number;
-      spawnRate: number;
-      growthSpeed: number;
-    };
-
     // Wave Interference System
     waveInterference: {
       enabled: boolean;
@@ -230,6 +283,8 @@ export interface VisualState {
       morphSpeed: number;
       rotationSpeed: number;
       wireframeOpacity: number;
+      size: number;
+      blur: number;
     };
 
     // Fireflies System
@@ -276,10 +331,11 @@ export interface VisualActions {
   loadPreset: (name: string) => void;
   getAvailablePresets: () => string[];
   deletePreset: (name: string) => void;
+  updateBackgroundConfig: (updates: Partial<VisualState['backgroundConfig']>) => void;
 }
 
 // Update the VisualPreset type to use VisualState
-type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset'> & {
+type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset' | 'updateBackgroundConfig'> & {
   savedAt: string;
   version: string;
 };
@@ -298,78 +354,133 @@ const defaultState: VisualState = {
     color: '#000011',
     gradient: true,
   },
+  backgroundConfig: {
+    enabled: false,
+    mode: 'full3D',
+    viewport: {
+      bounds: {
+        x: [-60, 60],
+        y: [-35, 35],
+        z: [-80, 20]
+      },
+      safeZone: 0.8
+    },
+    timeScale: 1.0,
+    camera: {
+      fixed: false,
+      position: [0, 0, 60],
+      target: [0, 0, 0]
+    },
+    artisticLayout: {
+      layers: {
+        farBackground: {
+          zPosition: -50,
+          objects: ['waveInterference', 'metamorphosis'],
+          opacity: 0.8,
+          movement: 'slow'
+        },
+        midBackground: {
+          zPosition: -20,
+          objects: ['ribbons'],
+          opacity: 0.9,
+          movement: 'normal'
+        },
+        nearBackground: {
+          zPosition: -5,
+          objects: ['blobs', 'spheres', 'cubes'],
+          opacity: 1.0,
+          movement: 'normal'
+        },
+        foreground: {
+          zPosition: 5,
+          objects: ['fireflies'],
+          opacity: 1.0,
+          movement: 'active'
+        }
+      },
+      camera: {
+        position: [0, 0, 60],
+        target: [0, 0, 0],
+        fov: 75
+      },
+      viewport: {
+        bounds: {
+          x: [-60, 60],
+          y: [-35, 35],
+          z: [-80, 20]
+        }
+      }
+    }
+  },
   geometric: {
     spheres: {
-      count: 8,
-      size: 1.0,
+      count: 12,
+      size: 1.2,
       color: '#00ff88',
-      speed: 1.0,
-      opacity: 0.7,
-      organicness: 0,
+      speed: 1.5,
+      opacity: 0.9,
+      organicness: 0.3,
     },
     cubes: {
-      count: 5,
-      size: 0.8,
+      count: 8,
+      size: 1.0,
       color: '#4169e1',
-      rotation: 1.0,
-      opacity: 0.6,
-      organicness: 0,
+      rotation: 1.5,
+      opacity: 0.8,
+      organicness: 0.2,
     },
     toruses: {
-      count: 3,
-      size: 1.2,
+      count: 5,
+      size: 1.5,
       color: '#ffa500',
-      speed: 0.8,
-      opacity: 0.5,
-      organicness: 0,
+      speed: 1.2,
+      opacity: 0.7,
+      organicness: 0.4,
     },
     blobs: {
-      count: 4,
-      size: 1.5,
+      count: 6,
+      size: 1.8,
       color: '#9370db',
-      speed: 0.6,
-      opacity: 0.8,
-      organicness: 0.7,
+      speed: 1.0,
+      opacity: 1.0,
+      organicness: 0.8,
     },
     ribbons: {
-      count: 3,
-      length: 8,
-      width: 0.3,
+      count: 5,
+      length: 10,
+      width: 0.4,
       color: '#ff6b6b',
-      speed: 1.2,
-      opacity: 0.6,
-      flow: 0.8,
-      organicness: 0,
+      speed: 1.5,
+      opacity: 0.8,
+      flow: 1.0,
+      organicness: 0.3,
     },
     crystals: {
-      count: 6,
-      size: 0.8,
+      count: 8,
+      size: 1.0,
       color: '#4ecdc4',
-      rotation: 1.5,
-      opacity: 0.7,
-      complexity: 12,
-      organicness: 0,
-    },
-    radialGrowth: {
-      color: '#ff0000',
+      rotation: 2.0,
+      opacity: 0.9,
+      complexity: 16,
+      organicness: 0.2,
     },
     waveInterference: {
-      color: '#ff0000',
+      color: '#00ffff',
     },
     metamorphosis: {
-      color: '#ff0000',
+      color: '#ff00ff',
     },
     fireflies: {
-      color: '#ff0000',
+      color: '#ffff00',
     },
   },
   particles: {
-    count: 500,
-    size: 0.2,
+    count: 800,
+    size: 0.3,
     color: '#ff1493',
-    speed: 1.0,
-    opacity: 0.9,
-    spread: 15,
+    speed: 1.5,
+    opacity: 1.0,
+    spread: 40,
   },
   globalEffects: {
     atmosphericBlur: {
@@ -476,12 +587,6 @@ const defaultState: VisualState = {
         fadeRate: 0.97,
       },
     },
-    radialGrowth: {
-      enabled: false,
-      maxRadiators: 10,
-      spawnRate: 0.5,
-      growthSpeed: 0.1,
-    },
     waveInterference: {
       enabled: false,
       speed: 0.5,
@@ -493,6 +598,8 @@ const defaultState: VisualState = {
       morphSpeed: 0.5,
       rotationSpeed: 0.5,
       wireframeOpacity: 0.5,
+      size: 1.0,
+      blur: 0.0,
     },
     fireflies: {
       enabled: false,
@@ -503,17 +610,17 @@ const defaultState: VisualState = {
     },
   },
   effects: {
-    glow: 0.3,
-    contrast: 1.0,
-    saturation: 1.2,
+    glow: 0.6,
+    contrast: 1.2,
+    saturation: 1.5,
     hue: 0,
-    brightness: 1.0,
-    vignette: 0,
+    brightness: 1.1,
+    vignette: 0.1,
   },
   camera: {
-    distance: 25,
+    distance: 60,
     height: 0,
-    fov: 60,
+    fov: 75,
   },
 };
 
@@ -580,6 +687,7 @@ export const useVisualStore = create<Store>((set, get) => ({
     const preset: VisualPreset = {
       ui: state.ui,
       background: state.background,
+      backgroundConfig: state.backgroundConfig,
       geometric: state.geometric,
       particles: state.particles,
       globalEffects: state.globalEffects,
@@ -607,6 +715,7 @@ export const useVisualStore = create<Store>((set, get) => ({
           ...state,
           ui: { ...state.ui, ...preset.ui },
           background: { ...state.background, ...preset.background },
+          backgroundConfig: { ...state.backgroundConfig, ...preset.backgroundConfig },
           geometric: { ...state.geometric, ...preset.geometric },
           particles: { ...state.particles, ...preset.particles },
           globalEffects: { ...state.globalEffects, ...preset.globalEffects },
@@ -635,5 +744,11 @@ export const useVisualStore = create<Store>((set, get) => ({
       localStorage.setItem('visualPresets', JSON.stringify(presets));
     } catch (error) {
     }
+  },
+
+  updateBackgroundConfig: (updates) => {
+    set((state) => ({
+      backgroundConfig: { ...state.backgroundConfig, ...updates }
+    }));
   },
 })); 
