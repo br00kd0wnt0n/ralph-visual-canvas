@@ -504,6 +504,15 @@ const CameraSync = () => {
 const EnhancedVisualCanvas = () => {
   const { globalEffects, effects, camera } = useVisualStore();
   const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
+  const [canvasReady, setCanvasReady] = useState(false);
+  
+  useEffect(() => {
+    console.log('🎨 EnhancedVisualCanvas: Component mounted');
+    setCanvasReady(true);
+    return () => {
+      console.log('🎨 EnhancedVisualCanvas: Component unmounting - THIS SHOULD NOT HAPPEN');
+    };
+  }, []);
 
   // Create atmospheric blur layers
   const atmosphericBlurLayers = useMemo(() => {
@@ -743,6 +752,10 @@ const EnhancedVisualCanvas = () => {
     );
   }, [effects.vignette]);
 
+  if (!canvasReady) {
+    return <div>Initializing Canvas...</div>;
+  }
+
   return (
     <ClientOnly>
       <div className={styles.canvasContainer}>
@@ -753,8 +766,18 @@ const EnhancedVisualCanvas = () => {
         {postProcessingOverlay}
         
         <Canvas
-          key={Date.now()}
           camera={{ position: [0, camera.height, camera.distance], fov: camera.fov }}
+          onCreated={({ gl }) => {
+            console.log('🎨 WebGL context created');
+            const canvas = gl.domElement;
+            canvas.addEventListener('webglcontextlost', (event: Event) => {
+              console.error('🚨 WebGL context lost!', event);
+              event.preventDefault();
+            });
+            canvas.addEventListener('webglcontextrestored', () => {
+              console.log('✅ WebGL context restored');
+            });
+          }}
           style={{
             filter: `
               ${effects.brightness !== 1 ? `brightness(${effects.brightness})` : ''}
