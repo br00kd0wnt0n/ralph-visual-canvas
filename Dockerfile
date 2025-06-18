@@ -16,10 +16,14 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Accept build arguments
+ARG MONGODB_URI
+
 # Set build environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_SHARP_PATH=/app/node_modules/sharp
+ENV MONGODB_URI=${MONGODB_URI}
 
 # Debug: Show environment and verify node_modules
 RUN echo "=== Environment ===" && \
@@ -45,10 +49,14 @@ RUN echo "=== Build Output ===" && \
 FROM base AS runner
 WORKDIR /app
 
+# Accept build arguments for runtime
+ARG MONGODB_URI
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV MONGODB_URI=${MONGODB_URI}
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

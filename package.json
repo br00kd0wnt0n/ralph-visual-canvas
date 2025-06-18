@@ -10,7 +10,10 @@
     "validate-config": "node scripts/validate-config.js",
     "clean-restart": "pkill -f 'next dev' || true && rm -rf .next node_modules/.cache && npm run dev",
     "check-styling": "npm run validate-config && echo '✅ Tailwind config is valid'",
-    "predev": "npm run check-styling"
+    "predev": "npm run check-styling",
+    "docker:build": "./scripts/build-docker.sh",
+    "docker:run": "docker run -p 3000:3000 visual-canvas-lab:latest",
+    "docker:build-run": "npm run docker:build && npm run docker:run"
   },
   "dependencies": {
     "@react-three/drei": "9.88.0",
