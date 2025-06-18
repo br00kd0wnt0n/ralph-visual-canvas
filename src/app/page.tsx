@@ -6,188 +6,74 @@ import { GlobalEffectsDashboard } from '../components/GlobalEffectsDashboard';
 import { ShapeParticleDashboard } from '../components/ShapeParticleDashboard';
 import { DashboardToggle } from '../components/DashboardToggle';
 import { GlobalDefaultsToggle } from '../components/GlobalDefaultsToggle';
+import { AIToggle } from '../components/AIToggle';
 import { PerformanceIndicator } from '../components/PerformanceIndicator';
 import { AITestDashboard } from '../ai-system/components/AITestDashboard';
 import GlobalDefaultsPanel from '../components/GlobalDefaultsManager';
-import { PresetManager } from '../components/PresetManager';
 import { useVisualStore } from '../store/visualStore';
 import styles from './page.module.css';
+import { BottomButtonBar } from '../components/BottomButtonBar';
 
 export default function Home() {
-  const { ui } = useVisualStore();
-  const [isVisible, setIsVisible] = useState(ui.showDashboards);
-  const [showAITest, setShowAITest] = useState(false);
+  const { ui, toggleDashboards, toggleCameraPositioningMode } = useVisualStore();
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
-  const [showPresetManager, setShowPresetManager] = useState(false);
-
-  useEffect(() => {
-    console.log('Home component mounted');
-    if (ui.showDashboards) {
-      setIsVisible(true);
-    } else {
-      // Delay hiding to allow for fade out animation
-      const timer = setTimeout(() => setIsVisible(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [ui.showDashboards]);
-
-  const handleAITestClick = () => {
-    console.log('AI Test System button clicked!');
-    setShowAITest((prev) => !prev);
-  };
+  const [showAITest, setShowAITest] = useState(false);
 
   return (
-    <main className={styles.main}>
-      {/* AI Test System Button - Styled to match dashboard */}
-      <button
-        onClick={handleAITestClick}
-        className={styles.aiTestButton}
-        title="Theme, AI + Logic"
-      >
-        🤖
-      </button>
-      
-      {/* AI Test Dashboard Overlay */}
+    <main className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Enhanced Visual Canvas */}
+      <EnhancedVisualCanvas />
+
+      {/* Top Controls Bar */}
+      <div className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          {/* Removed duplicate DashboardToggle and GlobalDefaultsToggle */}
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <PerformanceIndicator />
+        </div>
+      </div>
+
+      {/* Bottom Center Button Bar */}
+      <BottomButtonBar
+        isDashboardOpen={ui.showDashboards}
+        onDashboardToggle={toggleDashboards}
+        isGlobalDefaultsOpen={showGlobalDefaults}
+        onGlobalDefaultsToggle={() => setShowGlobalDefaults(!showGlobalDefaults)}
+        isAIOpen={showAITest}
+        onAIToggle={() => setShowAITest(!showAITest)}
+        isCameraMode={ui.cameraPositioningMode}
+        onCameraModeToggle={toggleCameraPositioningMode}
+      />
+
+      {/* Dashboards - Side Columns */}
+      {ui.showDashboards && (
+        <>
+          {/* Left Column - Global Effects */}
+          <div className="fixed left-4 top-20 bottom-4 z-40 w-80 overflow-y-auto">
+            <GlobalEffectsDashboard />
+          </div>
+
+          {/* Right Column - Shape & Particle Controls */}
+          <div className="fixed right-4 top-20 bottom-4 z-40 w-80 overflow-y-auto">
+            <ShapeParticleDashboard />
+          </div>
+        </>
+      )}
+
+      {/* AI Test Dashboard - Center Panel */}
       {showAITest && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10000,
-            width: 'min(98vw, 900px)',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            background: 'rgba(20,20,30,0.95)',
-            borderRadius: 16,
-            boxShadow: '0 4px 32px rgba(0,0,0,0.4)',
-            padding: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          <button
-            onClick={() => setShowAITest(false)}
-            style={{
-              alignSelf: 'flex-end',
-              margin: 8,
-              background: 'none',
-              border: 'none',
-              color: '#fff',
-              fontSize: 20,
-              cursor: 'pointer',
-              opacity: 0.7,
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
-            aria-label="Close Theme, AI + Logic"
-          >
-            ✕
-          </button>
+        <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-[95vw] h-[90vh] max-w-[1200px] max-h-[900px] overflow-y-auto bg-gray-900/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-2xl">
           <AITestDashboard />
         </div>
       )}
 
-      <DashboardToggle />
-      <GlobalDefaultsToggle 
-        isOpen={showGlobalDefaults} 
-        onToggle={() => setShowGlobalDefaults(!showGlobalDefaults)} 
-      />
-      
-      {/* Preset Manager Toggle Button */}
-      <button
-        onClick={() => setShowPresetManager(!showPresetManager)}
-        className={styles.presetButton}
-        title="Preset Manager"
-        style={{
-          position: 'fixed',
-          top: '20px',
-          right: '120px',
-          zIndex: 1000,
-          background: 'rgba(0, 0, 0, 0.7)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '8px',
-          padding: '8px 12px',
-          color: 'white',
-          cursor: 'pointer',
-          fontSize: '14px',
-          backdropFilter: 'blur(10px)',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(0, 0, 0, 0.9)';
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(0, 0, 0, 0.7)';
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-        }}
-      >
-        💾 Presets
-      </button>
-      
-      <PerformanceIndicator />
-      {isVisible && (
-        <div className={`${styles.dashboardContainer} ${!ui.showDashboards ? styles.hidden : ''}`}>
-          <GlobalEffectsDashboard />
-          <ShapeParticleDashboard />
-        </div>
-      )}
-      
-      {/* Global Defaults Manager Modal */}
+      {/* Global Defaults Panel */}
       <GlobalDefaultsPanel 
         isOpen={showGlobalDefaults} 
         onClose={() => setShowGlobalDefaults(false)} 
       />
-      
-      {/* Preset Manager Modal */}
-      {showPresetManager && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10000,
-            width: 'min(98vw, 800px)',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            background: 'rgba(20,20,30,0.95)',
-            borderRadius: 16,
-            boxShadow: '0 4px 32px rgba(0,0,0,0.4)',
-            padding: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          <button
-            onClick={() => setShowPresetManager(false)}
-            style={{
-              alignSelf: 'flex-end',
-              margin: 8,
-              background: 'none',
-              border: 'none',
-              color: '#fff',
-              fontSize: 20,
-              cursor: 'pointer',
-              opacity: 0.7,
-              transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-            onMouseLeave={e => (e.currentTarget.style.opacity = '0.7')}
-            aria-label="Close Preset Manager"
-          >
-            ✕
-          </button>
-          <PresetManager />
-        </div>
-      )}
-      
-      <EnhancedVisualCanvas />
     </main>
   );
 }
