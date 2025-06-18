@@ -59,3 +59,86 @@ MIT License - feel free to use this project for your own purposes.
 ## Author
 
 [br00kd0wnt0n](https://github.com/br00kd0wnt0n)
+
+## 🚀 Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+## 🛠️ Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run clean-restart` - Kill processes, clear cache, and restart
+- `npm run check-styling` - Validate Tailwind configuration
+- `npm run validate-config` - Test PostCSS and Tailwind setup
+
+### Troubleshooting
+
+#### Styling Not Updating
+
+If Tailwind styles aren't applying:
+
+1. **Check PostCSS config**: Ensure `postcss.config.js` uses CommonJS format:
+   ```js
+   module.exports = {
+     plugins: {
+       tailwindcss: {},
+       autoprefixer: {},
+     },
+   };
+   ```
+
+2. **Verify Tailwind directives**: Check `src/app/globals.css` has:
+   ```css
+   @tailwind base;
+   @tailwind components;
+   @tailwind utilities;
+   ```
+
+3. **Clear cache and restart**:
+   ```bash
+   npm run clean-restart
+   ```
+
+4. **Check browser cache**: Hard refresh (`Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Windows)
+
+#### Port Conflicts
+
+If you see `EADDRINUSE: address already in use :::3000`:
+
+```bash
+lsof -ti:3000 | xargs kill -9
+npm run dev
+```
+
+#### Configuration Validation
+
+Run validation before starting development:
+
+```bash
+npm run check-styling
+```
+
+## 🏗️ Architecture
+
+- **Frontend**: Next.js 14 with React Three Fiber
+- **Styling**: Tailwind CSS with PostCSS
+- **State Management**: Zustand
+- **AI Integration**: OpenAI Vision API
+- **Weather Data**: OpenWeatherMap API
+- **Parameter Mapping**: Custom engine with real-time updates
+
+## 📁 Project Structure
+
+```
+src/
+├── ai-system/          # AI analysis and integration
+├── components/         # React components
+├── store/             # Zustand state management
+├── app/               # Next.js app router
+└── utils/             # Utility functions
+```

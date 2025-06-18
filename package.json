@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "validate-config": "node scripts/validate-config.js",
+    "clean-restart": "pkill -f 'next dev' || true && rm -rf .next node_modules/.cache && npm run dev",
+    "check-styling": "npm run validate-config && echo '✅ Tailwind config is valid'",
+    "predev": "npm run check-styling"
   },
   "dependencies": {
     "@react-three/drei": "9.88.0",
