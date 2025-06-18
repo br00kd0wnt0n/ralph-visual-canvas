@@ -26,7 +26,7 @@ export const PerformanceIndicator: React.FC = () => {
 
   return (
     <div 
-      className="fixed top-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-2 text-xs text-white"
+      className="fixed bottom-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-2 text-xs text-white"
       style={{ zIndex: 99999 }}
     >
       <div className="flex items-center gap-2">

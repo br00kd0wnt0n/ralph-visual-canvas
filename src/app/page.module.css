@@ -41,6 +41,39 @@
   margin: 20px;
 }
 
+.aiTestButton {
+  position: fixed;
+  bottom: 16px;
+  left: 136px;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.aiTestButton:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.aiTestButton:active {
+  transform: scale(0.95);
+}
+
 @media (max-width: 768px) {
   .dashboardContainer {
     flex-direction: column;
@@ -52,6 +85,14 @@
     width: 100%;
     max-width: 320px;
     margin: 10px 0;
+  }
+
+  .aiTestButton {
+    bottom: 10px;
+    left: 120px;
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
   }
 }
 

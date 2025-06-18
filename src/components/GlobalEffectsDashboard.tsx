@@ -48,9 +48,13 @@ export const GlobalEffectsDashboard = () => {
   ], []);
 
   return (
-    <div className={styles.dashboard}>
-      <div className={styles.dashboardHeader}>
-        <h2>Global Effects</h2>
+    <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 text-white shadow-xl">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-blue-400">Global Effects</h2>
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span className="text-xs text-green-400">Active</span>
+        </div>
       </div>
 
       {/* Enhanced Preset Controls */}
@@ -533,18 +537,22 @@ export const GlobalEffectsDashboard = () => {
         />
         <div className={styles.colorControls}>
           <label>Rainbow Colors</label>
-          {globalEffects.chromatic.rainbow.colors.map((color, index) => (
+          {(globalEffects.chromatic.rainbow.colors || []).map((color, index) => (
             <div key={index} className={styles.colorRow}>
               <input
                 type="color"
                 value={color}
                 onChange={(e) => {
-                  const newColors = [...globalEffects.chromatic.rainbow.colors];
+                  const currentColors = globalEffects.chromatic.rainbow.colors || [];
+                  const newColors = [...currentColors];
                   newColors[index] = e.target.value;
                   updateGlobalEffects({
                     chromatic: {
                       ...globalEffects.chromatic,
-                      rainbow: { ...globalEffects.chromatic.rainbow, colors: newColors }
+                      rainbow: { 
+                        ...globalEffects.chromatic.rainbow, 
+                        colors: newColors 
+                      }
                     }
                   });
                 }}
@@ -552,12 +560,16 @@ export const GlobalEffectsDashboard = () => {
               <button
                 className={styles.removeColor}
                 onClick={() => {
-                  const newColors = globalEffects.chromatic.rainbow.colors.filter((_, i) => i !== index);
+                  const currentColors = globalEffects.chromatic.rainbow.colors || [];
+                  const newColors = currentColors.filter((_, i) => i !== index);
                   if (newColors.length >= 2) {
                     updateGlobalEffects({
                       chromatic: {
                         ...globalEffects.chromatic,
-                        rainbow: { ...globalEffects.chromatic.rainbow, colors: newColors }
+                        rainbow: { 
+                          ...globalEffects.chromatic.rainbow, 
+                          colors: newColors 
+                        }
                       }
                     });
                   }
@@ -570,11 +582,15 @@ export const GlobalEffectsDashboard = () => {
           <button
             className={styles.addColor}
             onClick={() => {
-              const newColors = [...globalEffects.chromatic.rainbow.colors, '#ffffff'];
+              const currentColors = globalEffects.chromatic.rainbow.colors || [];
+              const newColors = [...currentColors, '#ffffff'];
               updateGlobalEffects({
                 chromatic: {
                   ...globalEffects.chromatic,
-                  rainbow: { ...globalEffects.chromatic.rainbow, colors: newColors }
+                  rainbow: { 
+                    ...globalEffects.chromatic.rainbow, 
+                    colors: newColors 
+                  }
                 }
               });
             }}

@@ -22,6 +22,12 @@ interface BackgroundConfig {
   // REDESIGNED: Artistic layout system for living digital artpiece
   artisticLayout: {
     layers: {
+      deepBackground: {
+        zPosition: number;
+        objects: string[];
+        opacity: number;
+        movement: 'minimal' | 'slow' | 'normal' | 'active';
+      };
       farBackground: {
         zPosition: number;
         objects: string[];
@@ -111,16 +117,6 @@ export interface VisualState {
       color: string;
       speed: number;
       opacity: number;
-      organicness: number;
-    };
-    ribbons: {
-      count: number;
-      length: number;
-      width: number;
-      color: string;
-      speed: number;
-      opacity: number;
-      flow: number;
       organicness: number;
     };
     crystals: {
@@ -260,13 +256,6 @@ export interface VisualState {
         width: number;
         fadeRate: number;
       };
-      ribbonTrails: {
-        enabled: boolean;
-        length: number;
-        opacity: number;
-        width: number;
-        fadeRate: number;
-      };
     };
 
     // Wave Interference System
@@ -312,6 +301,23 @@ export interface VisualState {
     distance: number;
     height: number;
     fov: number;
+    position: [number, number, number];
+    target: [number, number, number];
+    rotation: {
+      x: number;
+      y: number;
+      z: number;
+    };
+    autoRotate: boolean;
+    autoRotateSpeed: number;
+    damping: number;
+    enableZoom: boolean;
+    enablePan: boolean;
+    enableRotate: boolean;
+    minDistance: number;
+    maxDistance: number;
+    minPolarAngle: number;
+    maxPolarAngle: number;
   };
 }
 
@@ -332,6 +338,12 @@ export interface VisualActions {
   getAvailablePresets: () => string[];
   deletePreset: (name: string) => void;
   updateBackgroundConfig: (updates: Partial<VisualState['backgroundConfig']>) => void;
+  resetToGlobalDefaults: () => void;
+  resetCameraToDefaults: () => void;
+  resetVisualEffectsToDefaults: () => void;
+  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => void;
+  forceApplyGlobalDefaults: () => void;
+  getGlobalDefaults: () => typeof GLOBAL_DEFAULTS;
 }
 
 // Update the VisualPreset type to use VisualState
@@ -344,9 +356,73 @@ type PresetStorage = {
   [key: string]: VisualPreset;
 };
 
+// Global Defaults Configuration
+export const GLOBAL_DEFAULTS = {
+  // Camera defaults
+  camera: {
+    distance: 12,
+    height: 2,
+    fov: 60,
+    position: [0, 2, 12] as [number, number, number],
+    target: [0, 0, 0] as [number, number, number],
+    rotation: { x: 0, y: 0, z: 0 },
+    autoRotate: false,
+    autoRotateSpeed: 0.5,
+    damping: 0.05,
+    enableZoom: true,
+    enablePan: true,
+    enableRotate: true,
+    minDistance: 5,
+    maxDistance: 50,
+    minPolarAngle: 0,
+    maxPolarAngle: Math.PI
+  },
+  
+  // Performance defaults
+  performance: {
+    targetFPS: 60,
+    enableVSync: true,
+    maxParticles: 1000,
+    maxShapes: 100,
+    enableFrustumCulling: true,
+    enableLOD: true
+  },
+  
+  // Quality defaults
+  quality: {
+    antialiasing: true,
+    shadows: true,
+    reflections: true,
+    postProcessing: true,
+    bloom: true,
+    motionBlur: false
+  },
+  
+  // Animation defaults
+  animation: {
+    defaultSpeed: 1.0,
+    easing: 'easeInOut' as const,
+    loop: true,
+    autoPlay: true
+  },
+  
+  // Visual/Post-processing defaults
+  visual: {
+    vignette: 0.15,
+    glow: 0.6,
+    contrast: 1.2,
+    saturation: 1.5,
+    brightness: 1.1,
+    bloom: true,
+    chromaticAberration: 0.0,
+    motionBlur: false
+  }
+};
+
+// Default state for the visual store
 const defaultState: VisualState = {
   ui: {
-    showDashboards: true,
+    showDashboards: false,
   },
   background: {
     opacity: 0.8,
@@ -373,15 +449,21 @@ const defaultState: VisualState = {
     },
     artisticLayout: {
       layers: {
+        deepBackground: {
+          zPosition: -80,
+          objects: ['metamorphosis'],
+          opacity: 0.6,
+          movement: 'minimal'
+        },
         farBackground: {
           zPosition: -50,
-          objects: ['waveInterference', 'metamorphosis'],
+          objects: ['waveInterference'],
           opacity: 0.8,
           movement: 'slow'
         },
         midBackground: {
           zPosition: -20,
-          objects: ['ribbons'],
+          objects: [],
           opacity: 0.9,
           movement: 'normal'
         },
@@ -444,16 +526,6 @@ const defaultState: VisualState = {
       speed: 1.0,
       opacity: 1.0,
       organicness: 0.8,
-    },
-    ribbons: {
-      count: 5,
-      length: 10,
-      width: 0.4,
-      color: '#ff6b6b',
-      speed: 1.5,
-      opacity: 0.8,
-      flow: 1.0,
-      organicness: 0.3,
     },
     crystals: {
       count: 8,
@@ -579,13 +651,6 @@ const defaultState: VisualState = {
         width: 0.12,
         fadeRate: 0.96,
       },
-      ribbonTrails: {
-        enabled: false,
-        length: 30,
-        opacity: 0.8,
-        width: 0.15,
-        fadeRate: 0.97,
-      },
     },
     waveInterference: {
       enabled: false,
@@ -610,17 +675,15 @@ const defaultState: VisualState = {
     },
   },
   effects: {
-    glow: 0.6,
-    contrast: 1.2,
-    saturation: 1.5,
+    glow: GLOBAL_DEFAULTS.visual.glow,
+    contrast: GLOBAL_DEFAULTS.visual.contrast,
+    saturation: GLOBAL_DEFAULTS.visual.saturation,
     hue: 0,
-    brightness: 1.1,
-    vignette: 0.1,
+    brightness: GLOBAL_DEFAULTS.visual.brightness,
+    vignette: GLOBAL_DEFAULTS.visual.vignette,
   },
   camera: {
-    distance: 60,
-    height: 0,
-    fov: 75,
+    ...GLOBAL_DEFAULTS.camera
   },
 };
 
@@ -751,4 +814,83 @@ export const useVisualStore = create<Store>((set, get) => ({
       backgroundConfig: { ...state.backgroundConfig, ...updates }
     }));
   },
+
+  // Global defaults management
+  resetToGlobalDefaults: () => {
+    set((state) => ({
+      ...state,
+      camera: { ...GLOBAL_DEFAULTS.camera },
+      effects: {
+        ...state.effects,
+        glow: GLOBAL_DEFAULTS.visual.glow,
+        contrast: GLOBAL_DEFAULTS.visual.contrast,
+        saturation: GLOBAL_DEFAULTS.visual.saturation,
+        brightness: GLOBAL_DEFAULTS.visual.brightness,
+        vignette: GLOBAL_DEFAULTS.visual.vignette,
+      }
+    }));
+  },
+
+  resetCameraToDefaults: () => {
+    set((state) => ({
+      camera: { ...GLOBAL_DEFAULTS.camera }
+    }));
+  },
+
+  resetVisualEffectsToDefaults: () => {
+    set((state) => ({
+      effects: {
+        ...state.effects,
+        glow: GLOBAL_DEFAULTS.visual.glow,
+        contrast: GLOBAL_DEFAULTS.visual.contrast,
+        saturation: GLOBAL_DEFAULTS.visual.saturation,
+        brightness: GLOBAL_DEFAULTS.visual.brightness,
+        vignette: GLOBAL_DEFAULTS.visual.vignette,
+      }
+    }));
+  },
+
+  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => {
+    // Update the global defaults (this affects future resets)
+    Object.assign(GLOBAL_DEFAULTS[category], updates);
+    
+    // If updating camera defaults, also update current camera if it matches old defaults
+    if (category === 'camera') {
+      set((state) => ({
+        camera: { ...state.camera, ...updates }
+      }));
+    }
+    
+    // If updating visual defaults, also update current effects
+    if (category === 'visual') {
+      set((state) => ({
+        effects: {
+          ...state.effects,
+          glow: GLOBAL_DEFAULTS.visual.glow,
+          contrast: GLOBAL_DEFAULTS.visual.contrast,
+          saturation: GLOBAL_DEFAULTS.visual.saturation,
+          brightness: GLOBAL_DEFAULTS.visual.brightness,
+          vignette: GLOBAL_DEFAULTS.visual.vignette,
+        }
+      }));
+    }
+  },
+
+  // NEW: Force apply global defaults to override any AI changes
+  forceApplyGlobalDefaults: () => {
+    set((state) => ({
+      ...state,
+      camera: { ...GLOBAL_DEFAULTS.camera },
+      effects: {
+        ...state.effects,
+        glow: GLOBAL_DEFAULTS.visual.glow,
+        contrast: GLOBAL_DEFAULTS.visual.contrast,
+        saturation: GLOBAL_DEFAULTS.visual.saturation,
+        brightness: GLOBAL_DEFAULTS.visual.brightness,
+        vignette: GLOBAL_DEFAULTS.visual.vignette,
+      }
+    }));
+  },
+
+  getGlobalDefaults: () => GLOBAL_DEFAULTS,
 })); 

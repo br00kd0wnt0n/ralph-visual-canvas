@@ -1,7 +1,7 @@
 .toggleButton {
   position: fixed;
   bottom: 16px;
-  left: 16px;
+  left: 76px;
   z-index: 2000;
   background: rgba(0, 0, 0, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -33,7 +33,7 @@
 @media (max-width: 768px) {
   .toggleButton {
     bottom: 10px;
-    left: 10px;
+    left: 65px;
     width: 45px;
     height: 45px;
     font-size: 18px;

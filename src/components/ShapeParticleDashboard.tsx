@@ -109,9 +109,13 @@ export const ShapeParticleDashboard = React.memo(() => {
   const { geometric, particles, globalEffects, updateGeometric, updateParticles, updateGlobalEffects } = useVisualStore();
 
   return (
-    <div className={styles.dashboard}>
-      <div className={styles.dashboardHeader}>
-        <h2>Shapes & Particles</h2>
+    <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 text-white shadow-xl">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-purple-400">Shapes & Particles</h2>
+        <div className="flex items-center space-x-2">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span className="text-xs text-green-400">Active</span>
+        </div>
       </div>
 
       <div className={styles.tabContent}>

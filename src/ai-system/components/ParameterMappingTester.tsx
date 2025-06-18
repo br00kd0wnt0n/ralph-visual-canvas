@@ -89,7 +89,7 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
   const currentParams = propCurrentParams || visualState;
 
   // Local state management
-  const [mappingEngine] = useState(() => new ParameterMappingEngine());
+  const [parameterMappingEngine] = useState(() => new ParameterMappingEngine());
   const [selectedVariable, setSelectedVariableLocal] = useState<string>(storeSelectedVariable);
   const [liveMode, setLiveModeLocal] = useState<boolean>(isLiveMode);
   const [overrideMode, setOverrideMode] = useState<OverrideState>({});
@@ -136,22 +136,22 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
 
   // Get all available rules from the mapping engine
   const allRules = useMemo(() => {
-    return mappingEngine.getAllRules().sort((a, b) => a.variable.localeCompare(b.variable));
-  }, [mappingEngine]);
+    return parameterMappingEngine.getAllRules().sort((a, b) => a.variable.localeCompare(b.variable));
+  }, [parameterMappingEngine]);
 
   // Get current computed value for selected variable
   const currentComputedValue = useMemo(() => {
     if (!selectedVariable || !aiResults || !weatherData) return null;
 
     try {
-      const updates = mappingEngine.mapParameters(aiResults, weatherData, currentParams);
+      const updates = parameterMappingEngine.mapParameters(aiResults, weatherData, currentParams);
       const update = updates.find(u => u.variable === selectedVariable);
       return update?.value ?? null;
     } catch (error) {
       console.error('Error computing value:', error);
       return null;
     }
-  }, [selectedVariable, aiResults, weatherData, currentParams, mappingEngine]);
+  }, [selectedVariable, aiResults, weatherData, currentParams, parameterMappingEngine]);
 
   // Get current actual value from scene
   const currentActualValue = useMemo(() => {
@@ -161,41 +161,22 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
 
   // Performance monitoring
   useEffect(() => {
-    let frameCount = 0;
+    let animationId: number | null = null;
     let lastTime = performance.now();
-    let animationId: number;
+    let frameCount = 0;
 
     const measurePerformance = () => {
       const currentTime = performance.now();
       frameCount++;
 
-      if (currentTime - lastTime >= 1000) {
+      if (currentTime - lastTime >= 1000) { // Update every second
         const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
         
-        // Get memory usage if available
-        let memoryUsage;
-        if ('memory' in performance) {
-          const mem = (performance as any).memory;
-          memoryUsage = {
-            used: Math.round(mem.usedJSHeapSize / 1024 / 1024),
-            total: Math.round(mem.totalJSHeapSize / 1024 / 1024),
-            percentage: Math.round((mem.usedJSHeapSize / mem.totalJSHeapSize) * 100)
-          };
-        }
-
-        const newMetrics = {
-          fps,
-          memoryUsage,
-          renderTime: currentTime - lastTime
-        };
-
-        setPerformanceMetricsLocal(newMetrics);
-        updatePerformanceMetrics({
-          fps,
-          memoryUsage,
-          updateFrequency: frameCount
-        });
-
+        // Use setTimeout to avoid setState during render
+        setTimeout(() => {
+          updatePerformanceMetrics({ fps });
+        }, 0);
+        
         frameCount = 0;
         lastTime = currentTime;
       }
@@ -219,7 +200,7 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
     const interval = setInterval(() => {
       try {
         setMappingEngineStatus('active');
-        const updates = mappingEngine.mapParameters(aiResults, weatherData, currentParams);
+        const updates = parameterMappingEngine.mapParameters(aiResults, weatherData, currentParams);
         
         // Add updates to store
         addParameterUpdates(updates);
@@ -237,7 +218,7 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
     }, 1000); // Update every second
 
     return () => clearInterval(interval);
-  }, [liveMode, aiResults, weatherData, currentParams, mappingEngine, onParameterUpdate, addParameterUpdates, setMappingEngineStatus]);
+  }, [liveMode, aiResults, weatherData, currentParams, parameterMappingEngine, onParameterUpdate, addParameterUpdates, setMappingEngineStatus]);
 
   // Subscribe to external parameter updates
   useEffect(() => {
@@ -344,7 +325,7 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
   const getInputType = useCallback((variable: string, value: any) => {
     if (typeof value === 'boolean') return 'checkbox';
     if (typeof value === 'number') {
-      const rule = mappingEngine.getRule(variable);
+      const rule = parameterMappingEngine.getRule(variable);
       if (rule && rule.constraints) {
         const { min, max } = rule.constraints;
         if (min !== undefined && max !== undefined && max - min <= 10) {
@@ -354,11 +335,11 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
       return 'number';
     }
     return 'text';
-  }, [mappingEngine]);
+  }, [parameterMappingEngine]);
 
   // Get input props for variable
   const getInputProps = useCallback((variable: string) => {
-    const rule = mappingEngine.getRule(variable);
+    const rule = parameterMappingEngine.getRule(variable);
     if (!rule) return {};
 
     const { min, max } = rule.constraints;
@@ -373,7 +354,7 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
     }
 
     return {};
-  }, [mappingEngine, currentParams, getNestedValue]);
+  }, [parameterMappingEngine, currentParams, getNestedValue]);
 
   // Format value for display
   const formatValue = useCallback((value: any): string => {
@@ -584,10 +565,10 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
               {/* Rule Information */}
               {showAdvanced && (
                 <div className="text-xs text-gray-400 space-y-1">
-                  <div>Source: {mappingEngine.getRule(selectedVariable)?.source}</div>
-                  <div>Priority: {mappingEngine.getRule(selectedVariable)?.priority}</div>
-                  <div>Sensitivity: {mappingEngine.getRule(selectedVariable)?.sensitivity}</div>
-                  <div>Description: {mappingEngine.getRule(selectedVariable)?.description}</div>
+                  <div>Source: {parameterMappingEngine.getRule(selectedVariable)?.source}</div>
+                  <div>Priority: {parameterMappingEngine.getRule(selectedVariable)?.priority}</div>
+                  <div>Sensitivity: {parameterMappingEngine.getRule(selectedVariable)?.sensitivity}</div>
+                  <div>Description: {parameterMappingEngine.getRule(selectedVariable)?.description}</div>
                 </div>
               )}
             </div>
@@ -648,7 +629,7 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Locked Parameters:</span>
-                  <span className="font-mono">{mappingEngine.getLockedParameters().length}</span>
+                  <span className="font-mono">{parameterMappingEngine.getLockedParameters().length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Active Overrides:</span>
