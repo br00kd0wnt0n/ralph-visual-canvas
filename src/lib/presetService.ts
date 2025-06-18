@@ -1,4 +1,5 @@
 import clientPromise from './mongodb';
+import { ObjectId } from 'mongodb';
 import { Preset, CreatePresetRequest, UpdatePresetRequest, PresetListResponse } from '@/types/preset';
 
 export class PresetService {
@@ -60,7 +61,13 @@ export class PresetService {
     const db = client.db('visual-canvas');
     const collection = db.collection<Preset>('presets');
 
-    return await collection.findOne({ _id: id });
+    try {
+      const objectId = new ObjectId(id);
+      return await collection.findOne({ _id: objectId });
+    } catch (error) {
+      console.error('Invalid ObjectId format:', id);
+      return null;
+    }
   }
 
   async createPreset(presetData: CreatePresetRequest): Promise<Preset> {
@@ -103,38 +110,47 @@ export class PresetService {
     const db = client.db('visual-canvas');
     const collection = db.collection<Preset>('presets');
 
-    // Check if preset exists
-    const existingPreset = await collection.findOne({ _id: id });
-    if (!existingPreset) {
-      throw new Error('Preset not found');
-    }
-
-    // Check if new name conflicts with another preset
-    if (updateData.name && updateData.name !== existingPreset.name) {
-      const nameConflict = await collection.findOne({ 
-        name: updateData.name,
-        _id: { $ne: id }
-      });
-      if (nameConflict) {
-        throw new Error('A preset with this name already exists');
+    try {
+      const objectId = new ObjectId(id);
+      
+      // Check if preset exists
+      const existingPreset = await collection.findOne({ _id: objectId });
+      if (!existingPreset) {
+        throw new Error('Preset not found');
       }
+
+      // Check if new name conflicts with another preset
+      if (updateData.name && updateData.name !== existingPreset.name) {
+        const nameConflict = await collection.findOne({ 
+          name: updateData.name,
+          _id: { $ne: objectId }
+        });
+        if (nameConflict) {
+          throw new Error('A preset with this name already exists');
+        }
+      }
+
+      const dataToUpdate: Partial<Preset> = {
+        ...updateData,
+        updatedAt: new Date()
+      };
+
+      const result = await collection.updateOne(
+        { _id: objectId },
+        { $set: dataToUpdate }
+      );
+
+      if (result.matchedCount === 0) {
+        throw new Error('Preset not found');
+      }
+
+      return await collection.findOne({ _id: objectId });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Invalid ObjectId')) {
+        throw new Error('Preset not found');
+      }
+      throw error;
     }
-
-    const dataToUpdate: Partial<Preset> = {
-      ...updateData,
-      updatedAt: new Date()
-    };
-
-    const result = await collection.updateOne(
-      { _id: id },
-      { $set: dataToUpdate }
-    );
-
-    if (result.matchedCount === 0) {
-      throw new Error('Preset not found');
-    }
-
-    return await collection.findOne({ _id: id });
   }
 
   async deletePreset(id: string): Promise<boolean> {
@@ -142,7 +158,13 @@ export class PresetService {
     const db = client.db('visual-canvas');
     const collection = db.collection<Preset>('presets');
 
-    const result = await collection.deleteOne({ _id: id });
-    return result.deletedCount > 0;
+    try {
+      const objectId = new ObjectId(id);
+      const result = await collection.deleteOne({ _id: objectId });
+      return result.deletedCount > 0;
+    } catch (error) {
+      console.error('Invalid ObjectId format:', id);
+      return false;
+    }
   }
 } 

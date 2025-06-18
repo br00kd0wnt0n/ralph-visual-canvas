@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI environment variable is not set');
   throw new Error('Please add your Mongo URI to .env.local');
 }
 
@@ -25,7 +26,10 @@ if (process.env.NODE_ENV === 'development') {
 } else {
   // In production mode, it's best to not use a global variable.
   client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  clientPromise = client.connect().catch(error => {
+    console.error('Failed to connect to MongoDB:', error);
+    throw error;
+  });
 }
 
 // Export a module-scoped MongoClient promise. By doing this in a

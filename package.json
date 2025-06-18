@@ -13,7 +13,8 @@
     "predev": "npm run check-styling",
     "docker:build": "./scripts/build-docker.sh",
     "docker:run": "docker run -p 3000:3000 visual-canvas-lab:latest",
-    "docker:build-run": "npm run docker:build && npm run docker:run"
+    "docker:build-run": "npm run docker:build && npm run docker:run",
+    "seed": "node scripts/seed-presets.js"
   },
   "dependencies": {
     "@react-three/drei": "9.88.0",
