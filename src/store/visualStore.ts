@@ -72,6 +72,7 @@ export interface VisualState {
   // UI State
   ui: {
     showDashboards: boolean;
+    cameraPositioningMode: boolean; // NEW: Enable direct camera control on live view
   };
   
   // Background Layer
@@ -137,6 +138,9 @@ export interface VisualState {
     fireflies: {
       color: string;
     };
+    layeredSineWaves: {
+      color: string;
+    };
   };
   
   // Particles Layer
@@ -174,14 +178,6 @@ export interface VisualState {
       customColor: string; // Used when useObjectColor is false
       pulsing: boolean;
       pulseSpeed: number;
-    };
-    
-    // Depth of Field
-    depthOfField: {
-      enabled: boolean;
-      focusDistance: number;
-      blurRadius: number;
-      bokehEffect: boolean;
     };
     
     // Chromatic Effects
@@ -264,6 +260,11 @@ export interface VisualState {
       speed: number;
       amplitude: number;
       contourLevels: number;
+      edgeFade: {
+        enabled: boolean;
+        fadeStart: number; // Start fading at this distance from center (0-1)
+        fadeEnd: number;   // Complete fade at this distance from center (0-1)
+      };
     };
 
     // Metamorphosis System
@@ -283,6 +284,25 @@ export interface VisualState {
       speed: number;
       glowIntensity: number;
       swarmRadius: number;
+    };
+
+    // Layered Sine Waves System
+    layeredSineWaves: {
+      enabled: boolean;
+      layers: number;
+      points: number;
+      waveAmplitude: number;
+      speed: number;
+      opacity: number;
+      lineWidth: number;
+      size: number; // Overall size multiplier
+      width: number; // Width of the wave field
+      height: number; // Height of the wave field
+      edgeFade: {
+        enabled: boolean;
+        fadeStart: number; // Start fading at this distance from center (0-1)
+        fadeEnd: number;   // Complete fade at this distance from center (0-1)
+      };
     };
   };
   
@@ -319,12 +339,17 @@ export interface VisualState {
     minPolarAngle: number;
     maxPolarAngle: number;
   };
+  
+  // Global animation speed multiplier
+  globalAnimationSpeed: number;
 }
 
 export interface VisualActions {
   // UI Actions
   toggleDashboards: () => void;
   setDashboardsVisible: (visible: boolean) => void;
+  toggleCameraPositioningMode: () => void; // NEW: Toggle camera positioning mode
+  setCameraPositioningMode: (enabled: boolean) => void; // NEW: Set camera positioning mode
   
   updateBackground: (updates: Partial<VisualState['background']>) => void;
   updateGeometric: (shape: keyof VisualState['geometric'], updates: Partial<VisualState['geometric'][keyof VisualState['geometric']]>) => void;
@@ -344,10 +369,11 @@ export interface VisualActions {
   updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => void;
   forceApplyGlobalDefaults: () => void;
   getGlobalDefaults: () => typeof GLOBAL_DEFAULTS;
+  clearCachedDefaults: () => void;
 }
 
 // Update the VisualPreset type to use VisualState
-type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset' | 'updateBackgroundConfig'> & {
+type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset' | 'updateBackgroundConfig' | 'resetToGlobalDefaults' | 'resetCameraToDefaults' | 'resetVisualEffectsToDefaults' | 'updateGlobalDefaults' | 'forceApplyGlobalDefaults' | 'getGlobalDefaults'> & {
   savedAt: string;
   version: string;
 };
@@ -401,9 +427,6 @@ export const GLOBAL_DEFAULTS = {
   // Animation defaults
   animation: {
     defaultSpeed: 1.0,
-    easing: 'easeInOut' as const,
-    loop: true,
-    autoPlay: true
   },
   
   // Visual/Post-processing defaults
@@ -413,16 +436,27 @@ export const GLOBAL_DEFAULTS = {
     contrast: 1.2,
     saturation: 1.5,
     brightness: 1.1,
-    bloom: true,
-    chromaticAberration: 0.0,
-    motionBlur: false
+    bloom: false,
+    chromaticAberration: 0,
+    motionBlur: false,
   }
+};
+
+// Safety function to clamp animation speed to prevent crashes
+const clampAnimationSpeed = (speed: number): number => {
+  return Math.max(0.01, Math.min(5.0, speed)); // Limit between 0.01x and 5.0x
+};
+
+// Safety function to clamp timeScale to prevent crashes
+const clampTimeScale = (timeScale: number): number => {
+  return Math.max(0.01, Math.min(10.0, timeScale)); // Limit between 0.01x and 10.0x
 };
 
 // Default state for the visual store
 const defaultState: VisualState = {
   ui: {
     showDashboards: false,
+    cameraPositioningMode: false,
   },
   background: {
     opacity: 0.8,
@@ -441,7 +475,7 @@ const defaultState: VisualState = {
       },
       safeZone: 0.8
     },
-    timeScale: 1.0,
+    timeScale: clampTimeScale(1.0),
     camera: {
       fixed: false,
       position: [0, 0, 60],
@@ -540,15 +574,18 @@ const defaultState: VisualState = {
       color: '#00ffff',
     },
     metamorphosis: {
-      color: '#ff00ff',
+      color: '#00ffff',
     },
     fireflies: {
+      color: '#ffff00',
+    },
+    layeredSineWaves: {
       color: '#ffff00',
     },
   },
   particles: {
     count: 800,
-    size: 0.3,
+    size: 0.1,
     color: '#ff1493',
     speed: 1.5,
     opacity: 1.0,
@@ -573,12 +610,6 @@ const defaultState: VisualState = {
       customColor: '#ffffff',
       pulsing: false,
       pulseSpeed: 1.0,
-    },
-    depthOfField: {
-      enabled: false,
-      focusDistance: 15,
-      blurRadius: 5,
-      bokehEffect: true,
     },
     chromatic: {
       enabled: false,
@@ -657,13 +688,18 @@ const defaultState: VisualState = {
       speed: 0.5,
       amplitude: 0.5,
       contourLevels: 5,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5,
+      },
     },
     metamorphosis: {
-      enabled: false,
+      enabled: true,
       morphSpeed: 0.5,
       rotationSpeed: 0.5,
-      wireframeOpacity: 0.5,
-      size: 1.0,
+      wireframeOpacity: 0.8,
+      size: 1.5,
       blur: 0.0,
     },
     fireflies: {
@@ -672,6 +708,23 @@ const defaultState: VisualState = {
       speed: 0.5,
       glowIntensity: 0.5,
       swarmRadius: 20,
+    },
+    layeredSineWaves: {
+      enabled: false,
+      layers: 80,
+      points: 200,
+      waveAmplitude: 40,
+      speed: 0.5,
+      opacity: 0.5,
+      lineWidth: 0.6,
+      size: 1.0,
+      width: 100,
+      height: 100,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5,
+      },
     },
   },
   effects: {
@@ -685,6 +738,7 @@ const defaultState: VisualState = {
   camera: {
     ...GLOBAL_DEFAULTS.camera
   },
+  globalAnimationSpeed: clampAnimationSpeed(GLOBAL_DEFAULTS.animation.defaultSpeed),
 };
 
 type Store = VisualState & VisualActions;
@@ -701,6 +755,18 @@ export const useVisualStore = create<Store>((set, get) => ({
   setDashboardsVisible: (visible: boolean) => {
     set((state) => ({
       ui: { ...state.ui, showDashboards: visible }
+    }));
+  },
+
+  toggleCameraPositioningMode: () => {
+    set((state) => ({
+      ui: { ...state.ui, cameraPositioningMode: !state.ui.cameraPositioningMode }
+    }));
+  },
+
+  setCameraPositioningMode: (enabled: boolean) => {
+    set((state) => ({
+      ui: { ...state.ui, cameraPositioningMode: enabled }
     }));
   },
 
@@ -756,6 +822,7 @@ export const useVisualStore = create<Store>((set, get) => ({
       globalEffects: state.globalEffects,
       effects: state.effects,
       camera: state.camera,
+      globalAnimationSpeed: state.globalAnimationSpeed,
       savedAt: new Date().toISOString(),
       version: '1.0'
     };
@@ -810,12 +877,55 @@ export const useVisualStore = create<Store>((set, get) => ({
   },
 
   updateBackgroundConfig: (updates) => {
+    // Safety check: clamp timeScale if it's being updated
+    if (updates.timeScale !== undefined) {
+      updates.timeScale = clampTimeScale(updates.timeScale);
+    }
+    
     set((state) => ({
       backgroundConfig: { ...state.backgroundConfig, ...updates }
     }));
   },
 
   // Global defaults management
+  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => {
+    // Update the global defaults (this affects future resets)
+    Object.assign(GLOBAL_DEFAULTS[category], updates);
+    
+    // If updating camera defaults, also update current camera if it matches old defaults
+    if (category === 'camera') {
+      set((state) => ({
+        camera: { ...state.camera, ...updates }
+      }));
+    }
+    
+    // If updating visual defaults, also update current effects
+    if (category === 'visual') {
+      const newEffects = {
+        glow: GLOBAL_DEFAULTS.visual.glow,
+        contrast: GLOBAL_DEFAULTS.visual.contrast,
+        saturation: GLOBAL_DEFAULTS.visual.saturation,
+        brightness: GLOBAL_DEFAULTS.visual.brightness,
+        vignette: GLOBAL_DEFAULTS.visual.vignette,
+      };
+      
+      set((state) => ({
+        effects: {
+          ...state.effects,
+          ...newEffects
+        }
+      }));
+    }
+    
+    // If updating animation defaults, also update current global animation speed
+    if (category === 'animation') {
+      const safeSpeed = clampAnimationSpeed(GLOBAL_DEFAULTS.animation.defaultSpeed);
+      set((state) => ({
+        globalAnimationSpeed: safeSpeed
+      }));
+    }
+  },
+
   resetToGlobalDefaults: () => {
     set((state) => ({
       ...state,
@@ -850,33 +960,6 @@ export const useVisualStore = create<Store>((set, get) => ({
     }));
   },
 
-  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => {
-    // Update the global defaults (this affects future resets)
-    Object.assign(GLOBAL_DEFAULTS[category], updates);
-    
-    // If updating camera defaults, also update current camera if it matches old defaults
-    if (category === 'camera') {
-      set((state) => ({
-        camera: { ...state.camera, ...updates }
-      }));
-    }
-    
-    // If updating visual defaults, also update current effects
-    if (category === 'visual') {
-      set((state) => ({
-        effects: {
-          ...state.effects,
-          glow: GLOBAL_DEFAULTS.visual.glow,
-          contrast: GLOBAL_DEFAULTS.visual.contrast,
-          saturation: GLOBAL_DEFAULTS.visual.saturation,
-          brightness: GLOBAL_DEFAULTS.visual.brightness,
-          vignette: GLOBAL_DEFAULTS.visual.vignette,
-        }
-      }));
-    }
-  },
-
-  // NEW: Force apply global defaults to override any AI changes
   forceApplyGlobalDefaults: () => {
     set((state) => ({
       ...state,
@@ -892,5 +975,15 @@ export const useVisualStore = create<Store>((set, get) => ({
     }));
   },
 
-  getGlobalDefaults: () => GLOBAL_DEFAULTS,
+  getGlobalDefaults: () => {
+    return GLOBAL_DEFAULTS;
+  },
+
+  // Clear cached defaults and force refresh
+  clearCachedDefaults: () => {
+    try {
+      localStorage.removeItem('globalDefaults');
+    } catch (error) {
+    }
+  },
 })); 

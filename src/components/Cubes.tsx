@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 export const Cubes = () => {
   const groupRef = useRef<THREE.Group>(null);
-  const { geometric, globalEffects } = useVisualStore();
+  const { geometric, globalEffects, globalAnimationSpeed } = useVisualStore();
   const { cubes } = geometric;
 
   const cubePositions = useMemo(() => {
@@ -24,16 +24,20 @@ export const Cubes = () => {
     if (groupRef.current) {
       const time = state.clock.elapsedTime;
       const noiseIntensity = globalEffects.distortion.noise;
+      // Safety check: clamp global animation speed to prevent crashes
+      const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+      // Calculate final rotation speed: individual cube rotation * global animation speed
+      const finalRotationSpeed = cubes.rotation * safeAnimationSpeed;
       
       groupRef.current.children.forEach((child, i) => {
-        // Enhanced rotation with distortion
-        child.rotation.x += cubes.rotation * 0.01;
-        child.rotation.y += cubes.rotation * 0.015;
-        child.position.x += Math.sin(time + i) * 0.01;
+        // Enhanced rotation with distortion and individual speed * global animation speed
+        child.rotation.x += finalRotationSpeed * 0.01;
+        child.rotation.y += finalRotationSpeed * 0.015;
+        child.position.x += Math.sin(time + i) * 0.01 * safeAnimationSpeed;
         
-        // Add noise distortion
+        // Add noise distortion with global animation speed
         if (noiseIntensity > 0) {
-          child.rotation.z += Math.random() * noiseIntensity * 0.1;
+          child.rotation.z += Math.random() * noiseIntensity * 0.1 * safeAnimationSpeed;
           child.scale.setScalar(1 + Math.random() * noiseIntensity * 0.2);
         }
       });

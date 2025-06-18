@@ -4,61 +4,75 @@ import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
 
 export const Particles = () => {
-  const pointsRef = useRef<THREE.Points>(null);
-  const { particles, globalEffects } = useVisualStore();
+  const { particles, globalEffects, globalAnimationSpeed } = useVisualStore();
 
   const particlePositions = useMemo(() => {
-    const positions = new Float32Array(particles.count * 3);
+    const positions = [];
     for (let i = 0; i < particles.count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * particles.spread;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * particles.spread;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * particles.spread;
+      positions.push({
+        x: (Math.random() - 0.5) * particles.spread,
+        y: (Math.random() - 0.5) * particles.spread,
+        z: (Math.random() - 0.5) * particles.spread,
+      });
     }
     return positions;
   }, [particles.count, particles.spread]);
 
+  const particleRefs = useRef<THREE.Mesh[]>([]);
+
+  // Use a single geometry instance for all particles
+  const particleGeometry = useMemo(() => {
+    return new THREE.SphereGeometry(0.5, 8, 6); // base size, will be scaled
+  }, []);
+
+  const particleMaterial = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
+      color: particles.color,
+      transparent: true,
+      opacity: particles.opacity,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+  }, [particles.color, particles.opacity]);
+
   useFrame((state) => {
-    if (pointsRef.current) {
-      const time = state.clock.elapsedTime;
-      pointsRef.current.rotation.y += particles.speed * 0.005;
-      
-      const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
-      const turbulence = globalEffects.particleInteraction.turbulence;
-      
-      for (let i = 0; i < positions.length; i += 3) {
-        // Base movement
-        positions[i + 1] += Math.sin(time + i) * 0.01 * particles.speed;
-        
-        // Add turbulence
+    const time = state.clock.elapsedTime;
+    const turbulence = globalEffects.particleInteraction.turbulence;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    // Calculate final speed: individual particle speed * global animation speed
+    const finalSpeed = particles.speed * safeAnimationSpeed;
+    const scale = Math.max(0.01, particles.size);
+
+    particleRefs.current.forEach((mesh, i) => {
+      if (mesh) {
+        // Set scale based on slider
+        mesh.scale.set(scale, scale, scale);
+        // Base movement with individual speed * global animation speed
+        mesh.position.y += Math.sin(time + i) * 0.01 * finalSpeed;
+        // Add turbulence with individual speed * global animation speed
         if (turbulence > 0) {
-          positions[i] += (Math.random() - 0.5) * turbulence * 0.1;
-          positions[i + 1] += (Math.random() - 0.5) * turbulence * 0.1;
-          positions[i + 2] += (Math.random() - 0.5) * turbulence * 0.1;
+          mesh.position.x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          mesh.position.y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          mesh.position.z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         }
       }
-      pointsRef.current.geometry.attributes.position.needsUpdate = true;
-    }
+    });
   });
 
   return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particles.count}
-          array={particlePositions}
-          itemSize={3}
+    <group>
+      {particlePositions.map((pos, i) => (
+        <mesh
+          key={`particle-${i}`}
+          ref={(el) => {
+            if (el) particleRefs.current[i] = el;
+          }}
+          position={[pos.x, pos.y, pos.z]}
+          geometry={particleGeometry}
+          material={particleMaterial}
         />
-      </bufferGeometry>
-      <pointsMaterial
-        color={particles.color}
-        size={particles.size * 2}
-        transparent
-        opacity={particles.opacity}
-        sizeAttenuation={true}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-      />
-    </points>
+      ))}
+    </group>
   );
 }; 

@@ -392,7 +392,7 @@ export const applyAIAnalysisToVisualStore = (analysis: ThemeAnalysis, weatherDat
     speed: speed * 1.2,
     opacity: 0.6 + (energy * 0.3),
     count: Math.floor(50 + (density * 100)),
-    size: 0.5 + (energy * 1.5)
+    size: 0.05 + (energy * 0.15)
   });
   
   // 4. Apply global effects based on mood and characteristics
@@ -464,7 +464,12 @@ export const applyAIAnalysisToVisualStore = (analysis: ThemeAnalysis, weatherDat
       enabled: shouldEnableWaveInterference,
       speed: shouldEnableWaveInterference ? 0.3 + (speed * 0.4) : 0.5,
       amplitude: shouldEnableWaveInterference ? 0.3 + (energy * 0.4) : 0.5,
-      contourLevels: shouldEnableWaveInterference ? Math.floor(3 + (density * 4)) : 5
+      contourLevels: shouldEnableWaveInterference ? Math.floor(3 + (density * 4)) : 5,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5
+      }
     }
   });
   
@@ -514,6 +519,35 @@ export const applyAIAnalysisToVisualStore = (analysis: ThemeAnalysis, weatherDat
     });
   }
   
+  // Layered Sine Waves - Enable for calm/zen themes or high harmony
+  const shouldEnableLayeredSineWaves = isCalm || visualCharacteristics.harmony > 0.7;
+  visualStore.updateGlobalEffects({
+    layeredSineWaves: {
+      enabled: shouldEnableLayeredSineWaves,
+      layers: shouldEnableLayeredSineWaves ? Math.floor(60 + (density * 40)) : 80,
+      points: shouldEnableLayeredSineWaves ? Math.floor(150 + (density * 100)) : 200,
+      waveAmplitude: shouldEnableLayeredSineWaves ? 30 + (energy * 20) : 40,
+      speed: shouldEnableLayeredSineWaves ? 0.2 + (speed * 0.3) : 0.5,
+      opacity: shouldEnableLayeredSineWaves ? 0.3 + (visualCharacteristics.harmony * 0.4) : 0.5,
+      lineWidth: shouldEnableLayeredSineWaves ? 0.4 + (visualCharacteristics.turbulence * 0.3) : 0.6,
+      size: shouldEnableLayeredSineWaves ? 0.8 + (visualCharacteristics.harmony * 0.4) : 1.0,
+      width: shouldEnableLayeredSineWaves ? 80 + (density * 40) : 100,
+      height: shouldEnableLayeredSineWaves ? 80 + (density * 40) : 100,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5
+      }
+    }
+  });
+  
+  // Update layered sine waves color in geometric
+  if (shouldEnableLayeredSineWaves) {
+    visualStore.updateGeometric('layeredSineWaves', {
+      color: isCalm ? '#323232' : '#666666'
+    });
+  }
+  
   // 6. Apply post-processing effects
   visualStore.updateEffects({
     ...globalDefaults.visual,
@@ -545,7 +579,8 @@ export const applyAIAnalysisToVisualStore = (analysis: ThemeAnalysis, weatherDat
   console.log('🎭 Special effects enabled:', {
     waveInterference: shouldEnableWaveInterference,
     metamorphosis: shouldEnableMetamorphosis,
-    fireflies: shouldEnableFireflies
+    fireflies: shouldEnableFireflies,
+    layeredSineWaves: shouldEnableLayeredSineWaves
   });
   
   // Update artistic layout for proper layering
@@ -719,7 +754,12 @@ export const applyWeatherEffectsToVisualStore = (weatherData: WeatherData, baseC
           enabled: true,
           speed: 0.2,
           amplitude: 0.4,
-          contourLevels: 8
+          contourLevels: 8,
+          edgeFade: {
+            enabled: true,
+            fadeStart: 0.3,
+            fadeEnd: 0.5
+          }
         },
         atmosphericBlur: {
           enabled: true,
@@ -811,6 +851,7 @@ export const enableSpecialEffects = (effects: {
   waveInterference?: boolean;
   metamorphosis?: boolean;
   fireflies?: boolean;
+  layeredSineWaves?: boolean;
 }) => {
   const visualStore = useVisualStore.getState();
   
@@ -822,7 +863,12 @@ export const enableSpecialEffects = (effects: {
         enabled: effects.waveInterference,
         speed: effects.waveInterference ? 0.5 : 0.5,
         amplitude: effects.waveInterference ? 0.5 : 0.5,
-        contourLevels: effects.waveInterference ? 5 : 5
+        contourLevels: effects.waveInterference ? 5 : 5,
+        edgeFade: {
+          enabled: true,
+          fadeStart: 0.3,
+          fadeEnd: 0.5
+        }
       }
     });
   }
@@ -852,6 +898,28 @@ export const enableSpecialEffects = (effects: {
     });
   }
   
+  if (effects.layeredSineWaves !== undefined) {
+    visualStore.updateGlobalEffects({
+      layeredSineWaves: {
+        enabled: effects.layeredSineWaves,
+        layers: effects.layeredSineWaves ? 80 : 80,
+        points: effects.layeredSineWaves ? 200 : 200,
+        waveAmplitude: effects.layeredSineWaves ? 40 : 40,
+        speed: effects.layeredSineWaves ? 0.5 : 0.5,
+        opacity: effects.layeredSineWaves ? 0.5 : 0.5,
+        lineWidth: effects.layeredSineWaves ? 0.6 : 0.6,
+        size: effects.layeredSineWaves ? 1.0 : 1.0,
+        width: effects.layeredSineWaves ? 100 : 100,
+        height: effects.layeredSineWaves ? 100 : 100,
+        edgeFade: {
+          enabled: true,
+          fadeStart: 0.3,
+          fadeEnd: 0.5
+        }
+      }
+    });
+  }
+  
   // Update artistic layout to ensure proper layering
   updateArtisticLayoutForSpecialEffects(effects);
   
@@ -863,6 +931,7 @@ export const updateArtisticLayoutForSpecialEffects = (effects: {
   waveInterference?: boolean;
   metamorphosis?: boolean;
   fireflies?: boolean;
+  layeredSineWaves?: boolean;
 }) => {
   const visualStore = useVisualStore.getState();
   const currentLayout = visualStore.backgroundConfig.artisticLayout;
@@ -882,7 +951,10 @@ export const updateArtisticLayoutForSpecialEffects = (effects: {
       movement: 'slow' as const
     },
     midBackground: {
-      ...currentLayout.layers.midBackground
+      zPosition: -30,
+      objects: effects.layeredSineWaves ? ['layeredSineWaves'] : [],
+      opacity: 0.7,
+      movement: 'slow' as const
     },
     nearBackground: {
       ...currentLayout.layers.nearBackground
@@ -954,7 +1026,7 @@ export const applyAIAnalysisToVisualStoreWithDefaults = (analysis: ThemeAnalysis
     speed: speed * 1.2,
     opacity: 0.6 + (energy * 0.3),
     count: Math.floor(50 + (density * 100)),
-    size: 0.5 + (energy * 1.5)
+    size: 0.05 + (energy * 0.15)
   });
   
   // 4. Apply global effects based on mood and characteristics (AI can control effects)
@@ -1026,7 +1098,12 @@ export const applyAIAnalysisToVisualStoreWithDefaults = (analysis: ThemeAnalysis
       enabled: shouldEnableWaveInterference,
       speed: shouldEnableWaveInterference ? 0.3 + (speed * 0.4) : 0.5,
       amplitude: shouldEnableWaveInterference ? 0.3 + (energy * 0.4) : 0.5,
-      contourLevels: shouldEnableWaveInterference ? Math.floor(3 + (density * 4)) : 5
+      contourLevels: shouldEnableWaveInterference ? Math.floor(3 + (density * 4)) : 5,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5
+      }
     }
   });
   
@@ -1076,6 +1153,35 @@ export const applyAIAnalysisToVisualStoreWithDefaults = (analysis: ThemeAnalysis
     });
   }
   
+  // Layered Sine Waves - Enable for calm/zen themes or high harmony
+  const shouldEnableLayeredSineWaves = isCalm || visualCharacteristics.harmony > 0.7;
+  visualStore.updateGlobalEffects({
+    layeredSineWaves: {
+      enabled: shouldEnableLayeredSineWaves,
+      layers: shouldEnableLayeredSineWaves ? Math.floor(60 + (density * 40)) : 80,
+      points: shouldEnableLayeredSineWaves ? Math.floor(150 + (density * 100)) : 200,
+      waveAmplitude: shouldEnableLayeredSineWaves ? 30 + (energy * 20) : 40,
+      speed: shouldEnableLayeredSineWaves ? 0.2 + (speed * 0.3) : 0.5,
+      opacity: shouldEnableLayeredSineWaves ? 0.3 + (visualCharacteristics.harmony * 0.4) : 0.5,
+      lineWidth: shouldEnableLayeredSineWaves ? 0.4 + (visualCharacteristics.turbulence * 0.3) : 0.6,
+      size: shouldEnableLayeredSineWaves ? 0.8 + (visualCharacteristics.harmony * 0.4) : 1.0,
+      width: shouldEnableLayeredSineWaves ? 80 + (density * 40) : 100,
+      height: shouldEnableLayeredSineWaves ? 80 + (density * 40) : 100,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5
+      }
+    }
+  });
+  
+  // Update layered sine waves color in geometric
+  if (shouldEnableLayeredSineWaves) {
+    visualStore.updateGeometric('layeredSineWaves', {
+      color: isCalm ? '#323232' : '#666666'
+    });
+  }
+  
   // 6. Apply post-processing effects
   visualStore.updateEffects({
     ...globalDefaults.visual,
@@ -1107,7 +1213,8 @@ export const applyAIAnalysisToVisualStoreWithDefaults = (analysis: ThemeAnalysis
   console.log('🎭 Special effects enabled:', {
     waveInterference: shouldEnableWaveInterference,
     metamorphosis: shouldEnableMetamorphosis,
-    fireflies: shouldEnableFireflies
+    fireflies: shouldEnableFireflies,
+    layeredSineWaves: shouldEnableLayeredSineWaves
   });
   console.log('🛡️ Global defaults protected for camera and visual effects');
   
@@ -1264,17 +1371,28 @@ export const applyWeatherEffectsToVisualStoreWithDefaults = (weatherData: Weathe
     case 'fog':
     case 'mist':
       visualStore.updateGlobalEffects({
+        waveInterference: {
+          enabled: true,
+          speed: 0.2,
+          amplitude: 0.4,
+          contourLevels: 8,
+          edgeFade: {
+            enabled: true,
+            fadeStart: 0.3,
+            fadeEnd: 0.5
+          }
+        },
         atmosphericBlur: {
           enabled: true,
-          intensity: 0.8,
-          layers: 8
+          intensity: 0.6,
+          layers: 6
         },
         volumetric: {
           enabled: true,
           fog: 0.7,
-          lightShafts: 0.2,
-          density: 0.6,
-          color: '#cccccc'
+          lightShafts: 0.05,
+          density: 0.4,
+          color: '#D3D3D3'
         }
       });
       break;

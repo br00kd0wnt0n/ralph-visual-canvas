@@ -58,6 +58,18 @@ export const AITestDashboard = () => {
     clearParameterUpdates
   } = useAIStore();
 
+  // Local state management
+  const [selectedVariable, setSelectedVariableLocal] = useState<string>('');
+  const [liveMode, setLiveModeLocal] = useState<boolean>(isLiveMode);
+  const [overrideMode, setOverrideMode] = useState<Record<string, any>>({});
+  const [performanceMetrics, setPerformanceMetricsLocal] = useState<{fps: number, renderTime: number}>({
+    fps: 60,
+    renderTime: 0
+  });
+  const [lastUpdate, setLastUpdateLocal] = useState<Date>(new Date());
+  const [updateHistory, setUpdateHistory] = useState<any[]>(parameterUpdates);
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -423,8 +435,6 @@ Return only valid JSON, no markdown formatting.`
 
   const isSetupComplete = theme && referenceImage && (openaiKey || openweatherKey);
   const isAnalysisComplete = analysis && weather;
-
-  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
 
   return (
     <div className="p-6 text-white min-h-screen bg-gray-900/95 backdrop-blur-sm">
@@ -1129,10 +1139,16 @@ Return only valid JSON, no markdown formatting.`
                             >
                               Enable Fireflies
                             </button>
+                            <button
+                              onClick={() => enableSpecialEffects({ layeredSineWaves: true })}
+                              className="px-3 py-2 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                            >
+                              Enable Layered Sine Waves
+                            </button>
                           </div>
                           
                           <button
-                            onClick={() => enableSpecialEffects({ waveInterference: true, metamorphosis: true, fireflies: true })}
+                            onClick={() => enableSpecialEffects({ waveInterference: true, metamorphosis: true, fireflies: true, layeredSineWaves: true })}
                             className="w-full px-3 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors"
                           >
                             Enable All Special Effects

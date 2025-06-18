@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useVisualStore } from '../store/visualStore';
-import { GlobalDefaultsManager, CameraPresets } from '../utils/globalDefaults';
+import { GlobalDefaultsManager, CameraPresets, GLOBAL_DEFAULTS } from '../utils/globalDefaults';
 
 interface GlobalDefaultsPanelProps {
   isOpen: boolean;
@@ -10,33 +10,93 @@ interface GlobalDefaultsPanelProps {
 export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsPanelProps) {
   const [activeTab, setActiveTab] = useState<'camera' | 'visual' | 'performance' | 'quality' | 'animation'>('camera');
   const [showPresets, setShowPresets] = useState(false);
+  const [updateTrigger, setUpdateTrigger] = useState(0); // Force re-renders when defaults change
+  const [feedbackMessage, setFeedbackMessage] = useState<string>('');
+  const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success');
   
   const visualStore = useVisualStore();
-  const currentDefaults = GlobalDefaultsManager.getDefaults();
-  const currentState = visualStore;
+  // Use the store's getGlobalDefaults function to get reactive defaults
+  const currentDefaults = visualStore.getGlobalDefaults();
 
   const handleUpdateDefaults = (category: keyof typeof currentDefaults, updates: any) => {
+    console.log('[GlobalDefaultsPanel] handleUpdateDefaults called:', { category, updates });
+    console.log('[GlobalDefaultsPanel] Before update - currentDefaults:', currentDefaults);
+    
     visualStore.updateGlobalDefaults(category, updates);
+    
+    // Force immediate re-render
+    setUpdateTrigger(prev => prev + 1);
+    
+    console.log('[GlobalDefaultsPanel] After update - new defaults:', visualStore.getGlobalDefaults());
   };
 
   const handleResetCategory = (category: keyof typeof currentDefaults) => {
+    console.log('[GlobalDefaultsPanel] handleResetCategory called:', category);
+    
     switch (category) {
       case 'camera':
         visualStore.resetCameraToDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Camera reset completed');
         break;
       case 'visual':
         visualStore.resetVisualEffectsToDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Visual effects reset completed');
+        break;
+      case 'performance':
+        // Reset performance defaults to initial values
+        GlobalDefaultsManager.resetAllDefaults();
+        // Force apply the reset defaults
+        visualStore.forceApplyGlobalDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Performance reset completed');
+        break;
+      case 'quality':
+        // Reset quality defaults to initial values
+        GlobalDefaultsManager.resetAllDefaults();
+        // Force apply the reset defaults
+        visualStore.forceApplyGlobalDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Quality reset completed');
+        break;
+      case 'animation':
+        // Reset animation defaults to initial values
+        GlobalDefaultsManager.resetAllDefaults();
+        // Force apply the reset defaults
+        visualStore.forceApplyGlobalDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Animation reset completed');
         break;
       default:
         // For other categories, we need to manually reset
         GlobalDefaultsManager.resetAllDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Default reset completed');
         break;
     }
   };
 
   const handleApplyPreset = (presetName: keyof typeof CameraPresets) => {
+    console.log('[GlobalDefaultsPanel] handleApplyPreset called:', presetName);
     const preset = CameraPresets[presetName];
-    visualStore.updateCamera(preset);
+    console.log('[GlobalDefaultsPanel] Applying preset:', preset);
+    
+    // Update both the defaults and the interactive position
+    if (preset.position && preset.target) {
+      visualStore.updateCamera(preset);
+    }
+    
+    setUpdateTrigger(prev => prev + 1);
+    
+    console.log('[GlobalDefaultsPanel] Preset applied successfully');
+  };
+
+  // Show feedback message and clear after 3 seconds
+  const showFeedback = (message: string, type: 'success' | 'error' = 'success') => {
+    setFeedbackMessage(message);
+    setFeedbackType(type);
+    setTimeout(() => setFeedbackMessage(''), 3000);
   };
 
   if (!isOpen) return null;
@@ -47,7 +107,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
       onClick={onClose}
     >
       <div
-        className="bg-gray-900/90 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-gray-900/90 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -56,14 +116,25 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
             <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
             <h2 className="text-xl font-bold text-white">Global Defaults Manager</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center space-x-4">
+            {feedbackMessage && (
+              <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                feedbackType === 'success' 
+                  ? 'bg-green-900/50 text-green-300 border border-green-700/30' 
+                  : 'bg-red-900/50 text-red-300 border border-red-700/30'
+              }`}>
+                {feedbackMessage}
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="flex h-[calc(90vh-80px)]">
@@ -109,28 +180,84 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
               
               <div className="space-y-2">
                 <button
-                  onClick={() => visualStore.resetToGlobalDefaults()}
+                  onClick={() => {
+                    try {
+                      visualStore.resetToGlobalDefaults();
+                      setUpdateTrigger(prev => prev + 1);
+                      console.log('[GlobalDefaultsPanel] Reset All to Defaults clicked. Current:', visualStore.getGlobalDefaults());
+                      showFeedback('✅ All settings reset to global defaults!');
+                    } catch (error) {
+                      console.error('[GlobalDefaultsPanel] Error resetting to defaults:', error);
+                      showFeedback('❌ Error resetting to defaults', 'error');
+                    }
+                  }}
                   className="w-full px-3 py-2 text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
                 >
                   Reset All to Defaults
                 </button>
                 <button
-                  onClick={() => visualStore.forceApplyGlobalDefaults()}
+                  onClick={() => {
+                    try {
+                      visualStore.forceApplyGlobalDefaults();
+                      setUpdateTrigger(prev => prev + 1);
+                      console.log('[GlobalDefaultsPanel] Force Override AI Changes clicked. Current:', visualStore.getGlobalDefaults());
+                      showFeedback('✅ Global defaults force applied!');
+                    } catch (error) {
+                      console.error('[GlobalDefaultsPanel] Error force applying defaults:', error);
+                      showFeedback('❌ Error force applying defaults', 'error');
+                    }
+                  }}
                   className="w-full px-3 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                 >
                   Force Override AI Changes
                 </button>
                 <button
-                  onClick={() => GlobalDefaultsManager.saveDefaults()}
+                  onClick={() => {
+                    try {
+                      GlobalDefaultsManager.saveDefaults();
+                      setUpdateTrigger(prev => prev + 1);
+                      console.log('[GlobalDefaultsPanel] Save Defaults clicked. Current:', visualStore.getGlobalDefaults());
+                      showFeedback('✅ Defaults saved to localStorage!');
+                    } catch (error) {
+                      console.error('[GlobalDefaultsPanel] Error saving defaults:', error);
+                      showFeedback('❌ Error saving defaults', 'error');
+                    }
+                  }}
                   className="w-full px-3 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                 >
                   Save Defaults
                 </button>
                 <button
-                  onClick={() => GlobalDefaultsManager.loadDefaults()}
+                  onClick={() => {
+                    try {
+                      GlobalDefaultsManager.loadDefaults();
+                      setUpdateTrigger(prev => prev + 1);
+                      console.log('[GlobalDefaultsPanel] Load Saved Defaults clicked. Current:', visualStore.getGlobalDefaults());
+                      showFeedback('✅ Defaults loaded from localStorage!');
+                    } catch (error) {
+                      console.error('[GlobalDefaultsPanel] Error loading defaults:', error);
+                      showFeedback('❌ Error loading defaults', 'error');
+                    }
+                  }}
                   className="w-full px-3 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   Load Saved Defaults
+                </button>
+                <button
+                  onClick={() => {
+                    try {
+                      visualStore.clearCachedDefaults();
+                      setUpdateTrigger(prev => prev + 1);
+                      console.log('[GlobalDefaultsPanel] Clear Cached Defaults clicked');
+                      showFeedback('✅ Cached defaults cleared!');
+                    } catch (error) {
+                      console.error('[GlobalDefaultsPanel] Error clearing cached defaults:', error);
+                      showFeedback('❌ Error clearing cached defaults', 'error');
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-sm bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+                >
+                  Clear Cached Defaults
                 </button>
               </div>
             </div>
@@ -141,7 +268,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
             {activeTab === 'camera' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Camera Defaults</h3>
+                  <h3 className="text-lg font-semibold text-white">Interactive Camera Positioning</h3>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => setShowPresets(!showPresets)}
@@ -161,7 +288,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                 {showPresets && (
                   <div className="bg-gray-800 rounded-lg p-4 mb-6">
                     <h4 className="text-sm font-semibold text-gray-300 mb-3">Camera Presets</h4>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       {Object.entries(CameraPresets).map(([name, preset]) => (
                         <button
                           key={name}
@@ -175,91 +302,76 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Distance</label>
-                      <input
-                        type="range"
-                        min="5"
-                        max="50"
-                        step="1"
-                        value={currentDefaults.camera.distance}
-                        onChange={(e) => handleUpdateDefaults('camera', { distance: Number(e.target.value) })}
-                        className="w-full"
-                      />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.camera.distance}</div>
+                <div className="space-y-4">
+                  {/* Camera Info Panel */}
+                  <div className="bg-gray-800 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-gray-300 mb-3">Current Position</h4>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">X:</span>
+                        <span className="text-white font-mono">{currentDefaults.camera.position[0].toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Y:</span>
+                        <span className="text-white font-mono">{currentDefaults.camera.position[1].toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Z:</span>
+                        <span className="text-white font-mono">{currentDefaults.camera.position[2].toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Distance:</span>
+                        <span className="text-white font-mono">{Math.sqrt(currentDefaults.camera.position[0] ** 2 + currentDefaults.camera.position[2] ** 2).toFixed(2)}</span>
+                      </div>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Height</label>
-                      <input
-                        type="range"
-                        min="-10"
-                        max="20"
-                        step="0.5"
-                        value={currentDefaults.camera.height}
-                        onChange={(e) => handleUpdateDefaults('camera', { height: Number(e.target.value) })}
-                        className="w-full"
-                      />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.camera.height}</div>
+                  {/* Camera Controls */}
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-600/30">
+                    <h3 className="text-lg font-semibold text-blue-400 mb-4">Camera Controls</h3>
+                    
+                    {/* Camera Positioning Mode Toggle */}
+                    <div className="mb-4 p-3 bg-blue-900/20 rounded-lg border border-blue-500/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-blue-300">Live Camera Positioning</label>
+                        <button
+                          onClick={() => visualStore.toggleCameraPositioningMode()}
+                          className={`px-3 py-1 rounded text-xs font-medium transition-all ${
+                            visualStore.ui.cameraPositioningMode
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'bg-gray-600 hover:bg-gray-700 text-gray-200'
+                          }`}
+                        >
+                          {visualStore.ui.cameraPositioningMode ? 'Active' : 'Enable'}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        {visualStore.ui.cameraPositioningMode 
+                          ? 'Click and drag on the live view to position camera. Press ESC to exit.'
+                          : 'Enable to directly control camera position on the live view instead of using sliders.'
+                        }
+                      </p>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Field of View</label>
+                    
+                    {/* Field of View Slider */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Field of View: {currentDefaults.camera.fov}°
+                      </label>
                       <input
                         type="range"
                         min="30"
                         max="120"
-                        step="5"
+                        step="1"
                         value={currentDefaults.camera.fov}
-                        onChange={(e) => handleUpdateDefaults('camera', { fov: Number(e.target.value) })}
-                        className="w-full"
+                        onChange={(e) => handleUpdateDefaults('camera', { fov: parseInt(e.target.value) })}
+                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
                       />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.camera.fov}°</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Auto Rotate</label>
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={currentDefaults.camera.autoRotate}
-                          onChange={(e) => handleUpdateDefaults('camera', { autoRotate: e.target.checked })}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-gray-300">Enabled</span>
+                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>30°</span>
+                        <span>75°</span>
+                        <span>120°</span>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Auto Rotate Speed</label>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="2"
-                        step="0.1"
-                        value={currentDefaults.camera.autoRotateSpeed}
-                        onChange={(e) => handleUpdateDefaults('camera', { autoRotateSpeed: Number(e.target.value) })}
-                        className="w-full"
-                      />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.camera.autoRotateSpeed}</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Damping</label>
-                      <input
-                        type="range"
-                        min="0.01"
-                        max="0.2"
-                        step="0.01"
-                        value={currentDefaults.camera.damping}
-                        onChange={(e) => handleUpdateDefaults('camera', { damping: Number(e.target.value) })}
-                        className="w-full"
-                      />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.camera.damping}</div>
                     </div>
                   </div>
                 </div>
@@ -408,7 +520,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                         onChange={(e) => handleUpdateDefaults('performance', { maxParticles: Number(e.target.value) })}
                         className="w-full"
                       />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.performance.maxParticles}</div>
+                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.performance.maxParticles} particles</div>
                     </div>
 
                     <div>
@@ -422,7 +534,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                         onChange={(e) => handleUpdateDefaults('performance', { maxShapes: Number(e.target.value) })}
                         className="w-full"
                       />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.performance.maxShapes}</div>
+                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.performance.maxShapes} shapes</div>
                     </div>
                   </div>
 
@@ -519,7 +631,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                           onChange={(e) => handleUpdateDefaults('quality', { reflections: e.target.checked })}
                           className="rounded"
                         />
-                        <span className="text-gray-300">Enabled</span>
+                        <span className="text-sm text-gray-300">Enabled</span>
                       </div>
                     </div>
                   </div>
@@ -532,19 +644,6 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                           type="checkbox"
                           checked={currentDefaults.quality.postProcessing}
                           onChange={(e) => handleUpdateDefaults('quality', { postProcessing: e.target.checked })}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-gray-300">Enabled</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Bloom</label>
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={currentDefaults.quality.bloom}
-                          onChange={(e) => handleUpdateDefaults('quality', { bloom: e.target.checked })}
                           className="rounded"
                         />
                         <span className="text-sm text-gray-300">Enabled</span>
@@ -587,55 +686,28 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                       <input
                         type="range"
                         min="0.1"
-                        max="3"
+                        max="3.0"
                         step="0.1"
                         value={currentDefaults.animation.defaultSpeed}
                         onChange={(e) => handleUpdateDefaults('animation', { defaultSpeed: Number(e.target.value) })}
                         className="w-full"
                       />
-                      <div className="text-xs text-gray-400 mt-1">{currentDefaults.animation.defaultSpeed}x</div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Easing</label>
-                      <select
-                        value={currentDefaults.animation.easing}
-                        onChange={(e) => handleUpdateDefaults('animation', { easing: e.target.value })}
-                        className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
-                      >
-                        <option value="easeInOut">Ease In Out</option>
-                        <option value="easeIn">Ease In</option>
-                        <option value="easeOut">Ease Out</option>
-                        <option value="linear">Linear</option>
-                      </select>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {currentDefaults.animation.defaultSpeed}x
+                        {currentDefaults.animation.defaultSpeed > 2.0 && (
+                          <span className="text-yellow-400 ml-2">⚠️ High speed may affect performance</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Loop</label>
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={currentDefaults.animation.loop}
-                          onChange={(e) => handleUpdateDefaults('animation', { loop: e.target.checked })}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-gray-300">Enabled</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Auto Play</label>
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={currentDefaults.animation.autoPlay}
-                          onChange={(e) => handleUpdateDefaults('animation', { autoPlay: e.target.checked })}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-gray-300">Enabled</span>
-                      </div>
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-300 mb-3">Animation Info</h4>
+                      <p className="text-xs text-gray-400">
+                        This controls the global animation speed multiplier that affects all animated elements in the scene.
+                        Lower values create slower, more cinematic animations, while higher values create faster, more energetic movements.
+                      </p>
                     </div>
                   </div>
                 </div>

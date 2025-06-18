@@ -131,9 +131,10 @@ export const ShapeParticleDashboard = React.memo(() => {
           />
           <SliderControl
             label="Size"
-            value={particles.size || 0.2}
-            min={0.1}
-            max={2}
+            value={particles.size || 0.1}
+            min={0.01}
+            max={1.0}
+            step={0.01}
             onChange={(value) => updateParticles({ size: value })}
           />
           <ColorControl
@@ -505,10 +506,218 @@ export const ShapeParticleDashboard = React.memo(() => {
               waveInterference: { ...globalEffects.waveInterference, contourLevels: value }
             })}
           />
+          
+          {/* Edge Fade Controls */}
+          <ToggleControl
+            label="Edge Fade"
+            value={globalEffects.waveInterference.edgeFade?.enabled ?? true}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              waveInterference: { 
+                ...globalEffects.waveInterference, 
+                edgeFade: { 
+                  enabled: value,
+                  fadeStart: globalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3,
+                  fadeEnd: globalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5
+                }
+              }
+            })}
+          />
+          <SliderControl
+            label="Fade Start"
+            value={globalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3}
+            min={0.1}
+            max={0.8}
+            step={0.05}
+            onChange={(value: number) => updateGlobalEffects({ 
+              waveInterference: { 
+                ...globalEffects.waveInterference, 
+                edgeFade: { 
+                  enabled: globalEffects.waveInterference.edgeFade?.enabled ?? true,
+                  fadeStart: value,
+                  fadeEnd: globalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5
+                }
+              }
+            })}
+          />
+          <SliderControl
+            label="Fade End"
+            value={globalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5}
+            min={0.2}
+            max={0.9}
+            step={0.05}
+            onChange={(value: number) => updateGlobalEffects({ 
+              waveInterference: { 
+                ...globalEffects.waveInterference, 
+                edgeFade: { 
+                  enabled: globalEffects.waveInterference.edgeFade?.enabled ?? true,
+                  fadeStart: globalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3,
+                  fadeEnd: value
+                }
+              }
+            })}
+          />
+          
           <ColorControl
             label="Color"
             value={geometric.waveInterference?.color || '#333333'}
             onChange={(value) => updateGeometric('waveInterference', { color: value })}
+          />
+        </ControlSection>
+
+        {/* Layered Sine Waves Controls */}
+        <ControlSection title="Layered Sine Waves">
+          <ToggleControl
+            label="Enable"
+            value={globalEffects.layeredSineWaves?.enabled ?? false}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, enabled: value }
+            })}
+          />
+          <SliderControl
+            label="Layers"
+            value={globalEffects.layeredSineWaves?.layers ?? 80}
+            min={10}
+            max={200}
+            step={5}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, layers: value }
+            })}
+          />
+          <SliderControl
+            label="Points"
+            value={globalEffects.layeredSineWaves?.points ?? 200}
+            min={50}
+            max={500}
+            step={10}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, points: value }
+            })}
+          />
+          <SliderControl
+            label="Wave Amplitude"
+            value={globalEffects.layeredSineWaves?.waveAmplitude ?? 40}
+            min={10}
+            max={100}
+            step={5}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, waveAmplitude: value }
+            })}
+          />
+          <SliderControl
+            label="Speed"
+            value={globalEffects.layeredSineWaves?.speed ?? 0.5}
+            min={0.1}
+            max={2.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, speed: value }
+            })}
+          />
+          <SliderControl
+            label="Opacity"
+            value={globalEffects.layeredSineWaves?.opacity ?? 0.5}
+            min={0.1}
+            max={1.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, opacity: value }
+            })}
+          />
+          <SliderControl
+            label="Line Width"
+            value={globalEffects.layeredSineWaves?.lineWidth ?? 0.6}
+            min={0.1}
+            max={2.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, lineWidth: value }
+            })}
+          />
+          <SliderControl
+            label="Size"
+            value={globalEffects.layeredSineWaves?.size ?? 1.0}
+            min={0.1}
+            max={3.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, size: value }
+            })}
+          />
+          <SliderControl
+            label="Width"
+            value={globalEffects.layeredSineWaves?.width ?? 100}
+            min={20}
+            max={200}
+            step={10}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, width: value }
+            })}
+          />
+          <SliderControl
+            label="Height"
+            value={globalEffects.layeredSineWaves?.height ?? 100}
+            min={20}
+            max={200}
+            step={10}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, height: value }
+            })}
+          />
+          
+          {/* Edge Fade Controls */}
+          <ToggleControl
+            label="Edge Fade"
+            value={globalEffects.layeredSineWaves?.edgeFade?.enabled ?? true}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              layeredSineWaves: { 
+                ...globalEffects.layeredSineWaves, 
+                edgeFade: { 
+                  enabled: value,
+                  fadeStart: globalEffects.layeredSineWaves?.edgeFade?.fadeStart ?? 0.3,
+                  fadeEnd: globalEffects.layeredSineWaves?.edgeFade?.fadeEnd ?? 0.5
+                }
+              }
+            })}
+          />
+          <SliderControl
+            label="Fade Start"
+            value={globalEffects.layeredSineWaves?.edgeFade?.fadeStart ?? 0.3}
+            min={0.1}
+            max={0.8}
+            step={0.05}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { 
+                ...globalEffects.layeredSineWaves, 
+                edgeFade: { 
+                  enabled: globalEffects.layeredSineWaves?.edgeFade?.enabled ?? true,
+                  fadeStart: value,
+                  fadeEnd: globalEffects.layeredSineWaves?.edgeFade?.fadeEnd ?? 0.5
+                }
+              }
+            })}
+          />
+          <SliderControl
+            label="Fade End"
+            value={globalEffects.layeredSineWaves?.edgeFade?.fadeEnd ?? 0.5}
+            min={0.2}
+            max={0.9}
+            step={0.05}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { 
+                ...globalEffects.layeredSineWaves, 
+                edgeFade: { 
+                  enabled: globalEffects.layeredSineWaves?.edgeFade?.enabled ?? true,
+                  fadeStart: globalEffects.layeredSineWaves?.edgeFade?.fadeStart ?? 0.3,
+                  fadeEnd: value
+                }
+              }
+            })}
+          />
+          
+          <ColorControl
+            label="Color"
+            value={geometric.layeredSineWaves?.color || '#323232'}
+            onChange={(value) => updateGeometric('layeredSineWaves', { color: value })}
           />
         </ControlSection>
       </div>

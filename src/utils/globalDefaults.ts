@@ -107,10 +107,7 @@ export const GlobalDefaultsManager = {
     
     // Reset animation defaults
     Object.assign(GLOBAL_DEFAULTS.animation, {
-      defaultSpeed: 1.0,
-      easing: 'easeInOut' as const,
-      loop: true,
-      autoPlay: true
+      defaultSpeed: 0.1,
     });
     
     // Reset visual defaults

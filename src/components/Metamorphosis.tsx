@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
@@ -8,12 +8,18 @@ interface FormFunction {
 }
 
 export const Metamorphosis = () => {
-  const { globalEffects, geometric } = useVisualStore();
+  const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { metamorphosis } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
-  const timeRef = useRef(2000);
+  const materialRef = useRef<THREE.LineBasicMaterial | null>(null);
+  const timeRef = useRef(0);
   const frameCountRef = useRef(0);
   const lastUpdateRef = useRef(0);
+
+  // Debug: Log when component mounts
+  useEffect(() => {
+    // Component mounted successfully
+  }, [metamorphosis?.enabled]);
 
   // Define the three morphing forms
   const forms = useMemo((): FormFunction[] => [
@@ -107,26 +113,85 @@ export const Metamorphosis = () => {
     return interpolateForms(forms[formIndex], forms[nextFormIndex], u, v, t, blend);
   };
 
-  // Create wireframe material
-  const wireframeMaterial = useMemo(() => 
-    new THREE.LineBasicMaterial({
+  // Create wireframe material with ref for dynamic updates
+  const wireframeMaterial = useMemo(() => {
+    const material = new THREE.LineBasicMaterial({
       color: geometric.metamorphosis?.color || '#333333',
       transparent: true,
       opacity: metamorphosis?.wireframeOpacity || 0.4,
-    }), [geometric.metamorphosis?.color, metamorphosis?.wireframeOpacity]
-  );
+    });
+    materialRef.current = material;
+    return material;
+  }, [geometric.metamorphosis?.color]);
 
   // Pre-allocate geometry objects for reuse
   const geometryPoolRef = useRef<THREE.BufferGeometry[]>([]);
   const linePoolRef = useRef<THREE.Line[]>([]);
 
   useFrame((state, delta) => {
-    if (!metamorphosis?.enabled || !groupRef.current) return;
+    if (!metamorphosis?.enabled || !groupRef.current) {
+      return;
+    }
 
     const morphSpeed = metamorphosis.morphSpeed || 1;
     const size = metamorphosis.size || 1.0;
     const blur = metamorphosis.blur || 0.0;
-    timeRef.current += delta * 30 * morphSpeed; // Animation speed
+    const baseOpacity = metamorphosis.wireframeOpacity || 0.4;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    // Calculate final speeds: individual speeds * global animation speed
+    const finalMorphSpeed = morphSpeed * safeAnimationSpeed;
+    const finalRotationSpeed = (metamorphosis.rotationSpeed || 1) * safeAnimationSpeed;
+    
+    timeRef.current += delta * 30 * finalMorphSpeed; // Individual morph speed * global animation speed
+
+    // Update material properties for opacity and blur effects
+    if (materialRef.current) {
+      // Update color if it changed
+      const currentColor = geometric.metamorphosis?.color || '#333333';
+      if (materialRef.current.color.getHexString() !== currentColor.replace('#', '')) {
+        materialRef.current.color.set(currentColor);
+      }
+      
+      // Apply blur effect by reducing opacity
+      let finalOpacity = baseOpacity;
+      if (blur > 0) {
+        finalOpacity = baseOpacity * (1 - blur * 0.5);
+      }
+      
+      // Only update if opacity actually changed
+      if (Math.abs(materialRef.current.opacity - finalOpacity) > 0.001) {
+        materialRef.current.opacity = finalOpacity;
+        materialRef.current.needsUpdate = true;
+        
+        // Update all existing lines with the new material
+        groupRef.current.children.forEach((child) => {
+          if (child instanceof THREE.Line && child.material) {
+            child.material.opacity = finalOpacity;
+            child.material.needsUpdate = true;
+          }
+        });
+      }
+      
+      // Ensure transparency is enabled
+      if (!materialRef.current.transparent) {
+        materialRef.current.transparent = true;
+        materialRef.current.needsUpdate = true;
+        
+        // Update all existing lines
+        groupRef.current.children.forEach((child) => {
+          if (child instanceof THREE.Line && child.material) {
+            child.material.transparent = true;
+            child.material.needsUpdate = true;
+          }
+        });
+      }
+    }
+
+    // Debug logging (less frequent)
+    if (frameCountRef.current % 120 === 0) { // Log every 120 frames (about every 2 seconds)
+      // Metamorphosis is running smoothly
+    }
 
     // PERFORMANCE OPTIMIZATION: Only update geometry every 3 frames
     frameCountRef.current++;
@@ -147,7 +212,8 @@ export const Metamorphosis = () => {
       }
       while (linePoolRef.current.length < totalLines) {
         const geometry = geometryPoolRef.current[linePoolRef.current.length];
-        linePoolRef.current.push(new THREE.Line(geometry, wireframeMaterial));
+        const line = new THREE.Line(geometry, wireframeMaterial);
+        linePoolRef.current.push(line);
       }
 
       let lineIndex = 0;
@@ -171,6 +237,12 @@ export const Metamorphosis = () => {
         
         const line = linePoolRef.current[lineIndex];
         line.geometry = geometry;
+        
+        // Ensure the line uses the current material with updated properties
+        if (materialRef.current) {
+          line.material = materialRef.current;
+        }
+        
         groupRef.current.add(line);
         lineIndex++;
       }
@@ -195,27 +267,24 @@ export const Metamorphosis = () => {
         
         const line = linePoolRef.current[lineIndex];
         line.geometry = geometry;
+        
+        // Ensure the line uses the current material with updated properties
+        if (materialRef.current) {
+          line.material = materialRef.current;
+        }
+        
         groupRef.current.add(line);
         lineIndex++;
       }
     }
 
     // Apply rotation (every frame)
-    const rotationSpeed = metamorphosis.rotationSpeed || 1;
-    const rotateSpeed = 0.00025 * rotationSpeed;
+    const rotateSpeed = 0.00025 * finalRotationSpeed;
     const rotateX = Math.sin(timeRef.current * rotateSpeed) * 0.5;
     const rotateY = Math.cos(timeRef.current * rotateSpeed * 0.7) * 0.3;
     const rotateZ = timeRef.current * rotateSpeed * 0.1;
     
     groupRef.current.rotation.set(rotateX, rotateY, rotateZ);
-    
-    // Apply blur effect by adjusting material properties
-    if (blur > 0) {
-      wireframeMaterial.opacity = (metamorphosis.wireframeOpacity || 0.4) * (1 - blur * 0.5);
-      wireframeMaterial.transparent = true;
-    } else {
-      wireframeMaterial.opacity = metamorphosis.wireframeOpacity || 0.4;
-    }
   });
 
   if (!metamorphosis?.enabled) return null;
@@ -223,8 +292,8 @@ export const Metamorphosis = () => {
   return (
     <group 
       ref={groupRef} 
-      position={[0, 0, -30]} // Position behind other objects
-      scale={[1.5, 1.5, 1.5]} // Make it larger as background element
+      position={[0, 0, -80]} // Position much further back to be behind wave interference
+      scale={[2.0, 2.0, 2.0]} // Make it larger as background element
     />
   );
 }; 

@@ -15,7 +15,7 @@ interface Firefly {
 }
 
 export const Fireflies = () => {
-  const { globalEffects, geometric } = useVisualStore();
+  const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { fireflies } = globalEffects;
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const firefliesRef = useRef<Firefly[]>([]);
@@ -78,25 +78,29 @@ export const Fireflies = () => {
     const time = state.clock.elapsedTime;
     const glowIntensity = fireflies?.glowIntensity || 1;
     const speed = fireflies?.speed || 1;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    // Calculate final speed: individual firefly speed * global animation speed
+    const finalSpeed = speed * safeAnimationSpeed;
 
     firefliesRef.current.forEach((firefly, i) => {
-      // Update glow phase
-      firefly.glowPhase += firefly.glowSpeed;
+      // Update glow phase with individual speed * global animation speed
+      firefly.glowPhase += firefly.glowSpeed * finalSpeed;
       firefly.brightness = firefly.maxBrightness * (0.3 + 0.7 * Math.sin(firefly.glowPhase)) * glowIntensity;
 
-      // Wandering behavior
-      firefly.wanderAngle += (Math.random() - 0.5) * 0.1;
+      // Wandering behavior with individual speed * global animation speed
+      firefly.wanderAngle += (Math.random() - 0.5) * 0.1 * finalSpeed;
       
-      // Apply wandering force
+      // Apply wandering force with individual speed * global animation speed
       const wanderForce = new THREE.Vector3(
-        Math.cos(firefly.wanderAngle) * 0.001 * speed,
-        Math.sin(firefly.wanderAngle * 0.7) * 0.0005 * speed,
-        Math.sin(firefly.wanderAngle) * 0.001 * speed
+        Math.cos(firefly.wanderAngle) * 0.001 * finalSpeed,
+        Math.sin(firefly.wanderAngle * 0.7) * 0.0005 * finalSpeed,
+        Math.sin(firefly.wanderAngle) * 0.001 * finalSpeed
       );
       
       firefly.velocity.add(wanderForce);
 
-      // Flocking behavior - attraction to nearby fireflies
+      // Flocking behavior - attraction to nearby fireflies with individual speed * global animation speed
       const neighbors = firefliesRef.current.filter((other, j) => {
         if (i === j) return false;
         const distance = firefly.position.distanceTo(other.position);
@@ -108,11 +112,11 @@ export const Fireflies = () => {
           return acc.add(neighbor.position);
         }, new THREE.Vector3()).divideScalar(neighbors.length);
         
-        const attraction = center.sub(firefly.position).multiplyScalar(0.0001 * speed);
+        const attraction = center.sub(firefly.position).multiplyScalar(0.0001 * finalSpeed);
         firefly.velocity.add(attraction);
       }
 
-      // Avoid getting too close to each other
+      // Avoid getting too close to each other with individual speed * global animation speed
       firefliesRef.current.forEach((other, j) => {
         if (i === j) return;
         const distance = firefly.position.distanceTo(other.position);
@@ -120,23 +124,23 @@ export const Fireflies = () => {
           const repulsion = firefly.position.clone()
             .sub(other.position)
             .normalize()
-            .multiplyScalar(0.002 * speed);
+            .multiplyScalar(0.002 * finalSpeed);
           firefly.velocity.add(repulsion);
         }
       });
 
-      // Gentle drift toward center to keep them in view
+      // Gentle drift toward center to keep them in view with individual speed * global animation speed
       const centerPull = new THREE.Vector3(0, 0, 0)
         .sub(firefly.position)
         .normalize()
-        .multiplyScalar(0.0002 * speed);
+        .multiplyScalar(0.0002 * finalSpeed);
       firefly.velocity.add(centerPull);
 
       // Apply velocity damping
       firefly.velocity.multiplyScalar(0.98);
 
-      // Limit velocity
-      const maxVelocity = 0.05 * speed;
+      // Limit velocity with individual speed * global animation speed
+      const maxVelocity = 0.05 * finalSpeed;
       if (firefly.velocity.length() > maxVelocity) {
         firefly.velocity.normalize().multiplyScalar(maxVelocity);
       }

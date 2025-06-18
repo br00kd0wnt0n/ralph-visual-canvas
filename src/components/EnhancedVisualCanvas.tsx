@@ -2,7 +2,7 @@ import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Html } from '@react-three/drei';
-import { useVisualStore } from '../store/visualStore';
+import { useVisualStore, GLOBAL_DEFAULTS } from '../store/visualStore';
 import { getArtisticCameraConfig, constrainToViewport } from '../utils/backgroundLayout';
 import { performanceMonitor } from '../utils/performanceMonitor';
 import * as THREE from 'three';
@@ -12,6 +12,8 @@ import { ObjectTrails } from './ObjectTrails';
 import { WaveInterference } from './WaveInterference';
 import { Metamorphosis } from './Metamorphosis';
 import { Fireflies } from './Fireflies';
+import { LayeredSineWaves } from './LayeredSineWaves';
+import { EffectComposer } from '@react-three/postprocessing';
 
 // Utility function to convert hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
@@ -42,7 +44,7 @@ const Spheres = () => {
     const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
     const safeOrganicness = isNaN(organicness) || organicness < 0 ? 0 : organicness;
     
-    const geometry = new THREE.SphereGeometry(safeSize, 32, 32);
+    const geometry = new THREE.SphereGeometry(safeSize, 16, 16);
     const positions = geometry.attributes.position.array;
     for (let i = 0; i < positions.length; i += 3) {
       const noise = (Math.random() - 0.5) * safeOrganicness;
@@ -55,7 +57,7 @@ const Spheres = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const { spheres } = geometric;
   const { shapeGlow } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
@@ -76,7 +78,7 @@ const Spheres = () => {
       newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 50,
         (Math.random() - 0.5) * 30,
-        (Math.random() - 0.5) * 40
+        (Math.random() - 0.5) * 40,
       ));
     }
     return newPositions;
@@ -110,20 +112,24 @@ const Spheres = () => {
     
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
-    const scaledTime = time * timeScale;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    const scaledTime = time * timeScale * safeAnimationSpeed;
     const waveIntensity = globalEffects.distortion.wave * 2;
     const rippleIntensity = globalEffects.distortion.ripple * 3;
+    // Calculate final speed: individual sphere speed * global animation speed
+    const finalSpeed = spheres.speed * safeAnimationSpeed;
     
-    // Rotate the entire group
-    groupRef.current.rotation.y += spheres.speed * 0.01 * timeScale;
+    // Rotate the entire group with individual speed * global animation speed
+    groupRef.current.rotation.y += finalSpeed * 0.01 * timeScale;
     
-    // Animate individual spheres
+    // Animate individual spheres with individual speed * global animation speed
     groupRef.current.children.forEach((child, i) => {
       const pos = positions[i];
       if (!pos) return;
       
-      // Base movement
-      child.position.y = pos.y + Math.sin(scaledTime + i) * 2 * spheres.speed;
+      // Base movement with individual speed * global animation speed
+      child.position.y = pos.y + Math.sin(scaledTime + i) * 2 * finalSpeed;
       
       // Add wave distortion
       if (waveIntensity > 0) {
@@ -220,7 +226,7 @@ const Cubes = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const { cubes } = geometric;
   const { shapeGlow } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
@@ -275,20 +281,24 @@ const Cubes = () => {
     
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
-    const scaledTime = time * timeScale;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    const scaledTime = time * timeScale * safeAnimationSpeed;
     const waveIntensity = globalEffects.distortion.wave * 2;
     const rippleIntensity = globalEffects.distortion.ripple * 3;
+    // Calculate final rotation speed: individual cube rotation * global animation speed
+    const finalRotationSpeed = cubes.rotation * safeAnimationSpeed;
     
-    // Rotate the entire group
-    groupRef.current.rotation.y += cubes.rotation * 0.01 * timeScale;
+    // Rotate the entire group with individual rotation speed * global animation speed
+    groupRef.current.rotation.y += finalRotationSpeed * 0.01 * timeScale;
     
-    // Animate individual cubes
+    // Animate individual cubes with individual rotation speed * global animation speed
     groupRef.current.children.forEach((child, i) => {
       const pos = positions[i];
       if (!pos) return;
       
-      // Base movement
-      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * cubes.rotation;
+      // Base movement with individual rotation speed * global animation speed
+      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * finalRotationSpeed;
       
       // Add wave distortion
       if (waveIntensity > 0) {
@@ -385,7 +395,7 @@ const Toruses = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const { toruses } = geometric;
   const { shapeGlow } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
@@ -404,9 +414,9 @@ const Toruses = () => {
     const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
     for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 50,
-        (Math.random() - 0.5) * 30,
         (Math.random() - 0.5) * 40,
+        (Math.random() - 0.5) * 25,
+        (Math.random() - 0.5) * 30,
       ));
     }
     return newPositions;
@@ -440,20 +450,24 @@ const Toruses = () => {
     
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
-    const scaledTime = time * timeScale;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    const scaledTime = time * timeScale * safeAnimationSpeed;
     const waveIntensity = globalEffects.distortion.wave * 2;
     const rippleIntensity = globalEffects.distortion.ripple * 3;
+    // Calculate final speed: individual torus speed * global animation speed
+    const finalSpeed = toruses.speed * safeAnimationSpeed;
     
-    // Rotate the entire group
-    groupRef.current.rotation.y += toruses.speed * 0.01 * timeScale;
+    // Rotate the entire group with individual speed * global animation speed
+    groupRef.current.rotation.y += finalSpeed * 0.01 * timeScale;
     
-    // Animate individual toruses
+    // Animate individual toruses with individual speed * global animation speed
     groupRef.current.children.forEach((child, i) => {
       const pos = positions[i];
       if (!pos) return;
       
-      // Base movement
-      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * toruses.speed;
+      // Base movement with individual speed * global animation speed
+      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * finalSpeed;
       
       // Add wave distortion
       if (waveIntensity > 0) {
@@ -531,55 +545,34 @@ const Toruses = () => {
 };
 
 const Particles = () => {
-  const pointsRef = useRef<THREE.Points>(null);
-  const { particles, globalEffects, backgroundConfig } = useVisualStore();
+  const { particles, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
+  const { particleInteraction } = globalEffects;
+  const [positions, setPositions] = useState<Array<{x: number, y: number, z: number}>>([]);
+  const particleRefs = useRef<THREE.Mesh[]>([]);
+  const renderKey = useMemo(() => `particles-${particles.count}-${Date.now()}`, [particles.count]);
 
-  // Get layer configuration for background mode - with proper fallbacks
+  // Get layer configuration for background mode
   const layerConfig = backgroundConfig.enabled ? 
-    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+    backgroundConfig.artisticLayout?.layers?.midBackground : null;
   const layerZ = layerConfig?.zPosition || 0;
   const layerOpacity = layerConfig?.opacity || 1.0;
 
-  // Safety checks
-  const safeCount = isNaN(particles.count) || particles.count < 0 ? 0 : particles.count;
-  const safeSize = isNaN(particles.size) || particles.size <= 0 ? 0.3 : particles.size;
-  const safeSpeed = isNaN(particles.speed) || particles.speed < 0 ? 1.0 : particles.speed;
-  const safeOpacity = isNaN(particles.opacity) || particles.opacity < 0 ? 1.0 : particles.opacity;
-  const safeSpread = isNaN(particles.spread) || particles.spread <= 0 ? 20 : particles.spread;
+  // Safety checks for particle parameters
+  const safeCount = Math.min(particles.count, 2000); // Cap at 2000 for performance
+  const safeSize = Math.max(0.1, Math.min(particles.size, 5.0));
+  const safeSpeed = Math.max(0.1, Math.min(particles.speed, 10.0));
+  const safeSpread = Math.max(10, Math.min(particles.spread, 100));
+  const safeOpacity = Math.max(0.1, Math.min(particles.opacity, 1.0));
 
-  // Early return if no particles
-  if (safeCount === 0) {
-    return null;
-  }
-
-  // Calculate a smaller base size for particles
-  const baseParticleSize = Math.max(0.1, safeSize * 0.3); // Ensure minimum size of 0.1
-
-  // Create particle texture once
-  const particleTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 32, 32);
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
-
-  const particlePositions = useMemo(() => {
-    const positions = new Float32Array(safeCount * 3);
+  // Generate particle positions using useMemo
+  const generatedPositions = useMemo(() => {
+    const positions = [];
     for (let i = 0; i < safeCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * safeSpread * 2;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * safeSpread * 1.5;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * safeSpread * 2;
+      positions.push({
+        x: (Math.random() - 0.5) * safeSpread * 2,
+        y: (Math.random() - 0.5) * safeSpread * 1.5,
+        z: (Math.random() - 0.5) * safeSpread * 2,
+      });
     }
     return positions;
   }, [safeCount, safeSpread]);
@@ -588,68 +581,68 @@ const Particles = () => {
   const frameCountRef = useRef(0);
 
   useFrame((state) => {
-    if (pointsRef.current) {
-      const time = state.clock.elapsedTime;
-      const timeScale = backgroundConfig.timeScale;
-      const scaledTime = time * timeScale;
-      pointsRef.current.rotation.y += safeSpeed * 0.005 * timeScale;
-      
-      const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
-      const turbulence = globalEffects.particleInteraction.turbulence;
-      
-      // PERFORMANCE OPTIMIZATION: Only apply viewport constraints every 5 frames
-      frameCountRef.current++;
-      const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 5 === 0;
-      
-      for (let i = 0; i < positions.length; i += 3) {
-        // Base movement
-        positions[i + 1] += Math.sin(scaledTime + i) * 0.01 * safeSpeed;
+    const time = state.clock.elapsedTime;
+    const timeScale = backgroundConfig.timeScale;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    const scaledTime = time * timeScale * safeAnimationSpeed;
+    const turbulence = globalEffects.particleInteraction.turbulence;
+    // Calculate final speed: individual particle speed * global animation speed
+    const finalSpeed = safeSpeed * safeAnimationSpeed;
+    
+    // PERFORMANCE OPTIMIZATION: Only apply viewport constraints every 5 frames
+    frameCountRef.current++;
+    const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 5 === 0;
+    
+    particleRefs.current.forEach((mesh, i) => {
+      if (mesh) {
+        // Set scale based on slider
+        mesh.scale.set(safeSize, safeSize, safeSize);
+        // Base movement with individual speed * global animation speed
+        mesh.position.y += Math.sin(scaledTime + i) * 0.01 * finalSpeed;
         
-        // Add turbulence
+        // Add turbulence with individual speed * global animation speed
         if (turbulence > 0) {
-          positions[i] += (Math.random() - 0.5) * turbulence * 0.1;
-          positions[i + 1] += (Math.random() - 0.5) * turbulence * 0.1;
-          positions[i + 2] += (Math.random() - 0.5) * turbulence * 0.1;
+          mesh.position.x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          mesh.position.y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          mesh.position.z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         }
         
         // Apply viewport constraints when in background mode (less frequently)
         if (shouldApplyConstraints) {
           const currentPosition = {
-            x: positions[i],
-            y: positions[i + 1],
-            z: positions[i + 2]
+            x: mesh.position.x,
+            y: mesh.position.y,
+            z: mesh.position.z
           };
           const constrainedPosition = constrainToViewport(currentPosition, layerZ);
-          positions[i] = constrainedPosition.x;
-          positions[i + 1] = constrainedPosition.y;
-          positions[i + 2] = constrainedPosition.z;
+          mesh.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
         }
       }
-      pointsRef.current.geometry.attributes.position.needsUpdate = true;
-    }
+    });
   });
 
   return (
-    <points ref={pointsRef} key={`particles-${backgroundConfig.enabled}-${safeCount}`}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={safeCount}
-          array={particlePositions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        color={particles.color}
-        size={baseParticleSize}
-        transparent
-        opacity={Math.max(0.1, safeOpacity * layerOpacity)}
-        sizeAttenuation={true}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-        map={particleTexture}
-      />
-    </points>
+    <group key={renderKey}>
+      {generatedPositions.map((pos, i) => (
+        <mesh
+          key={i}
+          ref={(el) => {
+            if (el) particleRefs.current[i] = el;
+          }}
+          position={[pos.x, pos.y, pos.z]}
+        >
+          <sphereGeometry args={[0.1, 8, 6]} />
+          <meshBasicMaterial
+            color={particles.color}
+            transparent
+            opacity={Math.max(0.1, safeOpacity * layerOpacity)}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      ))}
+    </group>
   );
 };
 
@@ -701,57 +694,144 @@ const Scene = () => {
         color={shapeGlow?.useObjectColor ? '#ffffff' : shapeGlow?.customColor || '#ffffff'}
       />
       <Metamorphosis />
+      <WaveInterference />
       <Spheres />
       <Cubes />
       <Toruses />
       <Blobs />
       <Particles />
       <ObjectTrails />
-      <WaveInterference />
       <Fireflies />
+      <LayeredSineWaves />
     </>
   );
 };
 
 // Move the camera sync logic into a separate component
 const CameraSync = () => {
-  const { camera, backgroundConfig } = useVisualStore();
+  const { camera, backgroundConfig, ui } = useVisualStore();
   const three = useThree();
   
   useEffect(() => {
     if (!three || !three.camera) return;
     
+    // Skip camera sync when in positioning mode - let OrbitControls handle it
+    if (ui.cameraPositioningMode) return;
+    
     // Determine camera values based on background mode
-    let finalDistance, finalHeight, finalFov;
+    let finalPosition, finalTarget, finalFov;
     
     if (backgroundConfig.enabled && backgroundConfig.camera.fixed) {
       // Fixed background mode: use artistic layout camera config
       const bgCamera = backgroundConfig.artisticLayout?.camera;
-      finalDistance = bgCamera?.position?.[2] || 50;
-      finalHeight = bgCamera?.position?.[1] || 0;
+      finalPosition = bgCamera?.position || [0, 0, 50];
+      finalTarget = bgCamera?.target || [0, 0, 0];
       finalFov = bgCamera?.fov || 60;
     } else {
-      // Normal mode: use slider values
-      finalDistance = camera.distance;
-      finalHeight = camera.height;
+      // Normal mode: use global defaults position and target
+      finalPosition = camera.position;
+      finalTarget = camera.target;
       finalFov = camera.fov;
     }
     
     // Apply camera position
-    three.camera.position.set(0, finalHeight, finalDistance);
+    three.camera.position.set(...finalPosition);
     
     // Apply FOV
     if (three.camera instanceof THREE.PerspectiveCamera) {
       three.camera.fov = finalFov;
       three.camera.updateProjectionMatrix();
     }
-  }, [camera.distance, camera.height, camera.fov, backgroundConfig.enabled, backgroundConfig.camera.fixed, backgroundConfig.artisticLayout?.camera, three]);
+    
+    // Look at the target
+    three.camera.lookAt(...finalTarget);
+  }, [camera.position, camera.target, camera.fov, backgroundConfig.enabled, backgroundConfig.camera.fixed, backgroundConfig.artisticLayout?.camera, three, ui.cameraPositioningMode]);
 
   return null;
 };
 
+// NEW: Camera Controls Component for positioning mode
+const CameraControls = () => {
+  const { camera, ui, updateCamera } = useVisualStore();
+  const controlsRef = useRef<any>(null);
+  const three = useThree();
+  const lastUpdateRef = useRef<{ position: [number, number, number]; target: [number, number, number] }>({
+    position: camera.position,
+    target: camera.target
+  });
+
+  // Update camera position from store when positioning mode is enabled
+  useEffect(() => {
+    if (ui.cameraPositioningMode && controlsRef.current && three.camera) {
+      three.camera.position.set(...camera.position);
+      controlsRef.current.target.set(...camera.target);
+      controlsRef.current.update();
+      lastUpdateRef.current = { position: camera.position, target: camera.target };
+    }
+  }, [ui.cameraPositioningMode, camera.position, camera.target, three.camera]);
+
+  // Handle camera changes and update store
+  useFrame(() => {
+    if (ui.cameraPositioningMode && controlsRef.current) {
+      const newPosition: [number, number, number] = [
+        three.camera.position.x,
+        three.camera.position.y,
+        three.camera.position.z
+      ];
+      const newTarget: [number, number, number] = [
+        controlsRef.current.target.x,
+        controlsRef.current.target.y,
+        controlsRef.current.target.z
+      ];
+      
+      // Only update if position or target actually changed
+      const hasChanged = 
+        newPosition[0] !== lastUpdateRef.current.position[0] ||
+        newPosition[1] !== lastUpdateRef.current.position[1] ||
+        newPosition[2] !== lastUpdateRef.current.position[2] ||
+        newTarget[0] !== lastUpdateRef.current.target[0] ||
+        newTarget[1] !== lastUpdateRef.current.target[1] ||
+        newTarget[2] !== lastUpdateRef.current.target[2];
+      
+      if (hasChanged) {
+        // Calculate distance and height from position
+        const distance = Math.sqrt(newPosition[0] ** 2 + newPosition[2] ** 2);
+        const height = newPosition[1];
+        
+        updateCamera({
+          position: newPosition,
+          target: newTarget,
+          distance,
+          height
+        });
+        
+        lastUpdateRef.current = { position: newPosition, target: newTarget };
+      }
+    }
+  });
+
+  if (!ui.cameraPositioningMode) return null;
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enablePan={camera.enablePan}
+      enableZoom={camera.enableZoom}
+      enableRotate={camera.enableRotate}
+      dampingFactor={camera.damping}
+      minDistance={camera.minDistance}
+      maxDistance={camera.maxDistance}
+      minPolarAngle={camera.minPolarAngle}
+      maxPolarAngle={camera.maxPolarAngle}
+      autoRotate={camera.autoRotate}
+      autoRotateSpeed={camera.autoRotateSpeed}
+    />
+  );
+};
+
 const EnhancedVisualCanvas = () => {
-  const { globalEffects, effects, camera, backgroundConfig } = useVisualStore();
+  const visualStore = useVisualStore();
+  const { globalEffects, effects, camera, backgroundConfig, ui } = visualStore;
   const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
   const [canvasReady, setCanvasReady] = useState(false);
   
@@ -771,6 +851,20 @@ const EnhancedVisualCanvas = () => {
     performanceMonitor.enable();
   }, []);
 
+  // Handle ESC key to exit camera positioning mode
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && ui.cameraPositioningMode) {
+        visualStore.setCameraPositioningMode(false);
+      }
+    };
+
+    if (ui.cameraPositioningMode) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [ui.cameraPositioningMode]);
+
   // Create atmospheric blur layers
   const atmosphericBlurLayers = useMemo(() => {
     if (!atmosphericBlur.enabled || atmosphericBlur.intensity <= 0) return null;
@@ -783,7 +877,7 @@ const EnhancedVisualCanvas = () => {
       // Progressive blur intensity for bokeh effect
       const intensity = baseIntensity * (i + 1) * 0.5;
       // Decreasing opacity for each layer
-      const opacity = 0.4 / (i + 1);
+      const opacity = 0.3 / (i + 1);
       
       layers.push(
         <div
@@ -796,26 +890,6 @@ const EnhancedVisualCanvas = () => {
             opacity,
             zIndex: 50 + i,
             mixBlendMode: 'normal',
-            willChange: 'backdrop-filter',
-            isolation: 'isolate'
-          }}
-        />
-      );
-    }
-    
-    // Add a soft bloom layer for enhanced bokeh effect
-    if (baseIntensity > 2) {
-      layers.push(
-        <div
-          key="bloom"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            backdropFilter: `blur(${baseIntensity * 3}px)`,
-            opacity: 0.3,
-            zIndex: 50 + layerCount,
-            mixBlendMode: 'soft-light',
             willChange: 'backdrop-filter',
             isolation: 'isolate'
           }}
@@ -999,6 +1073,43 @@ const EnhancedVisualCanvas = () => {
     );
   }, [effects.vignette]);
 
+  // Create bloom effect using CSS layers
+  const bloomLayer = useMemo(() => {
+    const bloom = GLOBAL_DEFAULTS.visual.bloom;
+    if (!bloom) {
+      return null;
+    }
+    
+    return (
+      <>
+        {/* Primary bloom layer */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%)',
+            filter: 'blur(20px)',
+            mixBlendMode: 'screen',
+            pointerEvents: 'none',
+            zIndex: 10
+          }}
+        />
+        {/* Secondary bloom layer for enhanced effect */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 50%)',
+            filter: 'blur(40px)',
+            mixBlendMode: 'screen',
+            pointerEvents: 'none',
+            zIndex: 11
+          }}
+        />
+      </>
+    );
+  }, [GLOBAL_DEFAULTS.visual.bloom]);
+
   // Optimize Canvas style calculation
   const canvasStyle: React.CSSProperties = useMemo(() => {
     const filters = [];
@@ -1007,6 +1118,23 @@ const EnhancedVisualCanvas = () => {
     // Add brightness filter (should always work)
     if (effects.brightness !== 1) {
       filters.push(`brightness(${effects.brightness})`);
+    }
+    
+    // Add contrast filter
+    if (effects.contrast !== 1) {
+      filters.push(`contrast(${effects.contrast})`);
+    }
+    
+    // Add saturation filter
+    if (effects.saturation !== 1) {
+      filters.push(`saturate(${effects.saturation})`);
+    }
+    
+    // Add glow filter
+    if (effects.glow > 0) {
+      // Glow effect using drop-shadow filter
+      const glowIntensity = effects.glow * 2; // Scale up for visibility
+      filters.push(`drop-shadow(0 0 ${glowIntensity}px rgba(255, 255, 255, ${effects.glow * 0.5}))`);
     }
     
     // Add atmospheric blur filter
@@ -1036,7 +1164,7 @@ const EnhancedVisualCanvas = () => {
       willChange: 'transform, filter, opacity',
       isolation: 'isolate'
     };
-  }, [effects.brightness, atmosphericBlur.enabled, atmosphericBlur.intensity, distortion.enabled, distortion.wave, distortion.ripple, distortion.noise, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
+  }, [effects.brightness, effects.contrast, effects.saturation, effects.glow, atmosphericBlur.enabled, atmosphericBlur.intensity, distortion.enabled, distortion.wave, distortion.ripple, distortion.noise, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
   
   if (!canvasReady) {
     return <div>Initializing Canvas...</div>;
@@ -1056,6 +1184,45 @@ const EnhancedVisualCanvas = () => {
         {fogLayer}
         {atmosphericBlurLayers}
         {postProcessingOverlay}
+        {bloomLayer}
+        
+        {/* Camera Positioning Mode Indicator */}
+        {ui.cameraPositioningMode && (
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(0, 0, 0, 0.8)',
+            color: '#00ff00',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            zIndex: 10000,
+            border: '2px solid #00ff00',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#00ff00',
+              animation: 'pulse 1.5s infinite'
+            }} />
+            Camera Positioning Mode Active
+            <div style={{
+              fontSize: '12px',
+              opacity: 0.8,
+              marginLeft: '8px'
+            }}>
+              Click and drag to move • Scroll to zoom • ESC to exit
+            </div>
+          </div>
+        )}
         
         <Canvas
           camera={{ 
@@ -1072,7 +1239,6 @@ const EnhancedVisualCanvas = () => {
           }}
           style={{
             ...canvasStyleWithBackground,
-            // Add more obvious visual changes when background mode is active
             ...(backgroundConfig.enabled && {
               position: 'fixed' as const,
               top: 0,
@@ -1080,24 +1246,13 @@ const EnhancedVisualCanvas = () => {
               zIndex: -1,
               filter: backgroundConfig.mode === 'modalFriendly' ? 'saturate(1.2) contrast(1.1)' : 'none',
               pointerEvents: backgroundConfig.mode === 'modalFriendly' ? 'none' as const : 'auto' as const,
-              // Add a subtle border when in background mode
               border: backgroundConfig.camera.fixed ? '4px solid rgba(255, 255, 0, 0.3)' : 'none'
             })
           }}
         >
           <CameraSync />
+          <CameraControls />
           <Scene />
-          
-          {/* Conditional OrbitControls - disable when in background mode */}
-          {!(backgroundConfig.enabled && backgroundConfig.camera.fixed) && (
-            <OrbitControls 
-              enablePan={true}
-              enableZoom={true}
-              enableRotate={true}
-              minDistance={5}
-              maxDistance={100}
-            />
-          )}
         </Canvas>
       </div>
     </ClientOnly>

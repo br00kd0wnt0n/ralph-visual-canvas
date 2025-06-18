@@ -16,7 +16,7 @@ function mulberry32(seed: number) {
 
 export const Blobs: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
-  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
+  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const blobs = geometric.blobs;
 
   // Get layer configuration for background mode - with proper fallbacks
@@ -103,29 +103,31 @@ export const Blobs: React.FC = () => {
   useFrame((state) => {
     if (groupRef.current) {
       const time = state.clock.elapsedTime;
-      const timeScale = backgroundConfig.timeScale;
-      const scaledTime = time * timeScale;
+      // Safety check: clamp global animation speed to prevent crashes
+      const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+      const scaledTime = time * safeAnimationSpeed;
       const waveIntensity = globalEffects.distortion.wave * 2;
       const rippleIntensity = globalEffects.distortion.ripple * 3;
-      const adjustedSpeed = safeSpeed * movementSpeed;
+      // Calculate final speed: individual blob speed * movement speed * global animation speed
+      const finalSpeed = safeSpeed * movementSpeed * safeAnimationSpeed;
       
-      // Rotate the entire group
-      groupRef.current.rotation.y += adjustedSpeed * 0.01 * timeScale;
+      // Rotate the entire group with individual speed * global animation speed
+      groupRef.current.rotation.y += finalSpeed * 0.01;
       
       // PERFORMANCE OPTIMIZATION: Only apply viewport constraints every 3 frames
       frameCountRef.current++;
       const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 3 === 0;
       
-      // Animate individual blobs
+      // Animate individual blobs with individual speed * global animation speed
       groupRef.current.children.forEach((child, i) => {
         const mesh = child as THREE.Mesh;
         const pos = positionsRef.current[i];
         if (!pos) return;
         
         // Base movement - use the same approach as other components
-        mesh.position.y = pos[1] + Math.sin(scaledTime + i) * 2 * adjustedSpeed;
+        mesh.position.y = pos[1] + Math.sin(scaledTime + i) * 2 * finalSpeed;
         
-        // Add wave distortion
+        // Add wave distortion with global animation speed
         if (waveIntensity > 0) {
           mesh.position.x = pos[0] + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
           mesh.position.z = pos[2] + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
@@ -134,7 +136,7 @@ export const Blobs: React.FC = () => {
           mesh.position.z = pos[2];
         }
         
-        // Add ripple effect
+        // Add ripple effect with global animation speed
         if (rippleIntensity > 0) {
           const distance = Math.sqrt(mesh.position.x ** 2 + mesh.position.z ** 2);
           mesh.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
@@ -151,9 +153,9 @@ export const Blobs: React.FC = () => {
           mesh.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
         }
         
-        // Add rotation and scaling
-        mesh.rotation.x += Math.sin(scaledTime + i) * 0.01 * adjustedSpeed;
-        mesh.rotation.z += Math.cos(scaledTime + i * 0.5) * 0.008 * adjustedSpeed;
+        // Add rotation and scaling with individual speed * global animation speed
+        mesh.rotation.x += Math.sin(scaledTime + i) * 0.01 * finalSpeed;
+        mesh.rotation.z += Math.cos(scaledTime + i * 0.5) * 0.008 * finalSpeed;
         
         const scale = 1 + Math.sin(scaledTime + i) * 0.1;
         mesh.scale.setScalar(scale);

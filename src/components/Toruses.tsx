@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 export const Toruses = () => {
   const groupRef = useRef<THREE.Group>(null);
-  const { geometric, globalEffects } = useVisualStore();
+  const { geometric, globalEffects, globalAnimationSpeed } = useVisualStore();
   const { toruses } = geometric;
 
   const torusPositions = useMemo(() => {
@@ -24,17 +24,21 @@ export const Toruses = () => {
     if (groupRef.current) {
       const time = state.clock.elapsedTime;
       const waveIntensity = globalEffects.distortion.wave * 2;
+      // Safety check: clamp global animation speed to prevent crashes
+      const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+      // Calculate final speed: individual torus speed * global animation speed
+      const finalSpeed = toruses.speed * safeAnimationSpeed;
       
-      groupRef.current.rotation.y += toruses.speed * 0.01;
+      groupRef.current.rotation.y += finalSpeed * 0.01;
       groupRef.current.children.forEach((child, i) => {
-        // Base movement
-        child.rotation.x += toruses.speed * 0.02;
-        child.rotation.z += toruses.speed * 0.01;
+        // Base movement with individual speed * global animation speed
+        child.rotation.x += finalSpeed * 0.02;
+        child.rotation.z += finalSpeed * 0.01;
         
-        // Add wave distortion
+        // Add wave distortion with global animation speed
         if (waveIntensity > 0) {
-          child.position.y += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
-          child.position.x += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+          child.position.y += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity * safeAnimationSpeed;
+          child.position.x += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity * safeAnimationSpeed;
         }
       });
     }

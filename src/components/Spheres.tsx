@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 export const Spheres = () => {
   const groupRef = useRef<THREE.Group>(null);
-  const { geometric, globalEffects } = useVisualStore();
+  const { geometric, globalEffects, globalAnimationSpeed } = useVisualStore();
   const { spheres } = geometric;
 
   const spherePositions = useMemo(() => {
@@ -24,25 +24,29 @@ export const Spheres = () => {
     if (groupRef.current) {
       const time = state.clock.elapsedTime;
       
-      // Enhanced movement with distortion effects
+      // Enhanced movement with distortion effects and individual speed * global animation speed
       const waveIntensity = globalEffects.distortion.wave * 2;
       const rippleIntensity = globalEffects.distortion.ripple * 3;
+      // Safety check: clamp global animation speed to prevent crashes
+      const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+      // Calculate final speed: individual sphere speed * global animation speed
+      const finalSpeed = spheres.speed * safeAnimationSpeed;
       
-      groupRef.current.rotation.y += spheres.speed * 0.01;
+      groupRef.current.rotation.y += finalSpeed * 0.01;
       groupRef.current.children.forEach((child, i) => {
-        // Base movement
-        child.position.y += Math.sin(time + i) * 0.02 * spheres.speed;
+        // Base movement with individual speed * global animation speed
+        child.position.y += Math.sin(time + i) * 0.02 * finalSpeed;
         
-        // Add wave distortion
+        // Add wave distortion with global animation speed
         if (waveIntensity > 0) {
-          child.position.x += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity;
-          child.position.z += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+          child.position.x += Math.sin(time * globalEffects.distortion.frequency + i) * waveIntensity * safeAnimationSpeed;
+          child.position.z += Math.cos(time * globalEffects.distortion.frequency + i * 0.5) * waveIntensity * safeAnimationSpeed;
         }
         
-        // Add ripple effect
+        // Add ripple effect with global animation speed
         if (rippleIntensity > 0) {
           const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
-          child.position.y += Math.sin(time * 2 + distance * 0.5) * rippleIntensity;
+          child.position.y += Math.sin(time * 2 + distance * 0.5) * rippleIntensity * safeAnimationSpeed;
         }
       });
     }

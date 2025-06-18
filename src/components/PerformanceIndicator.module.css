@@ -1,0 +1,38 @@
+.performanceIndicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #00ff00;
+  z-index: 1000;
+  min-width: 120px;
+  text-align: center;
+}
+
+.fps {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.renderTime {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.good {
+  color: #00ff00;
+}
+
+.warning {
+  color: #ffff00;
+}
+
+.poor {
+  color: #ff0000;
+} 

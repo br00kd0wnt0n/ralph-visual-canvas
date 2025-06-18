@@ -10,21 +10,35 @@ import { Particles } from './Particles';
 
 const GeometricShapes = () => {
   const geometric = useVisualStore((state) => state.geometric);
+  const globalAnimationSpeed = useVisualStore((state) => state.globalAnimationSpeed);
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
-    // Rotate the entire group
-    groupRef.current.rotation.y += delta * 0.2;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
 
-    // Update individual shapes
+    // Rotate the entire group with global animation speed
+    groupRef.current.rotation.y += delta * 0.2 * safeAnimationSpeed;
+
+    // Update individual shapes with their individual speeds * global animation speed
     groupRef.current.children.forEach((child) => {
       if (child.userData.type === 'sphere' || child.userData.type === 'torus') {
-        child.rotation.y += delta * (child.userData.speed || 1);
+        // Get individual speed from the geometric store
+        const shapeType = child.userData.type as keyof typeof geometric;
+        const shapeConfig = geometric[shapeType];
+        if (shapeConfig && 'speed' in shapeConfig) {
+          const individualSpeed = (shapeConfig as any).speed || 1.0;
+          const finalSpeed = individualSpeed * safeAnimationSpeed;
+          
+          // Apply individual speed * global animation speed
+          child.rotation.x += delta * 0.5 * finalSpeed;
+          child.rotation.y += delta * 0.3 * finalSpeed;
+        }
       } else if (child.userData.type === 'cube') {
-        child.rotation.x += delta * (child.userData.rotation || 1);
-        child.rotation.y += delta * (child.userData.rotation || 1);
+        child.rotation.x += delta * (child.userData.rotation || 1) * safeAnimationSpeed;
+        child.rotation.y += delta * (child.userData.rotation || 1) * safeAnimationSpeed;
       }
     });
   });

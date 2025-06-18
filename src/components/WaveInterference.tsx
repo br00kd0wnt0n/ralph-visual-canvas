@@ -10,7 +10,7 @@ interface WaveSource {
 }
 
 export const WaveInterference = () => {
-  const { globalEffects, geometric } = useVisualStore();
+  const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { waveInterference } = globalEffects;
   const meshRef = useRef<THREE.Mesh>(null);
   const timeRef = useRef(0);
@@ -46,6 +46,7 @@ export const WaveInterference = () => {
   // Shader material for wave interference
   const material = useMemo(() => {
     const contourLevels = waveInterference?.contourLevels || 5;
+    const edgeFade = waveInterference?.edgeFade || { enabled: true, fadeStart: 0.3, fadeEnd: 0.5 };
     
     return new THREE.ShaderMaterial({
       uniforms: {
@@ -53,7 +54,10 @@ export const WaveInterference = () => {
         uColor: { value: new THREE.Color(geometric.waveInterference?.color || '#333333') },
         uOpacity: { value: 0.3 },
         uContourLevels: { value: contourLevels },
-        uSources: { value: waveSources.map(s => new THREE.Vector4(s.position.x, s.position.y, s.wavelength, s.phase)) }
+        uSources: { value: waveSources.map(s => new THREE.Vector4(s.position.x, s.position.y, s.wavelength, s.phase)) },
+        uEdgeFadeEnabled: { value: edgeFade.enabled ? 1.0 : 0.0 },
+        uFadeStart: { value: edgeFade.fadeStart },
+        uFadeEnd: { value: edgeFade.fadeEnd }
       },
       vertexShader: `
         uniform float uTime;
@@ -87,6 +91,9 @@ export const WaveInterference = () => {
         uniform float uOpacity;
         uniform float uContourLevels;
         uniform float uTime;
+        uniform float uEdgeFadeEnabled;
+        uniform float uFadeStart;
+        uniform float uFadeEnd;
         varying float vHeight;
         varying vec2 vUv;
         
@@ -102,24 +109,42 @@ export const WaveInterference = () => {
           // Add some wave intensity variation
           float waveIntensity = sin(vHeight * 4.0 + uTime * 2.0) * 0.5 + 0.5;
           
-          float alpha = max(contour, gridPattern * 0.3) * uOpacity * (0.5 + waveIntensity * 0.5);
+          // Edge fade effect - create a radial fade from center to edges
+          float edgeFade = 1.0;
+          if (uEdgeFadeEnabled > 0.5) {
+            vec2 center = vec2(0.5, 0.5);
+            float distFromCenter = distance(vUv, center);
+            edgeFade = 1.0 - smoothstep(uFadeStart, uFadeEnd, distFromCenter);
+          }
+          
+          float alpha = max(contour, gridPattern * 0.3) * uOpacity * (0.5 + waveIntensity * 0.5) * edgeFade;
           gl_FragColor = vec4(uColor, alpha);
         }
       `,
       transparent: true,
       side: THREE.DoubleSide,
     });
-  }, [waveSources, geometric.waveInterference?.color, waveInterference?.contourLevels]);
+  }, [waveSources, geometric.waveInterference?.color, waveInterference?.contourLevels, waveInterference?.edgeFade]);
 
   useFrame((state, delta) => {
     if (!waveInterference?.enabled || !meshRef.current) return;
 
     const speed = waveInterference.speed || 0.5;
     const amplitude = waveInterference.amplitude || 0.5;
+    const edgeFade = waveInterference.edgeFade || { enabled: true, fadeStart: 0.3, fadeEnd: 0.5 };
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    // Calculate final speed: individual wave interference speed * global animation speed
+    const finalSpeed = speed * safeAnimationSpeed;
     
-    timeRef.current += delta * speed; // Use configurable speed
+    timeRef.current += delta * finalSpeed; // Use individual speed * global animation speed
     material.uniforms.uTime.value = timeRef.current;
     material.uniforms.uOpacity.value = amplitude; // Use configurable amplitude
+    
+    // Update edge fade settings
+    material.uniforms.uEdgeFadeEnabled.value = edgeFade.enabled ? 1.0 : 0.0;
+    material.uniforms.uFadeStart.value = edgeFade.fadeStart;
+    material.uniforms.uFadeEnd.value = edgeFade.fadeEnd;
     
     // Update color if changed
     if (geometric.waveInterference?.color) {

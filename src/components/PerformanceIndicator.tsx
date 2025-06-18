@@ -6,11 +6,11 @@ export const PerformanceIndicator: React.FC = () => {
 
   const getPerformanceColor = () => {
     switch (performance) {
-      case 'excellent': return 'text-green-400';
-      case 'good': return 'text-yellow-400';
-      case 'moderate': return 'text-orange-400';
-      case 'poor': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'excellent': return '#10b981';
+      case 'good': return '#f59e0b';
+      case 'moderate': return '#f97316';
+      case 'poor': return '#ef4444';
+      default: return '#6b7280';
     }
   };
 
@@ -25,19 +25,29 @@ export const PerformanceIndicator: React.FC = () => {
   };
 
   return (
-    <div 
-      className="fixed bottom-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-2 text-xs text-white"
-      style={{ zIndex: 99999 }}
-    >
-      <div className="flex items-center gap-2">
-        <span>{getPerformanceIcon()}</span>
-        <span className={getPerformanceColor()}>
-          {fps} FPS
-        </span>
-        <span className="text-gray-400">
-          ({performance})
-        </span>
-      </div>
+    <div style={{
+      position: 'fixed',
+      bottom: '20px',
+      right: '20px',
+      background: 'rgba(0, 0, 0, 0.7)',
+      color: 'white',
+      padding: '10px',
+      borderRadius: '8px',
+      fontSize: '12px',
+      fontFamily: 'monospace',
+      zIndex: 1000,
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    }}>
+      <span>{getPerformanceIcon()}</span>
+      <span style={{ color: getPerformanceColor() }}>
+        {fps} FPS
+      </span>
+      <span style={{ color: '#6b7280' }}>
+        ({performance})
+      </span>
     </div>
   );
 }; 
