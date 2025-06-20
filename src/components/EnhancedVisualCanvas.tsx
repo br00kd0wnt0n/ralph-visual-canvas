@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei';
 import { useVisualStore, GLOBAL_DEFAULTS } from '../store/visualStore';
 import { getArtisticCameraConfig, constrainToViewport } from '../utils/backgroundLayout';
 import { performanceMonitor } from '../utils/performanceMonitor';
+import { performanceOptimizer } from '../utils/performanceOptimizer';
 import * as THREE from 'three';
 import styles from './EnhancedVisualCanvas.module.css';
 import { Blobs } from './Blobs';
@@ -839,16 +840,30 @@ const EnhancedVisualCanvas = () => {
   const handleWebGLContextLost = useCallback((event: Event) => {
     console.error('🚨 WebGL context lost!', event);
     event.preventDefault();
+    
+    // Disable performance monitoring during context loss
+    performanceMonitor.disable();
+    
+    // Set a flag to prevent further rendering attempts
+    setCanvasReady(false);
   }, []);
 
   const handleWebGLContextRestored = useCallback(() => {
     console.log('✅ WebGL context restored');
+    
+    // Re-enable performance monitoring
+    performanceMonitor.enable();
+    
+    // Re-enable canvas rendering
+    setCanvasReady(true);
   }, []);
   
   useEffect(() => {
     setCanvasReady(true);
     // Enable performance monitoring
     performanceMonitor.enable();
+    // Enable performance optimization
+    performanceOptimizer.enable();
   }, []);
 
   // Handle ESC key to exit camera positioning mode
@@ -1233,9 +1248,31 @@ const EnhancedVisualCanvas = () => {
           }}
           onCreated={({ gl }) => {
             console.log('🎨 WebGL context created');
+            
+            // Set WebGL context attributes for better performance
+            gl.setClearColor(0x000000, 0);
+            gl.autoClear = false;
+            gl.autoClearColor = false;
+            gl.autoClearDepth = false;
+            gl.autoClearStencil = false;
+            
+            // Optimize WebGL context
+            performanceOptimizer.optimizeWebGLContext(gl);
+            
             const canvas = gl.domElement;
             canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
             canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
+            
+            // Add error handling for WebGL errors
+            const handleWebGLError = (event: Event) => {
+              console.warn('WebGL error detected:', event);
+            };
+            
+            canvas.addEventListener('webglcontextlost', handleWebGLError);
+          }}
+          onError={(error) => {
+            console.error('Canvas error:', error);
+            setCanvasReady(false);
           }}
           style={{
             ...canvasStyleWithBackground,

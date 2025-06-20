@@ -8,6 +8,8 @@ class PerformanceMonitor {
   private fpsHistory: number[] = [];
   private maxHistoryLength = 60; // Keep last 60 frames
   private isEnabled = false;
+  private lastLogTime = 0;
+  private logInterval = 5000; // Log every 5 seconds instead of every second
 
   private constructor() {}
 
@@ -47,11 +49,19 @@ class PerformanceMonitor {
         this.fpsHistory.reduce((sum, fps) => sum + fps, 0) / this.fpsHistory.length
       );
 
-      // Log performance warnings
-      if (avgFps < 30) {
-        console.warn(`⚠️ Low FPS detected: ${avgFps} FPS (current: ${fps} FPS)`);
-      } else if (avgFps < 50) {
-        console.info(`📊 Moderate FPS: ${avgFps} FPS (current: ${fps} FPS)`);
+      // Log performance warnings less frequently
+      const timeSinceLastLog = currentTime - this.lastLogTime;
+      if (timeSinceLastLog >= this.logInterval) {
+        this.lastLogTime = currentTime;
+        
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+          if (avgFps < 30) {
+            console.warn(`⚠️ Low FPS detected: ${avgFps} FPS (current: ${fps} FPS)`);
+          } else if (avgFps < 50) {
+            console.info(`📊 Moderate FPS: ${avgFps} FPS (current: ${fps} FPS)`);
+          }
+        }
       }
 
       this.frameCount = 0;

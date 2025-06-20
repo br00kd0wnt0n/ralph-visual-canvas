@@ -128,6 +128,41 @@ export const Metamorphosis = () => {
   const geometryPoolRef = useRef<THREE.BufferGeometry[]>([]);
   const linePoolRef = useRef<THREE.Line[]>([]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (groupRef.current) {
+        while (groupRef.current.children.length > 0) {
+          const child = groupRef.current.children[0];
+          if (child instanceof THREE.Line) {
+            if (child.geometry) {
+              child.geometry.dispose();
+            }
+            if (child.material) {
+              child.material.dispose();
+            }
+          }
+          groupRef.current.remove(child);
+        }
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose();
+      }
+      // Dispose pooled objects
+      geometryPoolRef.current.forEach(geometry => geometry.dispose());
+      linePoolRef.current.forEach(line => {
+        if (line.geometry) line.geometry.dispose();
+        if (line.material && Array.isArray(line.material)) {
+          line.material.forEach(mat => mat.dispose());
+        } else if (line.material) {
+          line.material.dispose();
+        }
+      });
+      geometryPoolRef.current = [];
+      linePoolRef.current = [];
+    };
+  }, []);
+
   useFrame((state, delta) => {
     if (!metamorphosis?.enabled || !groupRef.current) {
       return;
