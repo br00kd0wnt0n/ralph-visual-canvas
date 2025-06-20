@@ -101,6 +101,7 @@ export interface VisualState {
       size: number;
       color: string;
       rotation: number;
+      speed: number;
       opacity: number;
       organicness: number;
     };
@@ -252,6 +253,20 @@ export interface VisualState {
         width: number;
         fadeRate: number;
       };
+      torusTrails: {
+        enabled: boolean;
+        length: number;
+        opacity: number;
+        width: number;
+        fadeRate: number;
+      };
+      particleTrails: {
+        enabled: boolean;
+        length: number;
+        opacity: number;
+        width: number;
+        fadeRate: number;
+      };
     };
 
     // Wave Interference System
@@ -338,10 +353,24 @@ export interface VisualState {
     maxDistance: number;
     minPolarAngle: number;
     maxPolarAngle: number;
+    // Depth of Field settings
+    depthOfField: {
+      enabled: boolean;
+      focusDistance: number;
+      focalLength: number;
+      bokehScale: number;
+      blur: number;
+    };
   };
   
   // Global animation speed multiplier
   globalAnimationSpeed: number;
+
+  // Global blend mode overlay
+  globalBlendMode: {
+    mode: string; // Allow any string for blend mode
+    opacity: number; // Allow any number for opacity
+  },
 }
 
 export interface VisualActions {
@@ -401,7 +430,14 @@ export const GLOBAL_DEFAULTS = {
     minDistance: 5,
     maxDistance: 50,
     minPolarAngle: 0,
-    maxPolarAngle: Math.PI
+    maxPolarAngle: Math.PI,
+    depthOfField: {
+      enabled: false,
+      focusDistance: 10,
+      focalLength: 50,
+      bokehScale: 1,
+      blur: 0.5
+    }
   },
   
   // Performance defaults
@@ -439,7 +475,11 @@ export const GLOBAL_DEFAULTS = {
     bloom: false,
     chromaticAberration: 0,
     motionBlur: false,
-  }
+  },
+  globalBlendMode: {
+    mode: 'normal',
+    opacity: 0.5
+  },
 };
 
 // Safety function to clamp animation speed to prevent crashes
@@ -542,6 +582,7 @@ const defaultState: VisualState = {
       size: 1.0,
       color: '#4169e1',
       rotation: 1.5,
+      speed: 1.0,
       opacity: 0.8,
       organicness: 0.2,
     },
@@ -662,25 +703,39 @@ const defaultState: VisualState = {
     trails: {
       enabled: true,
       sphereTrails: {
-        enabled: false,
-        length: 20,
+        enabled: true,
+        length: 150,
         opacity: 0.6,
-        width: 0.1,
-        fadeRate: 0.95,
+        width: 0.8,
+        fadeRate: 0.3,
       },
       cubeTrails: {
-        enabled: false,
-        length: 15,
+        enabled: true,
+        length: 120,
         opacity: 0.5,
-        width: 0.08,
-        fadeRate: 0.94,
+        width: 0.7,
+        fadeRate: 0.4,
       },
       blobTrails: {
-        enabled: false,
-        length: 25,
+        enabled: true,
+        length: 200,
         opacity: 0.7,
-        width: 0.12,
-        fadeRate: 0.96,
+        width: 0.9,
+        fadeRate: 0.2,
+      },
+      torusTrails: {
+        enabled: true,
+        length: 100,
+        opacity: 0.5,
+        width: 0.6,
+        fadeRate: 0.5,
+      },
+      particleTrails: {
+        enabled: true,
+        length: 300,
+        opacity: 0.8,
+        width: 0.3,
+        fadeRate: 0.1,
       },
     },
     waveInterference: {
@@ -739,6 +794,10 @@ const defaultState: VisualState = {
     ...GLOBAL_DEFAULTS.camera
   },
   globalAnimationSpeed: clampAnimationSpeed(GLOBAL_DEFAULTS.animation.defaultSpeed),
+  globalBlendMode: {
+    mode: 'normal',
+    opacity: 0.5
+  },
 };
 
 type Store = VisualState & VisualActions;
@@ -823,6 +882,7 @@ export const useVisualStore = create<Store>((set, get) => ({
       effects: state.effects,
       camera: state.camera,
       globalAnimationSpeed: state.globalAnimationSpeed,
+      globalBlendMode: state.globalBlendMode,
       savedAt: new Date().toISOString(),
       version: '1.0'
     };
@@ -841,20 +901,58 @@ export const useVisualStore = create<Store>((set, get) => ({
       if (presets[name]) {
         const preset = presets[name];
         
-        set((state) => ({
-          ...state,
-          ui: { ...state.ui, ...preset.ui },
-          background: { ...state.background, ...preset.background },
-          backgroundConfig: { ...state.backgroundConfig, ...preset.backgroundConfig },
-          geometric: { ...state.geometric, ...preset.geometric },
-          particles: { ...state.particles, ...preset.particles },
-          globalEffects: { ...state.globalEffects, ...preset.globalEffects },
-          effects: { ...state.effects, ...preset.effects },
-          camera: { ...state.camera, ...preset.camera },
-        }));
+        set((state) => {
+          // Deep merge for globalEffects to ensure all nested properties are preserved
+          const mergedGlobalEffects = {
+            ...state.globalEffects,
+            ...preset.globalEffects,
+            // Ensure trails object is properly merged with all required properties
+            trails: {
+              ...state.globalEffects.trails,
+              ...(preset.globalEffects?.trails || {}),
+              // Ensure all trail types have required properties
+              sphereTrails: {
+                ...state.globalEffects.trails.sphereTrails,
+                ...(preset.globalEffects?.trails?.sphereTrails || {})
+              },
+              cubeTrails: {
+                ...state.globalEffects.trails.cubeTrails,
+                ...(preset.globalEffects?.trails?.cubeTrails || {})
+              },
+              blobTrails: {
+                ...state.globalEffects.trails.blobTrails,
+                ...(preset.globalEffects?.trails?.blobTrails || {})
+              },
+              torusTrails: {
+                ...state.globalEffects.trails.torusTrails,
+                ...(preset.globalEffects?.trails?.torusTrails || {})
+              },
+              particleTrails: {
+                ...state.globalEffects.trails.particleTrails,
+                ...(preset.globalEffects?.trails?.particleTrails || {})
+              }
+            }
+          };
+
+          return {
+            ...state,
+            ui: { ...state.ui, ...preset.ui },
+            background: { ...state.background, ...preset.background },
+            backgroundConfig: { ...state.backgroundConfig, ...preset.backgroundConfig },
+            geometric: { ...state.geometric, ...preset.geometric },
+            particles: { ...state.particles, ...preset.particles },
+            globalEffects: mergedGlobalEffects,
+            effects: { ...state.effects, ...preset.effects },
+            camera: { ...state.camera, ...preset.camera },
+            globalAnimationSpeed: preset.globalAnimationSpeed ?? state.globalAnimationSpeed,
+            globalBlendMode: preset.globalBlendMode ?? state.globalBlendMode,
+          };
+        });
       } else {
+        console.warn(`Preset "${name}" not found`);
       }
     } catch (error) {
+      console.error('Error loading preset:', error);
     }
   },
 
@@ -922,6 +1020,13 @@ export const useVisualStore = create<Store>((set, get) => ({
       const safeSpeed = clampAnimationSpeed(GLOBAL_DEFAULTS.animation.defaultSpeed);
       set((state) => ({
         globalAnimationSpeed: safeSpeed
+      }));
+    }
+    
+    // If updating globalBlendMode defaults, also update current globalBlendMode
+    if (category === 'globalBlendMode') {
+      set((state) => ({
+        globalBlendMode: { ...state.globalBlendMode, ...updates }
       }));
     }
   },

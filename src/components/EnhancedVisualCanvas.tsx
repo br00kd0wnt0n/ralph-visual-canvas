@@ -7,6 +7,7 @@ import { getArtisticCameraConfig, constrainToViewport } from '../utils/backgroun
 import { performanceMonitor } from '../utils/performanceMonitor';
 import { performanceOptimizer } from '../utils/performanceOptimizer';
 import * as THREE from 'three';
+import { TrailObject, trailManager } from './TrailObject';
 import styles from './EnhancedVisualCanvas.module.css';
 import { Blobs } from './Blobs';
 import { ObjectTrails } from './ObjectTrails';
@@ -14,7 +15,37 @@ import { WaveInterference } from './WaveInterference';
 import { Metamorphosis } from './Metamorphosis';
 import { Fireflies } from './Fireflies';
 import { LayeredSineWaves } from './LayeredSineWaves';
-import { EffectComposer } from '@react-three/postprocessing';
+import { ArtisticCanvasController } from './artistic/ArtisticCanvasSystem';
+import { ArtisticPresets } from './artistic/ArtisticConfigSystem';
+
+// Import artistic canvas system
+import { ArtisticCanvas, PaintingObject, ArtisticCanvasOverlay } from './artistic/ArtisticCanvasSystem';
+import type { ArtisticCanvasConfig } from '../types/artistic';
+
+// Trail renderer component
+const TrailRenderer = () => {
+  const [trailMeshes, setTrailMeshes] = useState<{ mesh: THREE.InstancedMesh; material: THREE.Material; count: number }[]>([]);
+
+  useFrame(() => {
+    // Update trail meshes from the global trail manager
+    const meshes = trailManager.getTrailMeshes();
+    setTrailMeshes(meshes);
+    
+    // Update trails
+    trailManager.updateTrails(0.016); // Assuming 60fps
+  });
+
+  return (
+    <>
+      {trailMeshes.map(({ mesh, material, count }, index) => (
+        <primitive
+          key={`trail-mesh-${index}`}
+          object={mesh}
+        />
+      ))}
+    </>
+  );
+};
 
 // Utility function to convert hex color to RGB
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
@@ -64,6 +95,7 @@ const Spheres = () => {
   const groupRef = useRef<THREE.Group>(null);
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
   const renderKey = useMemo(() => `spheres-${spheres.count}-${Date.now()}`, [spheres.count]);
+  const pulseTimeRef = useRef(0);
 
   // Get layer configuration for background mode
   const layerConfig = backgroundConfig.enabled ? 
@@ -121,6 +153,11 @@ const Spheres = () => {
     // Calculate final speed: individual sphere speed * global animation speed
     const finalSpeed = spheres.speed * safeAnimationSpeed;
     
+    // Update pulse time for glow animation
+    if (shapeGlow.enabled && shapeGlow.pulsing) {
+      pulseTimeRef.current += state.clock.getDelta() * (shapeGlow.pulseSpeed || 1.0) * safeAnimationSpeed;
+    }
+    
     // Rotate the entire group with individual speed * global animation speed
     groupRef.current.rotation.y += finalSpeed * 0.01 * timeScale;
     
@@ -157,6 +194,25 @@ const Spheres = () => {
         }, layerZ);
         child.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
       }
+      
+      // Animate glow pulsing for individual spheres
+      if (shapeGlow.enabled && shapeGlow.pulsing) {
+        const trailObjectGroup = child as THREE.Group;
+        const mesh = trailObjectGroup.children[0] as THREE.Mesh;
+        const material = mesh.material as THREE.MeshStandardMaterial;
+        
+        // Create pulsing effect with individual phase offset
+        const pulsePhase = pulseTimeRef.current + i * 0.5;
+        const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
+        material.emissiveIntensity = shapeGlow.intensity * 2.0 * pulseIntensity;
+        
+        // Also animate the pulsing glow mesh if it exists
+        if (trailObjectGroup.children.length > 1) {
+          const glowMesh = trailObjectGroup.children[1] as THREE.Mesh;
+          const glowMaterial = glowMesh.material as THREE.MeshBasicMaterial;
+          glowMaterial.opacity = shapeGlow.intensity * 0.3 * pulseIntensity;
+        }
+      }
     });
   });
 
@@ -172,35 +228,52 @@ const Spheres = () => {
         // Safety check: only render if geometry exists
         if (!geometry) return null;
         
+        // Enhanced glow effect with better visibility
+        const glowColor = shapeGlow.useObjectColor ? spheres.color : (shapeGlow.customColor || spheres.color);
+        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        
+        // Create material for this sphere with enhanced glow
+        const material = new THREE.MeshStandardMaterial({
+          color: spheres.color,
+          emissive: new THREE.Color(glowColor),
+          emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
+          transparent: true,
+          opacity: spheres.opacity, // Use actual sphere opacity instead of layerOpacity
+          // Add additive blending for more vibrant glow
+          blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+          // Increase metalness and roughness for better glow visibility
+          metalness: glowIntensity > 0 ? 0.8 : 0.0,
+          roughness: glowIntensity > 0 ? 0.2 : 0.5,
+        });
+        
         return (
-          <group key={`sphere-${i}-${spheres.count}`} position={pos}>
-            {/* Main sphere */}
-            <mesh>
-              <primitive object={geometry} />
-              <meshBasicMaterial 
-                color={spheres.color} 
-                transparent 
-                opacity={spheres.opacity * layerOpacity}
-                visible={true}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-            {/* Single glow layer */}
-            {shapeGlow.enabled && (
-              <mesh>
-                <primitive object={geometry} />
-                <meshBasicMaterial
-                  color={shapeGlow.useObjectColor ? spheres.color : shapeGlow.customColor}
-                  transparent
-                  opacity={shapeGlow.intensity * 0.3 * layerOpacity}
-                  blending={THREE.AdditiveBlending}
-                  depthWrite={false}
-                  visible={true}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-            )}
-          </group>
+          <TrailObject 
+            key={`sphere-${i}-${spheres.count}`} 
+            id={`sphere-${i}`}
+            color={new THREE.Color(spheres.color)}
+            size={spheres.size}
+            velocityThreshold={0.05}
+            geometry={geometry}
+            material={material}
+            trailType='sphereTrails'
+          >
+            <group position={pos}>
+              <mesh geometry={geometry} material={material} />
+              
+              {/* Add pulsing glow effect when enabled */}
+              {shapeGlow.enabled && shapeGlow.pulsing && (
+                <mesh geometry={geometry} position={[0, 0, 0]}>
+                  <meshBasicMaterial
+                    color={glowColor}
+                    transparent={true}
+                    opacity={glowIntensity * 0.3}
+                    blending={THREE.AdditiveBlending}
+                    side={THREE.BackSide}
+                  />
+                </mesh>
+              )}
+            </group>
+          </TrailObject>
         );
       })}
     </group>
@@ -287,13 +360,200 @@ const Cubes = () => {
     const scaledTime = time * timeScale * safeAnimationSpeed;
     const waveIntensity = globalEffects.distortion.wave * 2;
     const rippleIntensity = globalEffects.distortion.ripple * 3;
-    // Calculate final rotation speed: individual cube rotation * global animation speed
+    // Calculate final speeds: individual cube speeds * global animation speed
     const finalRotationSpeed = cubes.rotation * safeAnimationSpeed;
+    const finalMovementSpeed = cubes.speed * safeAnimationSpeed;
+    
+    // Animate individual cubes with separate movement and rotation speeds
+    groupRef.current.children.forEach((child, i) => {
+      const pos = positions[i];
+      if (!pos) return;
+      
+      // Individual cube rotation: use rotation property for spinning
+      child.rotation.x += finalRotationSpeed * 0.01;
+      child.rotation.y += finalRotationSpeed * 0.015;
+      
+      // Base movement with individual movement speed * global animation speed
+      child.position.x = pos.x + Math.sin(scaledTime + i) * 2 * finalMovementSpeed;
+      child.position.y = pos.y + Math.cos(scaledTime + i * 0.5) * 1.5 * finalMovementSpeed;
+      child.position.z = pos.z + Math.sin(scaledTime * 0.7 + i) * 1 * finalMovementSpeed;
+      
+      // Add wave distortion on top of base movement
+      if (waveIntensity > 0) {
+        child.position.x += Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
+        child.position.z += Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+      }
+      
+      // Add ripple effect
+      if (rippleIntensity > 0) {
+        const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
+        child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
+      }
+      
+      // Apply layer Z position when in background mode
+      if (backgroundConfig.enabled) {
+        // Apply viewport constraints for background mode
+        const constrainedPosition = constrainToViewport({
+          x: child.position.x,
+          y: child.position.y,
+          z: child.position.z
+        }, layerZ);
+        child.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
+      }
+    });
+  });
+
+  // Don't render until positions are available
+  if (positions.length === 0) {
+    return null;
+  }
+
+  return (
+    <group ref={groupRef} key={renderKey}>
+      {positions.map((pos, i) => {
+        const geometry = geometries[i];
+        // Safety check: only render if geometry exists
+        if (!geometry) return null;
+        
+        // Enhanced glow effect with better visibility
+        const glowColor = shapeGlow.useObjectColor ? cubes.color : (shapeGlow.customColor || cubes.color);
+        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        
+        // Create material for this cube with enhanced glow
+        const material = new THREE.MeshStandardMaterial({
+          color: cubes.color,
+          emissive: new THREE.Color(glowColor),
+          emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
+          transparent: true,
+          opacity: cubes.opacity, // Use actual cube opacity instead of layerOpacity
+          // Add additive blending for more vibrant glow
+          blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+          // Increase metalness and roughness for better glow visibility
+          metalness: glowIntensity > 0 ? 0.8 : 0.0,
+          roughness: glowIntensity > 0 ? 0.2 : 0.5,
+        });
+        
+        return (
+          <TrailObject 
+            key={`cube-${i}-${cubes.count}`} 
+            id={`cube-${i}`}
+            color={new THREE.Color(cubes.color)}
+            size={cubes.size}
+            velocityThreshold={0.05}
+            geometry={geometry}
+            material={material}
+            trailType='cubeTrails'
+          >
+            <group position={pos}>
+              <mesh geometry={geometry} material={material} />
+              
+              {/* Add pulsing glow effect when enabled */}
+              {shapeGlow.enabled && shapeGlow.pulsing && (
+                <mesh geometry={geometry} position={[0, 0, 0]}>
+                  <meshBasicMaterial
+                    color={glowColor}
+                    transparent={true}
+                    opacity={glowIntensity * 0.3}
+                    blending={THREE.AdditiveBlending}
+                    side={THREE.BackSide}
+                  />
+                </mesh>
+              )}
+            </group>
+          </TrailObject>
+        );
+      })}
+    </group>
+  );
+};
+
+const Toruses = () => {
+  // Helper to create unique organic geometry for each torus - MUST BE FIRST
+  const createOrganicTorusGeometry = (size: number, organicness: number) => {
+    // Safety checks to prevent NaN values
+    const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
+    const safeOrganicness = isNaN(organicness) || organicness < 0 ? 0 : organicness;
+    
+    const geometry = new THREE.TorusGeometry(safeSize, safeSize * 0.3, 8, 16);
+    const positions = geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      const noise = (Math.random() - 0.5) * safeOrganicness;
+      positions[i] += noise;
+      positions[i + 1] += noise;
+      positions[i + 2] += noise;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  };
+
+  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
+  const { toruses } = geometric;
+  const { shapeGlow } = globalEffects;
+  const groupRef = useRef<THREE.Group>(null);
+  const [positions, setPositions] = useState<THREE.Vector3[]>([]);
+  const renderKey = useMemo(() => `toruses-${toruses.count}-${Date.now()}`, [toruses.count]);
+
+  // Get layer configuration for background mode
+  const layerConfig = backgroundConfig.enabled ? 
+    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+  const layerZ = layerConfig?.zPosition || 0;
+  const layerOpacity = layerConfig?.opacity || 1.0;
+
+  // Generate positions using useMemo to ensure they're available before render
+  const generatedPositions = useMemo(() => {
+    const newPositions: THREE.Vector3[] = [];
+    const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
+    for (let i = 0; i < safeCount; i++) {
+      newPositions.push(new THREE.Vector3(
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 30,
+        (Math.random() - 0.5) * 40,
+      ));
+    }
+    return newPositions;
+  }, [toruses.count, toruses.size]);
+
+  // FIX: Memoize all geometries at once, BEFORE any conditional returns
+  const geometries = useMemo(
+    () => {
+      const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
+      const safeSize = isNaN(toruses.size) || toruses.size <= 0 ? 1.0 : toruses.size;
+      const safeOrganicness = isNaN(toruses.organicness) || toruses.organicness < 0 ? 0 : toruses.organicness;
+      
+      return Array.from({ length: safeCount }, () => 
+        createOrganicTorusGeometry(safeSize, safeOrganicness)
+      );
+    },
+    [toruses.count, toruses.size, toruses.organicness]
+  );
+
+  // Update positions state when generated positions change
+  useEffect(() => {
+    setPositions(generatedPositions);
+  }, [generatedPositions]);
+
+  if (!toruses || toruses.count === 0) {
+    return null;
+  }
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    
+    const time = state.clock.elapsedTime;
+    const timeScale = backgroundConfig.timeScale;
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    const scaledTime = time * timeScale * safeAnimationSpeed;
+    const waveIntensity = globalEffects.distortion.wave * 2;
+    const rippleIntensity = globalEffects.distortion.ripple * 3;
+    // Calculate final rotation speed: individual torus rotation * global animation speed
+    const finalRotationSpeed = toruses.speed * safeAnimationSpeed;
     
     // Rotate the entire group with individual rotation speed * global animation speed
     groupRef.current.rotation.y += finalRotationSpeed * 0.01 * timeScale;
     
-    // Animate individual cubes with individual rotation speed * global animation speed
+    // Animate individual toruses with individual rotation speed * global animation speed
     groupRef.current.children.forEach((child, i) => {
       const pos = positions[i];
       if (!pos) return;
@@ -341,204 +601,52 @@ const Cubes = () => {
         // Safety check: only render if geometry exists
         if (!geometry) return null;
         
-        return (
-          <group key={`cube-${i}-${cubes.count}`} position={pos}>
-            {/* Main cube */}
-            <mesh>
-              <primitive object={geometry} />
-              <meshBasicMaterial 
-                color={cubes.color} 
-                transparent 
-                opacity={cubes.opacity * layerOpacity}
-                visible={true}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-            {/* Single glow layer */}
-            {shapeGlow.enabled && (
-              <mesh>
-                <primitive object={geometry} />
-                <meshBasicMaterial
-                  color={shapeGlow.useObjectColor ? cubes.color : shapeGlow.customColor}
-                  transparent
-                  opacity={shapeGlow.intensity * 0.3 * layerOpacity}
-                  blending={THREE.AdditiveBlending}
-                  depthWrite={false}
-                  visible={true}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-            )}
-          </group>
-        );
-      })}
-    </group>
-  );
-};
-
-const Toruses = () => {
-  // Helper to create unique organic geometry for each torus - MUST BE FIRST
-  const createOrganicTorusGeometry = (size: number, organicness: number) => {
-    // Safety checks to prevent NaN values
-    const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
-    const safeOrganicness = isNaN(organicness) || organicness < 0 ? 0 : organicness;
-    
-    const geometry = new THREE.TorusGeometry(safeSize, safeSize * 0.3, 16, 32);
-    const positions = geometry.attributes.position.array;
-    for (let i = 0; i < positions.length; i += 3) {
-      const noise = (Math.random() - 0.5) * safeOrganicness;
-      positions[i] += noise;
-      positions[i + 1] += noise;
-      positions[i + 2] += noise;
-    }
-    geometry.attributes.position.needsUpdate = true;
-    geometry.computeVertexNormals();
-    return geometry;
-  };
-
-  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
-  const { toruses } = geometric;
-  const { shapeGlow } = globalEffects;
-  const groupRef = useRef<THREE.Group>(null);
-  const [positions, setPositions] = useState<THREE.Vector3[]>([]);
-  const renderKey = useMemo(() => `toruses-${toruses.count}-${Date.now()}`, [toruses.count]);
-
-  // Get layer configuration for background mode
-  const layerConfig = backgroundConfig.enabled ? 
-    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
-  const layerZ = layerConfig?.zPosition || 0;
-  const layerOpacity = layerConfig?.opacity || 1.0;
-
-  // Generate positions using useMemo to ensure they're available before render
-  const generatedPositions = useMemo(() => {
-    const newPositions: THREE.Vector3[] = [];
-    const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
-    for (let i = 0; i < safeCount; i++) {
-      newPositions.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 40,
-        (Math.random() - 0.5) * 25,
-        (Math.random() - 0.5) * 30,
-      ));
-    }
-    return newPositions;
-  }, [toruses.count, toruses.size]);
-
-  // FIX: Memoize all geometries at once, BEFORE any conditional returns
-  const geometries = useMemo(
-    () => {
-      const safeCount = isNaN(toruses.count) || toruses.count < 0 ? 0 : toruses.count;
-      const safeSize = isNaN(toruses.size) || toruses.size <= 0 ? 1.0 : toruses.size;
-      const safeOrganicness = isNaN(toruses.organicness) || toruses.organicness < 0 ? 0 : toruses.organicness;
-      
-      return Array.from({ length: safeCount }, () => 
-        createOrganicTorusGeometry(safeSize, safeOrganicness)
-      );
-    },
-    [toruses.count, toruses.size, toruses.organicness]
-  );
-
-  // Update positions state when generated positions change
-  useEffect(() => {
-    setPositions(generatedPositions);
-  }, [generatedPositions]);
-
-  if (!toruses || toruses.count === 0) {
-    return null;
-  }
-
-  useFrame((state) => {
-    if (!groupRef.current) return;
-    
-    const time = state.clock.elapsedTime;
-    const timeScale = backgroundConfig.timeScale;
-    // Safety check: clamp global animation speed to prevent crashes
-    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
-    const scaledTime = time * timeScale * safeAnimationSpeed;
-    const waveIntensity = globalEffects.distortion.wave * 2;
-    const rippleIntensity = globalEffects.distortion.ripple * 3;
-    // Calculate final speed: individual torus speed * global animation speed
-    const finalSpeed = toruses.speed * safeAnimationSpeed;
-    
-    // Rotate the entire group with individual speed * global animation speed
-    groupRef.current.rotation.y += finalSpeed * 0.01 * timeScale;
-    
-    // Animate individual toruses with individual speed * global animation speed
-    groupRef.current.children.forEach((child, i) => {
-      const pos = positions[i];
-      if (!pos) return;
-      
-      // Base movement with individual speed * global animation speed
-      child.position.y = pos.y + Math.sin(scaledTime + i) * 1.5 * finalSpeed;
-      
-      // Add wave distortion
-      if (waveIntensity > 0) {
-        child.position.x = pos.x + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
-        child.position.z = pos.z + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
-      } else {
-        child.position.x = pos.x;
-        child.position.z = pos.z;
-      }
-      
-      // Add ripple effect
-      if (rippleIntensity > 0) {
-        const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
-        child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
-      }
-      
-      // Apply layer Z position when in background mode
-      if (backgroundConfig.enabled) {
-        // Apply viewport constraints for background mode
-        const constrainedPosition = constrainToViewport({
-          x: child.position.x,
-          y: child.position.y,
-          z: child.position.z
-        }, layerZ);
-        child.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
-      }
-    });
-  });
-
-  // Don't render until positions are available
-  if (positions.length === 0) {
-    return null;
-  }
-
-  return (
-    <group ref={groupRef} key={renderKey}>
-      {positions.map((pos, i) => {
-        const geometry = geometries[i];
-        // Safety check: only render if geometry exists
-        if (!geometry) return null;
+        // Enhanced glow effect with better visibility
+        const glowColor = shapeGlow.useObjectColor ? toruses.color : (shapeGlow.customColor || toruses.color);
+        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        
+        // Create material for this torus with enhanced glow
+        const material = new THREE.MeshStandardMaterial({
+          color: toruses.color,
+          emissive: new THREE.Color(glowColor),
+          emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
+          transparent: true,
+          opacity: toruses.opacity, // Use actual torus opacity instead of layerOpacity
+          // Add additive blending for more vibrant glow
+          blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+          // Increase metalness and roughness for better glow visibility
+          metalness: glowIntensity > 0 ? 0.8 : 0.0,
+          roughness: glowIntensity > 0 ? 0.2 : 0.5,
+        });
         
         return (
-          <group key={`torus-${i}-${toruses.count}`} position={pos}>
-            {/* Main torus */}
-            <mesh>
-              <primitive object={geometry} />
-              <meshBasicMaterial 
-                color={toruses.color} 
-                transparent 
-                opacity={toruses.opacity * layerOpacity}
-                visible={true}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-            {/* Single glow layer */}
-            {shapeGlow.enabled && (
-              <mesh>
-                <primitive object={geometry} />
-                <meshBasicMaterial
-                  color={shapeGlow.useObjectColor ? toruses.color : shapeGlow.customColor}
-                  transparent
-                  opacity={shapeGlow.intensity * 0.3 * layerOpacity}
-                  blending={THREE.AdditiveBlending}
-                  depthWrite={false}
-                  visible={true}
-                  side={THREE.DoubleSide}
-                />
-              </mesh>
-            )}
-          </group>
+          <TrailObject 
+            key={`torus-${i}-${toruses.count}`} 
+            id={`torus-${i}`}
+            color={new THREE.Color(toruses.color)}
+            size={toruses.size * 0.3}
+            velocityThreshold={0.05}
+            geometry={geometry}
+            material={material}
+            trailType='torusTrails'
+          >
+            <group position={pos}>
+              <mesh geometry={geometry} material={material} />
+              
+              {/* Add pulsing glow effect when enabled */}
+              {shapeGlow.enabled && shapeGlow.pulsing && (
+                <mesh geometry={geometry} position={[0, 0, 0]}>
+                  <meshBasicMaterial
+                    color={glowColor}
+                    transparent={true}
+                    opacity={glowIntensity * 0.3}
+                    blending={THREE.AdditiveBlending}
+                    side={THREE.BackSide}
+                  />
+                </mesh>
+              )}
+            </group>
+          </TrailObject>
         );
       })}
     </group>
@@ -547,7 +655,7 @@ const Toruses = () => {
 
 const Particles = () => {
   const { particles, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
-  const { particleInteraction } = globalEffects;
+  const { particleInteraction, shapeGlow } = globalEffects;
   const [positions, setPositions] = useState<Array<{x: number, y: number, z: number}>>([]);
   const particleRefs = useRef<THREE.Mesh[]>([]);
   const renderKey = useMemo(() => `particles-${particles.count}-${Date.now()}`, [particles.count]);
@@ -625,24 +733,62 @@ const Particles = () => {
 
   return (
     <group key={renderKey}>
-      {generatedPositions.map((pos, i) => (
-        <mesh
-          key={i}
-          ref={(el) => {
-            if (el) particleRefs.current[i] = el;
-          }}
-          position={[pos.x, pos.y, pos.z]}
-        >
-          <sphereGeometry args={[0.1, 8, 6]} />
-          <meshBasicMaterial
-            color={particles.color}
-            transparent
-            opacity={Math.max(0.1, safeOpacity * layerOpacity)}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false}
-          />
-        </mesh>
-      ))}
+      {generatedPositions.map((pos, i) => {
+        const geometry = new THREE.SphereGeometry(0.1, 8, 6);
+        
+        // Enhanced glow effect for particles
+        const glowColor = shapeGlow.useObjectColor ? particles.color : (shapeGlow.customColor || particles.color);
+        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        
+        const material = new THREE.MeshStandardMaterial({
+          color: particles.color,
+          emissive: new THREE.Color(glowColor),
+          emissiveIntensity: glowIntensity * 1.5, // Slightly less intense for particles
+          transparent: true,
+          opacity: particles.opacity, // Use actual particles opacity instead of layerOpacity
+          // Add additive blending for more vibrant glow
+          blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+          // Adjust metalness and roughness for better glow visibility
+          metalness: glowIntensity > 0 ? 0.6 : 0.1,
+          roughness: glowIntensity > 0 ? 0.3 : 0.8
+        });
+        
+        return (
+          <TrailObject 
+            key={i}
+            id={`particle-${i}`}
+            color={new THREE.Color(particles.color)}
+            size={safeSize}
+            velocityThreshold={0.05}
+            trailType='particleTrails'
+            geometry={geometry}
+            material={material}
+          >
+            <group position={[pos.x, pos.y, pos.z]}>
+              <mesh
+                ref={(el) => {
+                  if (el) particleRefs.current[i] = el;
+                }}
+                geometry={geometry}
+                material={material}
+              />
+              
+              {/* Add pulsing glow effect when enabled */}
+              {shapeGlow.enabled && shapeGlow.pulsing && (
+                <mesh geometry={geometry} position={[0, 0, 0]}>
+                  <meshBasicMaterial
+                    color={glowColor}
+                    transparent={true}
+                    opacity={glowIntensity * 0.2}
+                    blending={THREE.AdditiveBlending}
+                    side={THREE.BackSide}
+                  />
+                </mesh>
+              )}
+            </group>
+          </TrailObject>
+        );
+      })}
     </group>
   );
 };
@@ -676,34 +822,53 @@ const VolumetricFog = () => {
   );
 };
 
-const Scene = () => {
-  const { globalEffects, backgroundConfig } = useVisualStore();
-  const { volumetric, shapeGlow } = globalEffects;
-
-  // Performance monitoring
+// Performance monitor component that updates in the render loop
+const PerformanceMonitor = () => {
   useFrame(() => {
     performanceMonitor.update();
   });
+  
+  return null;
+};
+
+const Scene = () => {
+  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
+  const { blobs, waveInterference, metamorphosis, fireflies, layeredSineWaves } = geometric;
+  const { trails } = globalEffects;
 
   return (
     <>
-      <VolumetricFog />
-      <ambientLight intensity={0.5} />
-      <pointLight 
-        position={[10, 10, 10]} 
-        intensity={1 + (shapeGlow?.intensity || 0)}
-        color={shapeGlow?.useObjectColor ? '#ffffff' : shapeGlow?.customColor || '#ffffff'}
-      />
-      <Metamorphosis />
-      <WaveInterference />
+      {/* Performance Monitor */}
+      <PerformanceMonitor />
+      
+      {/* Lighting */}
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[10, 10, 5]} intensity={0.8} />
+      <pointLight position={[-10, -10, -5]} intensity={0.5} />
+      
+      {/* 3D Trail Renderer - only when trails are enabled */}
+      {trails.enabled && <TrailRenderer />}
+      
+      {/* Geometric Objects */}
       <Spheres />
       <Cubes />
       <Toruses />
-      <Blobs />
+      
+      {/* Particles */}
       <Particles />
-      <ObjectTrails />
-      <Fireflies />
-      <LayeredSineWaves />
+      
+      {/* Volumetric Fog */}
+      <VolumetricFog />
+      
+      {/* Special Effects */}
+      {blobs.count > 0 && <Blobs />}
+      {globalEffects.waveInterference.enabled && <WaveInterference />}
+      {globalEffects.metamorphosis.enabled && <Metamorphosis />}
+      {globalEffects.fireflies.enabled && <Fireflies />}
+      {globalEffects.layeredSineWaves.enabled && <LayeredSineWaves />}
+      
+      {/* Object Trails */}
+      {trails.enabled && <ObjectTrails />}
     </>
   );
 };
@@ -832,7 +997,7 @@ const CameraControls = () => {
 
 const EnhancedVisualCanvas = () => {
   const visualStore = useVisualStore();
-  const { globalEffects, effects, camera, backgroundConfig, ui } = visualStore;
+  const { globalEffects, effects, camera, backgroundConfig, ui, globalBlendMode } = visualStore;
   const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
   const [canvasReady, setCanvasReady] = useState(false);
   
@@ -879,6 +1044,68 @@ const EnhancedVisualCanvas = () => {
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
   }, [ui.cameraPositioningMode]);
+
+  // Create depth of field layer - MOVED INSIDE COMPONENT
+  const depthOfFieldLayer = useMemo(() => {
+    if (!camera.depthOfField.enabled) {
+      console.log('Depth of field disabled');
+      return null;
+    }
+    
+    const { focusDistance, focalLength, bokehScale, blur } = camera.depthOfField;
+    console.log('Depth of field settings:', { focusDistance, focalLength, bokehScale, blur });
+    
+    // Calculate blur intensity based on depth of field settings
+    const blurIntensity = blur * bokehScale * 10; // Much stronger for visibility
+    const focusRange = focalLength * 0.3; // Larger focus range
+    
+    console.log('Calculated blur intensity:', blurIntensity, 'focus range:', focusRange);
+    
+    // Create multiple layers for more dramatic effect
+    return (
+      <>
+        {/* Primary depth of field layer */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'transparent',
+          backdropFilter: `blur(${blurIntensity}px)`,
+          opacity: 0.8, // High opacity for visibility
+          pointerEvents: 'none',
+          zIndex: 5,
+          // Create a radial gradient that simulates depth of field
+          mask: `radial-gradient(circle at center, 
+            transparent ${Math.max(5, 100 - focusDistance * 4)}%, 
+            rgba(0, 0, 0, 0.95) ${Math.min(100, 100 - focusDistance * 4 + focusRange)}%
+          )`,
+          WebkitMask: `radial-gradient(circle at center, 
+            transparent ${Math.max(5, 100 - focusDistance * 4)}%, 
+            rgba(0, 0, 0, 0.95) ${Math.min(100, 100 - focusDistance * 4 + focusRange)}%
+          )`
+        }} />
+        
+        {/* Secondary bokeh layer for enhanced effect */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'transparent',
+          backdropFilter: `blur(${blurIntensity * 0.5}px)`,
+          opacity: 0.4,
+          pointerEvents: 'none',
+          zIndex: 6,
+          mixBlendMode: 'overlay',
+          mask: `radial-gradient(circle at center, 
+            transparent ${Math.max(10, 100 - focusDistance * 3)}%, 
+            rgba(0, 0, 0, 0.7) ${Math.min(100, 100 - focusDistance * 3 + focusRange * 1.5)}%
+          )`,
+          WebkitMask: `radial-gradient(circle at center, 
+            transparent ${Math.max(10, 100 - focusDistance * 3)}%, 
+            rgba(0, 0, 0, 0.7) ${Math.min(100, 100 - focusDistance * 3 + focusRange * 1.5)}%
+          )`
+        }} />
+      </>
+    );
+  }, [camera.depthOfField]);
 
   // Create atmospheric blur layers
   const atmosphericBlurLayers = useMemo(() => {
@@ -1125,10 +1352,49 @@ const EnhancedVisualCanvas = () => {
     );
   }, [GLOBAL_DEFAULTS.visual.bloom]);
 
+  // Global blend mode overlay - FIXED IMPLEMENTATION
+  const blendModeOverlay = useMemo(() => {
+    console.log('Global blend mode check:', globalBlendMode);
+    if (!globalBlendMode || globalBlendMode.mode === 'normal' || globalBlendMode.opacity <= 0) {
+      console.log('Global blend mode disabled or normal');
+      return null;
+    }
+    
+    console.log('Creating global blend mode overlay:', globalBlendMode);
+    
+    // Create a colored overlay for blend modes
+    let overlayColor = 'white';
+    if (globalBlendMode.mode === 'multiply') {
+      overlayColor = '#808080'; // Gray for multiply
+    } else if (globalBlendMode.mode === 'screen') {
+      overlayColor = '#404040'; // Dark gray for screen
+    } else if (globalBlendMode.mode === 'overlay') {
+      overlayColor = '#606060'; // Medium gray for overlay
+    } else if (globalBlendMode.mode === 'color-dodge') {
+      overlayColor = '#202020'; // Very dark for color dodge
+    } else if (globalBlendMode.mode === 'color-burn') {
+      overlayColor = '#a0a0a0'; // Light gray for color burn
+    }
+    
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 9999,
+          background: overlayColor,
+          mixBlendMode: globalBlendMode.mode as any,
+          opacity: globalBlendMode.opacity,
+          transition: 'opacity 0.3s',
+        }}
+      />
+    );
+  }, [globalBlendMode]);
+
   // Optimize Canvas style calculation
   const canvasStyle: React.CSSProperties = useMemo(() => {
     const filters = [];
-    const transforms = [];
     
     // Add brightness filter (should always work)
     if (effects.brightness !== 1) {
@@ -1162,24 +1428,17 @@ const EnhancedVisualCanvas = () => {
       filters.push(`saturate(${1 + chromatic.prism * 0.3})`);
     }
     
-    // Add distortion transforms (not filters)
-    if (distortion.enabled && distortion.wave > 0) {
-      transforms.push(`skew(${distortion.wave * 10}deg, ${distortion.ripple * 10}deg)`);
-    }
-    if (distortion.enabled && distortion.noise > 0) {
-      transforms.push(`scale(${1 + distortion.noise * 0.1})`);
-    }
+    // Note: Distortion effects are now only applied at the object level, not canvas level
+    // This prevents the entire viewport from being twisted
     
     return {
       filter: filters.length > 0 ? filters.join(' ') : undefined,
-      transform: transforms.length > 0 ? transforms.join(' ') : undefined,
-      transformOrigin: 'center center',
       mixBlendMode: colorBlending.enabled ? colorBlending.mode : 'normal',
       opacity: colorBlending.enabled ? 0.5 + (colorBlending.intensity * 0.5) : 1,
-      willChange: 'transform, filter, opacity',
+      willChange: 'filter, opacity',
       isolation: 'isolate'
     };
-  }, [effects.brightness, effects.contrast, effects.saturation, effects.glow, atmosphericBlur.enabled, atmosphericBlur.intensity, distortion.enabled, distortion.wave, distortion.ripple, distortion.noise, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
+  }, [effects.brightness, effects.contrast, effects.saturation, effects.glow, atmosphericBlur.enabled, atmosphericBlur.intensity, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
   
   if (!canvasReady) {
     return <div>Initializing Canvas...</div>;
@@ -1197,9 +1456,11 @@ const EnhancedVisualCanvas = () => {
         {aberrationLayers}
         {rainbowLayer}
         {fogLayer}
+        {depthOfFieldLayer}
         {atmosphericBlurLayers}
         {postProcessingOverlay}
         {bloomLayer}
+        {blendModeOverlay}
         
         {/* Camera Positioning Mode Indicator */}
         {ui.cameraPositioningMode && (
@@ -1239,6 +1500,24 @@ const EnhancedVisualCanvas = () => {
           </div>
         )}
         
+        {/* Depth of Field Indicator */}
+        {camera.depthOfField.enabled && (
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            background: 'rgba(0, 0, 0, 0.8)',
+            color: '#00ff00',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            zIndex: 10000,
+            border: '1px solid #00ff00'
+          }}>
+            DOF: {camera.depthOfField.blur.toFixed(1)} | {camera.depthOfField.bokehScale.toFixed(1)}
+          </div>
+        )}
+        
         <Canvas
           camera={{ 
             position: [0, 0, 25], // Default position - CameraSync will override this
@@ -1256,8 +1535,37 @@ const EnhancedVisualCanvas = () => {
             gl.autoClearDepth = false;
             gl.autoClearStencil = false;
             
-            // Optimize WebGL context
-            performanceOptimizer.optimizeWebGLContext(gl);
+            // Add a longer delay to ensure WebGL context is fully initialized
+            // React Three Fiber needs more time to properly set up the context
+            // Retry mechanism for WebGL optimization
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            const tryOptimizeWebGL = () => {
+              attempts++;
+              try {
+                const optimizationResult = performanceOptimizer.optimizeWebGLContext(gl);
+                if (optimizationResult) {
+                  console.log('✅ WebGL context optimized successfully');
+                  return; // Success, stop retrying
+                } else {
+                  console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
+                }
+              } catch (error) {
+                console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
+              }
+              
+              // Retry with exponential backoff if we haven't reached max attempts
+              if (attempts < maxAttempts) {
+                const delay = Math.pow(2, attempts) * 500; // 500ms, 1000ms, 2000ms
+                setTimeout(tryOptimizeWebGL, delay);
+              } else {
+                console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
+              }
+            };
+            
+            // Start the optimization process with initial delay
+            setTimeout(tryOptimizeWebGL, 500);
             
             const canvas = gl.domElement;
             canvas.addEventListener('webglcontextlost', handleWebGLContextLost);

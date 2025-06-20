@@ -373,6 +373,135 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                         <span>120°</span>
                       </div>
                     </div>
+
+                    {/* Depth of Field Controls */}
+                    <div className="mb-4 p-3 bg-purple-900/20 rounded-lg border border-purple-500/30">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-purple-300">Depth of Field</h4>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={currentDefaults.camera.depthOfField.enabled}
+                            onChange={(e) => handleUpdateDefaults('camera', { 
+                              depthOfField: { 
+                                ...currentDefaults.camera.depthOfField, 
+                                enabled: e.target.checked 
+                              } 
+                            })}
+                            className="rounded"
+                          />
+                          <span className="text-xs text-gray-300">Enabled</span>
+                        </div>
+                      </div>
+                      
+                      {currentDefaults.camera.depthOfField.enabled && (
+                        <div className="space-y-3">
+                          {/* Focus Distance */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-300 mb-1">
+                              Focus Distance: {currentDefaults.camera.depthOfField.focusDistance}
+                            </label>
+                            <input
+                              type="range"
+                              min="1"
+                              max="50"
+                              step="0.5"
+                              value={currentDefaults.camera.depthOfField.focusDistance}
+                              onChange={(e) => handleUpdateDefaults('camera', { 
+                                depthOfField: { 
+                                  ...currentDefaults.camera.depthOfField, 
+                                  focusDistance: Number(e.target.value) 
+                                } 
+                              })}
+                              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                            />
+                            <div className="flex justify-between text-xs text-gray-400 mt-1">
+                              <span>1</span>
+                              <span>25</span>
+                              <span>50</span>
+                            </div>
+                          </div>
+
+                          {/* Focal Length */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-300 mb-1">
+                              Focal Length: {currentDefaults.camera.depthOfField.focalLength}mm
+                            </label>
+                            <input
+                              type="range"
+                              min="10"
+                              max="200"
+                              step="5"
+                              value={currentDefaults.camera.depthOfField.focalLength}
+                              onChange={(e) => handleUpdateDefaults('camera', { 
+                                depthOfField: { 
+                                  ...currentDefaults.camera.depthOfField, 
+                                  focalLength: Number(e.target.value) 
+                                } 
+                              })}
+                              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                            />
+                            <div className="flex justify-between text-xs text-gray-400 mt-1">
+                              <span>10mm</span>
+                              <span>100mm</span>
+                              <span>200mm</span>
+                            </div>
+                          </div>
+
+                          {/* Bokeh Scale */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-300 mb-1">
+                              Bokeh Scale: {currentDefaults.camera.depthOfField.bokehScale}
+                            </label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="5"
+                              step="0.1"
+                              value={currentDefaults.camera.depthOfField.bokehScale}
+                              onChange={(e) => handleUpdateDefaults('camera', { 
+                                depthOfField: { 
+                                  ...currentDefaults.camera.depthOfField, 
+                                  bokehScale: Number(e.target.value) 
+                                } 
+                              })}
+                              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                            />
+                            <div className="flex justify-between text-xs text-gray-400 mt-1">
+                              <span>0</span>
+                              <span>2.5</span>
+                              <span>5</span>
+                            </div>
+                          </div>
+
+                          {/* Blur */}
+                          <div>
+                            <label className="block text-xs font-medium text-gray-300 mb-1">
+                              Blur: {currentDefaults.camera.depthOfField.blur}
+                            </label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="2"
+                              step="0.1"
+                              value={currentDefaults.camera.depthOfField.blur}
+                              onChange={(e) => handleUpdateDefaults('camera', { 
+                                depthOfField: { 
+                                  ...currentDefaults.camera.depthOfField, 
+                                  blur: Number(e.target.value) 
+                                } 
+                              })}
+                              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                            />
+                            <div className="flex justify-between text-xs text-gray-400 mt-1">
+                              <span>0</span>
+                              <span>1</span>
+                              <span>2</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -478,6 +607,50 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                     </div>
                   </div>
                 </div>
+
+                {/* Global Blend Modes Panel */}
+                <div className="mb-6 p-4 bg-blue-900/20 rounded-lg border border-blue-500/30">
+                  <h4 className="text-sm font-semibold text-blue-300 mb-3">Global Blend Modes</h4>
+                  <div className="flex items-center space-x-4 mb-3">
+                    <label className="text-xs text-gray-300 font-medium">Blend Mode:</label>
+                    <select
+                      value={currentDefaults.globalBlendMode.mode}
+                      onChange={e => handleUpdateDefaults('globalBlendMode', { mode: e.target.value })}
+                      className="bg-gray-800 text-white rounded px-2 py-1 border border-gray-700 focus:outline-none"
+                    >
+                      <option value="normal">Normal</option>
+                      <option value="multiply">Multiply</option>
+                      <option value="screen">Screen</option>
+                      <option value="overlay">Overlay</option>
+                      <option value="darken">Darken</option>
+                      <option value="lighten">Lighten</option>
+                      <option value="color-dodge">Color Dodge</option>
+                      <option value="color-burn">Color Burn</option>
+                      <option value="hard-light">Hard Light</option>
+                      <option value="soft-light">Soft Light</option>
+                      <option value="difference">Difference</option>
+                      <option value="exclusion">Exclusion</option>
+                      <option value="hue">Hue</option>
+                      <option value="saturation">Saturation</option>
+                      <option value="color">Color</option>
+                      <option value="luminosity">Luminosity</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <label className="text-xs text-gray-300 font-medium">Opacity:</label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={currentDefaults.globalBlendMode.opacity}
+                      onChange={e => handleUpdateDefaults('globalBlendMode', { opacity: Number(e.target.value) })}
+                      className="w-40"
+                    />
+                    <span className="text-xs text-gray-400">{Math.round(currentDefaults.globalBlendMode.opacity * 100)}%</span>
+                  </div>
+                </div>
+                {/* End Global Blend Modes Panel */}
               </div>
             )}
 

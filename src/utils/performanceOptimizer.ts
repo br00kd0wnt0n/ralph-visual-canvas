@@ -77,20 +77,57 @@ export class PerformanceOptimizer {
 
   // Optimize WebGL context
   optimizeWebGLContext(gl: any) {
-    if (!gl) return;
+    if (!gl) {
+      console.warn('WebGL context is null or undefined');
+      return null;
+    }
+
+    // For React Three Fiber, the gl object might be a wrapper
+    // Try to get the actual WebGL context
+    const actualGL = gl.getContext ? gl.getContext() : gl;
+    
+    if (!actualGL) {
+      console.warn('Could not get actual WebGL context from R3F wrapper');
+      return null;
+    }
+
+    // Check if the WebGL context is valid and has the required methods
+    if (typeof actualGL.getParameter !== 'function') {
+      console.warn('WebGL context does not have getParameter method - context may not be properly initialized');
+      return null;
+    }
+
+    // Additional validation - check if context is not lost
+    if (actualGL.isContextLost && actualGL.isContextLost()) {
+      console.warn('WebGL context is lost');
+      return null;
+    }
 
     try {
+      // Test a simple getParameter call first
+      const vendor = actualGL.getParameter(actualGL.VENDOR);
+      if (!vendor) {
+        console.warn('WebGL context getParameter test failed');
+        return null;
+      }
+
       // Set conservative limits to prevent crashes
-      const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-      const maxViewportDims = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+      const maxTextureSize = actualGL.getParameter(actualGL.MAX_TEXTURE_SIZE);
+      const maxViewportDims = actualGL.getParameter(actualGL.MAX_VIEWPORT_DIMS);
+      
+      // Validate that we got reasonable values
+      if (!maxTextureSize || maxTextureSize <= 0) {
+        console.warn('Invalid MAX_TEXTURE_SIZE from WebGL context');
+        return null;
+      }
       
       // Log WebGL capabilities in development
       if (process.env.NODE_ENV === 'development') {
         console.log('🎨 WebGL capabilities:', {
           maxTextureSize,
           maxViewportDims,
-          vendor: gl.getParameter(gl.VENDOR),
-          renderer: gl.getParameter(gl.RENDERER)
+          vendor,
+          renderer: actualGL.getParameter(actualGL.RENDERER)
         });
       }
 

@@ -82,7 +82,14 @@ export const GlobalDefaultsManager = {
       minDistance: 5,
       maxDistance: 50,
       minPolarAngle: 0,
-      maxPolarAngle: Math.PI
+      maxPolarAngle: Math.PI,
+      depthOfField: {
+        enabled: false,
+        focusDistance: 10,
+        focalLength: 50,
+        bokehScale: 1,
+        blur: 0.5
+      }
     });
     
     // Reset performance defaults
@@ -164,7 +171,14 @@ export const CameraPresets = {
     minDistance: 8,
     maxDistance: 30,
     minPolarAngle: 0,
-    maxPolarAngle: Math.PI
+    maxPolarAngle: Math.PI,
+    depthOfField: {
+      enabled: true,
+      focusDistance: 15,
+      focalLength: 85,
+      bokehScale: 2,
+      blur: 0.8
+    }
   },
   
   closeUp: {
@@ -183,7 +197,14 @@ export const CameraPresets = {
     minDistance: 3,
     maxDistance: 15,
     minPolarAngle: 0,
-    maxPolarAngle: Math.PI
+    maxPolarAngle: Math.PI,
+    depthOfField: {
+      enabled: true,
+      focusDistance: 8,
+      focalLength: 50,
+      bokehScale: 1.5,
+      blur: 1.2
+    }
   },
   
   wideAngle: {
@@ -202,7 +223,14 @@ export const CameraPresets = {
     minDistance: 10,
     maxDistance: 50,
     minPolarAngle: 0,
-    maxPolarAngle: Math.PI
+    maxPolarAngle: Math.PI,
+    depthOfField: {
+      enabled: false,
+      focusDistance: 20,
+      focalLength: 35,
+      bokehScale: 0.5,
+      blur: 0.3
+    }
   },
   
   orbiting: {
@@ -221,7 +249,14 @@ export const CameraPresets = {
     minDistance: 5,
     maxDistance: 30,
     minPolarAngle: 0,
-    maxPolarAngle: Math.PI
+    maxPolarAngle: Math.PI,
+    depthOfField: {
+      enabled: false,
+      focusDistance: 12,
+      focalLength: 50,
+      bokehScale: 1,
+      blur: 0.5
+    }
   }
 };
 

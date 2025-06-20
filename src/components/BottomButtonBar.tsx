@@ -2,6 +2,7 @@ import React from 'react';
 import { DashboardToggle } from './DashboardToggle';
 import { GlobalDefaultsToggle } from './GlobalDefaultsToggle';
 import { AIToggle } from './AIToggle';
+import { TrailToggle } from './TrailToggle';
 
 interface BottomButtonBarProps {
   isDashboardOpen: boolean;
@@ -12,6 +13,8 @@ interface BottomButtonBarProps {
   onAIToggle: () => void;
   isCameraMode: boolean;
   onCameraModeToggle: () => void;
+  isTrailControlsOpen: boolean;
+  onTrailControlsToggle: () => void;
 }
 
 export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
@@ -23,6 +26,8 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
   onAIToggle,
   isCameraMode,
   onCameraModeToggle,
+  isTrailControlsOpen,
+  onTrailControlsToggle,
 }) => {
   return (
     <div style={{
@@ -40,6 +45,9 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
       </div>
       <div style={{ pointerEvents: 'auto' }}>
         <GlobalDefaultsToggle isOpen={isGlobalDefaultsOpen} onToggle={onGlobalDefaultsToggle} />
+      </div>
+      <div style={{ pointerEvents: 'auto' }}>
+        <TrailToggle isOpen={isTrailControlsOpen} onToggle={onTrailControlsToggle} />
       </div>
       <div style={{ pointerEvents: 'auto' }}>
         <button

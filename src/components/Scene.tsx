@@ -19,8 +19,12 @@ const GeometricShapes = () => {
     // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
 
-    // Rotate the entire group with global animation speed
-    groupRef.current.rotation.y += delta * 0.2 * safeAnimationSpeed;
+    // Rotate the entire group with global animation speed (excluding cubes)
+    groupRef.current.children.forEach((child) => {
+      if (child.userData.type !== 'cube') {
+        child.rotation.y += delta * 0.2 * safeAnimationSpeed;
+      }
+    });
 
     // Update individual shapes with their individual speeds * global animation speed
     groupRef.current.children.forEach((child) => {
@@ -37,8 +41,21 @@ const GeometricShapes = () => {
           child.rotation.y += delta * 0.3 * finalSpeed;
         }
       } else if (child.userData.type === 'cube') {
-        child.rotation.x += delta * (child.userData.rotation || 1) * safeAnimationSpeed;
-        child.rotation.y += delta * (child.userData.rotation || 1) * safeAnimationSpeed;
+        const cubeRotation = child.userData.rotation || 1;
+        const cubeSpeed = child.userData.speed || 1;
+        const finalRotationSpeed = cubeRotation * safeAnimationSpeed;
+        const finalMovementSpeed = cubeSpeed * safeAnimationSpeed;
+        
+        // Rotation: use rotation property for spinning
+        child.rotation.x += delta * finalRotationSpeed;
+        child.rotation.y += delta * finalRotationSpeed;
+        
+        // Movement: use speed property for position changes
+        const time = state.clock.elapsedTime;
+        const originalPos = child.userData.originalPosition || [0, 0, 0];
+        child.position.x = originalPos[0] + Math.sin(time) * 1 * finalMovementSpeed;
+        child.position.y = originalPos[1] + Math.cos(time * 0.5) * 1 * finalMovementSpeed;
+        child.position.z = originalPos[2] + Math.sin(time * 0.7) * 1 * finalMovementSpeed;
       }
     });
   });
@@ -66,24 +83,29 @@ const GeometricShapes = () => {
       ))}
 
       {/* Cubes */}
-      {Array.from({ length: geometric.cubes.count }).map((_, i) => (
-        <Box
-          key={`cube-${i}`}
-          args={[geometric.cubes.size, geometric.cubes.size, geometric.cubes.size]}
-          position={[
-            Math.cos(i * Math.PI * 2 / geometric.cubes.count) * 4,
-            Math.sin(i * Math.PI * 2 / geometric.cubes.count) * 4,
-            0
-          ]}
-          userData={{ type: 'cube', rotation: geometric.cubes.rotation }}
-        >
-          <meshBasicMaterial
-            color={geometric.cubes.color}
-            transparent
-            opacity={geometric.cubes.opacity}
-          />
-        </Box>
-      ))}
+      {Array.from({ length: geometric.cubes.count }).map((_, i) => {
+        const originalX = Math.cos(i * Math.PI * 2 / geometric.cubes.count) * 4;
+        const originalY = Math.sin(i * Math.PI * 2 / geometric.cubes.count) * 4;
+        return (
+          <Box
+            key={`cube-${i}`}
+            args={[geometric.cubes.size, geometric.cubes.size, geometric.cubes.size]}
+            position={[originalX, originalY, 0]}
+            userData={{ 
+              type: 'cube', 
+              rotation: geometric.cubes.rotation, 
+              speed: geometric.cubes.speed,
+              originalPosition: [originalX, originalY, 0]
+            }}
+          >
+            <meshBasicMaterial
+              color={geometric.cubes.color}
+              transparent
+              opacity={geometric.cubes.opacity}
+            />
+          </Box>
+        );
+      })}
 
       {/* Toruses */}
       {Array.from({ length: geometric.toruses.count }).map((_, i) => (

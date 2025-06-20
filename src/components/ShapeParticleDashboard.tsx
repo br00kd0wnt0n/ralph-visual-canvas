@@ -240,6 +240,13 @@ export const ShapeParticleDashboard = React.memo(() => {
             onChange={(value) => updateGeometric('cubes', { color: value })}
           />
           <SliderControl
+            label="Speed"
+            value={geometric.cubes.speed || 1.0}
+            min={0}
+            max={5}
+            onChange={(value) => updateGeometric('cubes', { speed: value })}
+          />
+          <SliderControl
             label="Rotation"
             value={geometric.cubes.rotation || 1.0}
             min={0}

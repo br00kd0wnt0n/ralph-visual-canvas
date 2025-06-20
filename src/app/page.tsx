@@ -10,6 +10,7 @@ import { AIToggle } from '../components/AIToggle';
 import { PerformanceIndicator } from '../components/PerformanceIndicator';
 import { AITestDashboard } from '../ai-system/components/AITestDashboard';
 import GlobalDefaultsPanel from '../components/GlobalDefaultsManager';
+import { TrailControlPanel } from '../components/TrailControlPanel';
 import { useVisualStore } from '../store/visualStore';
 import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
@@ -18,6 +19,7 @@ export default function Home() {
   const { ui, toggleDashboards, toggleCameraPositioningMode } = useVisualStore();
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
   const [showAITest, setShowAITest] = useState(false);
+  const [showTrailControls, setShowTrailControls] = useState(false);
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -45,6 +47,8 @@ export default function Home() {
         onAIToggle={() => setShowAITest(!showAITest)}
         isCameraMode={ui.cameraPositioningMode}
         onCameraModeToggle={toggleCameraPositioningMode}
+        isTrailControlsOpen={showTrailControls}
+        onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
       />
 
       {/* Dashboards - Side Columns */}
@@ -68,6 +72,12 @@ export default function Home() {
           <AITestDashboard />
         </div>
       )}
+
+      {/* Trail Control Panel */}
+      <TrailControlPanel 
+        isOpen={showTrailControls} 
+        onClose={() => setShowTrailControls(false)} 
+      />
 
       {/* Global Defaults Panel */}
       <GlobalDefaultsPanel 

@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useVisualStore } from '../store/visualStore';
 import { getLayerConfig, constrainToViewport, getMovementSpeed } from '../utils/backgroundLayout';
+import { TrailObject } from './TrailObject';
 
 // Simple seeded random generator
 function mulberry32(seed: number) {
@@ -18,6 +19,7 @@ export const Blobs: React.FC = () => {
   const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const blobs = geometric.blobs;
+  const { shapeGlow } = globalEffects;
 
   // Get layer configuration for background mode - with proper fallbacks
   const layerConfig = backgroundConfig.enabled ? 
@@ -73,15 +75,26 @@ export const Blobs: React.FC = () => {
     return geometry;
   }, [safeSize, safeOrganicness]);
 
-  // PERFORMANCE OPTIMIZATION: Use a single shared material
+  // Enhanced glow effect for blobs
+  const glowColor = shapeGlow.useObjectColor ? blobs.color : (shapeGlow.customColor || blobs.color);
+  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+
+  // PERFORMANCE OPTIMIZATION: Use a single shared material with proper 3D rendering and enhanced glow
   const sharedMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
+    return new THREE.MeshStandardMaterial({
       color: blobs.color,
+      emissive: new THREE.Color(glowColor),
+      emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
       transparent: true,
-      opacity: Math.max(0.1, safeOpacity * layerOpacity),
-      side: THREE.DoubleSide
+      opacity: blobs.opacity, // Use actual blobs opacity instead of layerOpacity
+      side: THREE.DoubleSide,
+      // Add additive blending for more vibrant glow
+      blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+      // Increase metalness and roughness for better glow visibility
+      metalness: glowIntensity > 0 ? 0.8 : 0.1,
+      roughness: glowIntensity > 0 ? 0.2 : 0.8
     });
-  }, [blobs.color, safeOpacity, layerOpacity]);
+  }, [blobs.color, glowColor, glowIntensity, blobs.opacity]);
 
   // Stable positions for each blob
   const positionsRef = useRef<[number, number, number][]>([]);
@@ -120,37 +133,39 @@ export const Blobs: React.FC = () => {
       
       // Animate individual blobs with individual speed * global animation speed
       groupRef.current.children.forEach((child, i) => {
-        const mesh = child as THREE.Mesh;
+        const trailObjectGroup = child as THREE.Group;
+        const mesh = trailObjectGroup.children[0] as THREE.Mesh;
         const pos = positionsRef.current[i];
         if (!pos) return;
         
-        // Base movement - use the same approach as other components
-        mesh.position.y = pos[1] + Math.sin(scaledTime + i) * 2 * finalSpeed;
+        // Set position on the group (which TrailObject reads from)
+        let x = pos[0];
+        let y = pos[1] + Math.sin(scaledTime + i) * 2 * finalSpeed;
+        let z = pos[2];
         
         // Add wave distortion with global animation speed
         if (waveIntensity > 0) {
-          mesh.position.x = pos[0] + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
-          mesh.position.z = pos[2] + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
-        } else {
-          mesh.position.x = pos[0];
-          mesh.position.z = pos[2];
+          x = pos[0] + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
+          z = pos[2] + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
         }
         
         // Add ripple effect with global animation speed
         if (rippleIntensity > 0) {
-          const distance = Math.sqrt(mesh.position.x ** 2 + mesh.position.z ** 2);
-          mesh.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
+          const distance = Math.sqrt(x ** 2 + z ** 2);
+          y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
         }
         
         // Apply layer Z position when in background mode (less frequently)
         if (shouldApplyConstraints) {
           // Apply viewport constraints for background mode
           const constrainedPosition = constrainToViewport({
-            x: mesh.position.x,
-            y: mesh.position.y,
-            z: mesh.position.z
+            x: x,
+            y: y,
+            z: z
           }, layerZ);
-          mesh.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
+          trailObjectGroup.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
+        } else {
+          trailObjectGroup.position.set(x, y, z);
         }
         
         // Add rotation and scaling with individual speed * global animation speed
@@ -166,12 +181,36 @@ export const Blobs: React.FC = () => {
   return (
     <group ref={groupRef} key={`blobs-${backgroundConfig.enabled}-${safeCount}`}>
       {positionsRef.current.map((position, i) => (
-        <mesh
+        <TrailObject 
           key={`blob-${i}-${safeCount}`}
+          id={`blob-${i}`}
+          color={new THREE.Color(blobs.color)}
+          size={safeSize}
+          velocityThreshold={0.05}
+          trailType='blobTrails'
           geometry={sharedGeometry}
           material={sharedMaterial}
-          position={position}
-        />
+        >
+          <group position={position}>
+            <mesh
+              geometry={sharedGeometry}
+              material={sharedMaterial}
+            />
+            
+            {/* Add pulsing glow effect when enabled */}
+            {shapeGlow.enabled && shapeGlow.pulsing && (
+              <mesh geometry={sharedGeometry} position={[0, 0, 0]}>
+                <meshBasicMaterial
+                  color={glowColor}
+                  transparent={true}
+                  opacity={glowIntensity * 0.3}
+                  blending={THREE.AdditiveBlending}
+                  side={THREE.BackSide}
+                />
+              </mesh>
+            )}
+          </group>
+        </TrailObject>
       ))}
     </group>
   );

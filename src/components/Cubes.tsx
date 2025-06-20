@@ -26,14 +26,22 @@ export const Cubes = () => {
       const noiseIntensity = globalEffects.distortion.noise;
       // Safety check: clamp global animation speed to prevent crashes
       const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
-      // Calculate final rotation speed: individual cube rotation * global animation speed
+      // Calculate final speeds: individual cube speeds * global animation speed
       const finalRotationSpeed = cubes.rotation * safeAnimationSpeed;
+      const finalMovementSpeed = cubes.speed * safeAnimationSpeed;
       
       groupRef.current.children.forEach((child, i) => {
-        // Enhanced rotation with distortion and individual speed * global animation speed
+        const originalPos = cubePositions[i];
+        if (!originalPos) return;
+        
+        // Rotation: use rotation property for spinning
         child.rotation.x += finalRotationSpeed * 0.01;
         child.rotation.y += finalRotationSpeed * 0.015;
-        child.position.x += Math.sin(time + i) * 0.01 * safeAnimationSpeed;
+        
+        // Movement: use speed property for position changes based on original position
+        child.position.x = originalPos[0] + Math.sin(time + i) * 2 * finalMovementSpeed;
+        child.position.y = originalPos[1] + Math.cos(time + i * 0.5) * 1.5 * finalMovementSpeed;
+        child.position.z = originalPos[2] + Math.sin(time * 0.7 + i) * 1 * finalMovementSpeed;
         
         // Add noise distortion with global animation speed
         if (noiseIntensity > 0) {
