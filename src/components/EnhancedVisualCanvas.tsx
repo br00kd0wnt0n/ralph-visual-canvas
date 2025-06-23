@@ -1533,7 +1533,7 @@ const EnhancedVisualCanvas = () => {
           {blendModeOverlay}
           
           {/* Camera Positioning Mode Indicator */}
-          {ui.cameraPositioningMode && (
+          {ui.cameraPositioningMode && !camera.autoPan.enabled && (
             <div style={{
               position: 'absolute',
               top: '20px',
