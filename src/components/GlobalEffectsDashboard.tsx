@@ -87,7 +87,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Atmospheric Blur */}
-      <CollapsibleSection title="Atmospheric Blur">
+      <CollapsibleSection title="Atmospheric Blur" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.atmosphericBlur.enabled}
@@ -118,7 +118,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Color Blending */}
-      <CollapsibleSection title="Color Blending">
+      <CollapsibleSection title="Color Blending" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.colorBlending.enabled}
@@ -147,7 +147,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Shape Glow */}
-      <CollapsibleSection title="Shape Glow">
+      <CollapsibleSection title="Shape Glow" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.shapeGlow.enabled}
@@ -216,7 +216,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Chromatic Effects */}
-      <CollapsibleSection title="Chromatic Effects">
+      <CollapsibleSection title="Chromatic Effects" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.enabled}
@@ -289,7 +289,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Rainbow Effect */}
-      <CollapsibleSection title="Rainbow Effect">
+      <CollapsibleSection title="Rainbow Effect" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.rainbow.enabled}
@@ -437,7 +437,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Distortion */}
-      <CollapsibleSection title="Distortion">
+      <CollapsibleSection title="Distortion" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.distortion.enabled}
@@ -484,7 +484,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Volumetric Effects */}
-      <CollapsibleSection title="Volumetric">
+      <CollapsibleSection title="Volumetric" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
           value={globalEffects.volumetric.enabled}
@@ -526,7 +526,7 @@ export const GlobalEffectsDashboard = () => {
       </CollapsibleSection>
 
       {/* Enhanced Post-Processing */}
-      <CollapsibleSection title="Enhanced Post-FX">
+      <CollapsibleSection title="Enhanced Post-FX" defaultExpanded={false}>
         <SliderControl
           label="Brightness"
           value={effects.brightness || 1.0}
