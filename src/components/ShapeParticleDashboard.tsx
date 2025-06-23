@@ -552,6 +552,62 @@ export const ShapeParticleDashboard = React.memo(() => {
           />
         </CollapsibleSection>
 
+        {/* Fireflies Controls */}
+        <CollapsibleSection title="Fireflies" defaultExpanded={false}>
+          <ToggleControl
+            label="Enable"
+            value={globalEffects.fireflies.enabled}
+            onChange={(value: boolean) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, enabled: value }
+            })}
+          />
+          <SliderControl
+            label="Count"
+            value={globalEffects.fireflies.count || 50}
+            min={10}
+            max={100}
+            step={5}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, count: value }
+            })}
+          />
+          <SliderControl
+            label="Speed"
+            value={globalEffects.fireflies.speed || 1}
+            min={0.1}
+            max={3}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, speed: value }
+            })}
+          />
+          <SliderControl
+            label="Glow Intensity"
+            value={globalEffects.fireflies.glowIntensity || 1}
+            min={0.1}
+            max={2}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, glowIntensity: value }
+            })}
+          />
+          <SliderControl
+            label="Swarm Radius"
+            value={globalEffects.fireflies.swarmRadius || 30}
+            min={10}
+            max={50}
+            step={5}
+            onChange={(value: number) => updateGlobalEffects({ 
+              fireflies: { ...globalEffects.fireflies, swarmRadius: value }
+            })}
+          />
+          <ColorControl
+            label="Color"
+            value={geometric.fireflies?.color || '#ffff88'}
+            onChange={(value) => updateGeometric('fireflies', { color: value })}
+          />
+        </CollapsibleSection>
+
         {/* Metamorphosis Controls */}
         <CollapsibleSection title="Metamorphosis" defaultExpanded={false}>
           <ToggleControl
@@ -635,62 +691,6 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Color"
             value={geometric.metamorphosis?.color || '#333333'}
             onChange={(value) => updateGeometric('metamorphosis', { color: value })}
-          />
-        </CollapsibleSection>
-
-        {/* Fireflies Controls */}
-        <CollapsibleSection title="Fireflies" defaultExpanded={false}>
-          <ToggleControl
-            label="Enable"
-            value={globalEffects.fireflies.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, enabled: value }
-            })}
-          />
-          <SliderControl
-            label="Count"
-            value={globalEffects.fireflies.count || 50}
-            min={10}
-            max={100}
-            step={5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, count: value }
-            })}
-          />
-          <SliderControl
-            label="Speed"
-            value={globalEffects.fireflies.speed || 1}
-            min={0.1}
-            max={3}
-            step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, speed: value }
-            })}
-          />
-          <SliderControl
-            label="Glow Intensity"
-            value={globalEffects.fireflies.glowIntensity || 1}
-            min={0.1}
-            max={2}
-            step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, glowIntensity: value }
-            })}
-          />
-          <SliderControl
-            label="Swarm Radius"
-            value={globalEffects.fireflies.swarmRadius || 30}
-            min={10}
-            max={50}
-            step={5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, swarmRadius: value }
-            })}
-          />
-          <ColorControl
-            label="Color"
-            value={geometric.fireflies?.color || '#ffff88'}
-            onChange={(value) => updateGeometric('fireflies', { color: value })}
           />
         </CollapsibleSection>
 
