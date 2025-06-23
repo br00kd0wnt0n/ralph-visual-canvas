@@ -15,11 +15,22 @@ import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
 
 export default function Home() {
-  const { ui, toggleDashboards, toggleCameraPositioningMode } = useVisualStore();
+  const { ui, toggleDashboards, toggleCameraPositioningMode, loadPreset, getAvailablePresets } = useVisualStore();
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
   const [showAITest, setShowAITest] = useState(false);
   const [showTrailControls, setShowTrailControls] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
+
+  // Load INIT preset by default on first app load
+  useEffect(() => {
+    const availablePresets = getAvailablePresets();
+    if (availablePresets.includes('INIT')) {
+      console.log('🚀 Loading INIT preset by default...');
+      loadPreset('INIT');
+    } else {
+      console.log('ℹ️ INIT preset not found, using default settings');
+    }
+  }, [loadPreset, getAvailablePresets]);
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
