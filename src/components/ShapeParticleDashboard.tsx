@@ -553,7 +553,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Metamorphosis Controls */}
-        <CollapsibleSection title="Metamorphosis" defaultExpanded={true}>
+        <CollapsibleSection title="Metamorphosis" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
             value={globalEffects.metamorphosis.enabled}
@@ -639,7 +639,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Fireflies Controls */}
-        <CollapsibleSection title="Fireflies" defaultExpanded={true}>
+        <CollapsibleSection title="Fireflies" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
             value={globalEffects.fireflies.enabled}
@@ -695,7 +695,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Wave Interference Controls */}
-        <CollapsibleSection title="Wave Interference" defaultExpanded={true}>
+        <CollapsibleSection title="Wave Interference" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
             value={globalEffects.waveInterference.enabled}
@@ -812,7 +812,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Layered Sine Waves Controls */}
-        <CollapsibleSection title="Layered Sine Waves" defaultExpanded={true}>
+        <CollapsibleSection title="Layered Sine Waves" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
             value={globalEffects.layeredSineWaves?.enabled ?? false}
