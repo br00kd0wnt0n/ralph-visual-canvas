@@ -173,7 +173,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={particles.size || 0.1}
             min={0.01}
-            max={1.0}
+            max={10.0}
             step={0.01}
             onChange={(value) => updateParticles({ size: value })}
           />
@@ -211,6 +211,20 @@ export const ShapeParticleDashboard = React.memo(() => {
             step={0.1}
             onChange={(value) => updateParticles({ distance: value })}
           />
+          <ToggleControl
+            label="Pulse"
+            value={particles.pulseEnabled}
+            onChange={(value) => updateParticles({ pulseEnabled: value })}
+          />
+          {particles.pulseEnabled && (
+            <SliderControl
+              label="Pulse Size"
+              value={particles.pulseSize}
+              min={0.1}
+              max={3}
+              onChange={(value) => updateParticles({ pulseSize: value })}
+            />
+          )}
           <SelectControl
             label="Movement Pattern"
             value={particles.movementPattern}
@@ -238,7 +252,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={geometric.spheres.size || 1.0}
             min={0.1}
-            max={3}
+            max={15}
             onChange={(value) => updateGeometric('spheres', { size: value })}
           />
           <SliderControl
@@ -283,6 +297,20 @@ export const ShapeParticleDashboard = React.memo(() => {
             step={0.1}
             onChange={(value) => updateGeometric('spheres', { distance: value })}
           />
+          <ToggleControl
+            label="Pulse"
+            value={geometric.spheres.pulseEnabled}
+            onChange={(value) => updateGeometric('spheres', { pulseEnabled: value })}
+          />
+          {geometric.spheres.pulseEnabled && (
+            <SliderControl
+              label="Pulse Size"
+              value={geometric.spheres.pulseSize}
+              min={0.1}
+              max={3}
+              onChange={(value) => updateGeometric('spheres', { pulseSize: value })}
+            />
+          )}
           <SelectControl
             label="Movement Pattern"
             value={geometric.spheres.movementPattern}
@@ -310,7 +338,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={geometric.cubes.size || 0.8}
             min={0.1}
-            max={3}
+            max={15}
             onChange={(value) => updateGeometric('cubes', { size: value })}
           />
           <SliderControl
@@ -354,6 +382,20 @@ export const ShapeParticleDashboard = React.memo(() => {
             step={0.1}
             onChange={(value) => updateGeometric('cubes', { distance: value })}
           />
+          <ToggleControl
+            label="Pulse"
+            value={geometric.cubes.pulseEnabled}
+            onChange={(value) => updateGeometric('cubes', { pulseEnabled: value })}
+          />
+          {geometric.cubes.pulseEnabled && (
+            <SliderControl
+              label="Pulse Size"
+              value={geometric.cubes.pulseSize}
+              min={0.1}
+              max={3}
+              onChange={(value) => updateGeometric('cubes', { pulseSize: value })}
+            />
+          )}
           <SelectControl
             label="Movement Pattern"
             value={geometric.cubes.movementPattern}
@@ -381,7 +423,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={geometric.toruses.size || 1.2}
             min={0.1}
-            max={3}
+            max={15}
             onChange={(value) => updateGeometric('toruses', { size: value })}
           />
           <SliderControl
@@ -426,6 +468,20 @@ export const ShapeParticleDashboard = React.memo(() => {
             step={0.1}
             onChange={(value) => updateGeometric('toruses', { distance: value })}
           />
+          <ToggleControl
+            label="Pulse"
+            value={geometric.toruses.pulseEnabled}
+            onChange={(value) => updateGeometric('toruses', { pulseEnabled: value })}
+          />
+          {geometric.toruses.pulseEnabled && (
+            <SliderControl
+              label="Pulse Size"
+              value={geometric.toruses.pulseSize}
+              min={0.1}
+              max={3}
+              onChange={(value) => updateGeometric('toruses', { pulseSize: value })}
+            />
+          )}
           <SelectControl
             label="Movement Pattern"
             value={geometric.toruses.movementPattern}
@@ -453,7 +509,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={geometric.blobs.size || 1.5}
             min={0.2}
-            max={3}
+            max={15}
             onChange={(value) => updateGeometric('blobs', { size: value })}
           />
           <SliderControl
@@ -490,6 +546,20 @@ export const ShapeParticleDashboard = React.memo(() => {
             step={0.1}
             onChange={(value) => updateGeometric('blobs', { distance: value })}
           />
+          <ToggleControl
+            label="Pulse"
+            value={geometric.blobs.pulseEnabled}
+            onChange={(value) => updateGeometric('blobs', { pulseEnabled: value })}
+          />
+          {geometric.blobs.pulseEnabled && (
+            <SliderControl
+              label="Pulse Size"
+              value={geometric.blobs.pulseSize}
+              min={0.1}
+              max={3}
+              onChange={(value) => updateGeometric('blobs', { pulseSize: value })}
+            />
+          )}
           <SelectControl
             label="Movement Pattern"
             value={geometric.blobs.movementPattern}
@@ -546,7 +616,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={globalEffects.metamorphosis.size || 1.0}
             min={0.1}
-            max={3.0}
+            max={15.0}
             step={0.1}
             onChange={(value: number) => updateGlobalEffects({ 
               metamorphosis: { ...globalEffects.metamorphosis, size: value }
@@ -634,6 +704,26 @@ export const ShapeParticleDashboard = React.memo(() => {
               waveInterference: { ...globalEffects.waveInterference, enabled: value }
             })}
           />
+          <SelectControl
+            label="Preset"
+            value={globalEffects.waveInterference.preset?.toString() || "1"}
+            options={[
+              { value: "1", label: "1 - Classic Interference" },
+              { value: "2", label: "2 - Spiral Waves" },
+              { value: "3", label: "3 - Chaotic Turbulence" },
+              { value: "4", label: "4 - Harmonic Resonance" }
+            ]}
+            onChange={(value: string) => updateGlobalEffects({ 
+              waveInterference: { ...globalEffects.waveInterference, preset: parseInt(value) }
+            })}
+          />
+          {/* Preset descriptions */}
+          <div className="text-xs text-gray-400 mt-1 mb-2 px-2">
+            {globalEffects.waveInterference.preset === 1 && "Traditional wave interference with grid sources"}
+            {globalEffects.waveInterference.preset === 2 && "Concentric spiral wave pattern with rotation effects"}
+            {globalEffects.waveInterference.preset === 3 && "Random chaotic wave interference with noise"}
+            {globalEffects.waveInterference.preset === 4 && "Harmonic wave patterns with frequency relationships"}
+          </div>
           <SliderControl
             label="Speed"
             value={globalEffects.waveInterference.speed || 0.5}
@@ -795,7 +885,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Size"
             value={globalEffects.layeredSineWaves?.size ?? 1.0}
             min={0.1}
-            max={3.0}
+            max={15.0}
             step={0.1}
             onChange={(value: number) => updateGlobalEffects({ 
               layeredSineWaves: { ...globalEffects.layeredSineWaves, size: value }

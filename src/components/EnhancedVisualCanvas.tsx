@@ -672,7 +672,7 @@ const Particles = () => {
 
   // Safety checks for particle parameters
   const safeCount = Math.min(particles.count, 2000); // Cap at 2000 for performance
-  const safeSize = Math.max(0.1, Math.min(particles.size, 5.0));
+  const safeSize = Math.max(0.1, Math.min(particles.size, 15.0));
   const safeSpeed = Math.max(0.1, Math.min(particles.speed, 10.0));
   const safeSpread = Math.max(10, Math.min(particles.spread, 100));
   const safeOpacity = Math.max(0.1, Math.min(particles.opacity, 1.0));

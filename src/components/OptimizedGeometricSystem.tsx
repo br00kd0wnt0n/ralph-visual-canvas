@@ -141,6 +141,9 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
   const safeRotation = isNaN((shape as any).rotation) ? 1.0 : (shape as any).rotation;
   const movementPattern = shape.movementPattern || 'orbit';
   const safeDistance = isNaN(shape.distance) || shape.distance < 0 ? 2.0 : shape.distance;
+  const pulseEnabled = shape.pulseEnabled || false;
+  const pulseSize = isNaN(shape.pulseSize) || shape.pulseSize < 0 ? 1.0 : shape.pulseSize;
+  const pulseTimeRef = useRef(0);
 
   if (!shape || safeCount === 0) return null;
 
@@ -158,21 +161,7 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
     });
   }
 
-  // Shared material
-  const glowColor = shapeGlow.useObjectColor ? shape.color : (shapeGlow.customColor || shape.color);
-  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
-  const sharedMaterial = useMemo(() => new THREE.MeshStandardMaterial({
-    color: shape.color,
-    emissive: new THREE.Color(glowColor),
-    emissiveIntensity: glowIntensity * 2.0,
-    transparent: true,
-    opacity: shape.opacity,
-    blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
-    metalness: glowIntensity > 0 ? 0.8 : 0.1,
-    roughness: glowIntensity > 0 ? 0.2 : 0.8
-  }), [shape.color, glowColor, glowIntensity, shape.opacity]);
-
-  // Individual organic geometries
+  // Individual organic geometries and materials
   const geometries = useMemo(() => {
     return Array.from({ length: safeCount }, () => {
       let geometry: THREE.BufferGeometry;
@@ -198,38 +187,77 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
     });
   }, [safeCount, safeSize, safeOrganicness, type]);
 
+  // Individual materials for each object
+  const materials = useMemo(() => {
+    return Array.from({ length: safeCount }, () => {
+      const glowColor = shapeGlow.useObjectColor ? shape.color : (shapeGlow.customColor || shape.color);
+      const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+      
+      return new THREE.MeshStandardMaterial({
+        color: shape.color,
+        emissive: new THREE.Color(glowColor),
+        emissiveIntensity: glowIntensity * 2.0,
+        transparent: true,
+        opacity: shape.opacity,
+        blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+        metalness: glowIntensity > 0 ? 0.8 : 0.1,
+        roughness: glowIntensity > 0 ? 0.2 : 0.8
+      });
+    });
+  }, [safeCount, shape.color, shape.opacity, shapeGlow]);
+
+  // Get glow intensity for animation
+  const glowColor = shapeGlow.useObjectColor ? shape.color : (shapeGlow.customColor || shape.color);
+  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+
   // Frame counter for constraint optimization
   const frameCountRef = useRef(0);
 
   useFrame((state) => {
     if (!groupRef.current) return;
     const time = state.clock.elapsedTime;
+    const timeScale = backgroundConfig.timeScale || 1;
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
-    const scaledTime = time * safeAnimationSpeed;
+    const scaledTime = time * timeScale * safeAnimationSpeed;
     const waveIntensity = globalEffects.distortion.wave * 2;
     const rippleIntensity = globalEffects.distortion.ripple * 3;
-    const finalSpeed = safeSpeed * movementSpeed * safeAnimationSpeed;
-    const finalRotation = safeRotation * safeAnimationSpeed;
+    
+    // Update pulse time for individual object pulsing
+    if (pulseEnabled) {
+      pulseTimeRef.current += state.clock.getDelta() * safeAnimationSpeed;
+    }
+    
     frameCountRef.current++;
     const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 3 === 0;
     groupRef.current.children.forEach((child, i) => {
       const trailObjectGroup = child as THREE.Group;
       const mesh = trailObjectGroup.children[0] as THREE.Mesh;
+      const material = materials[i];
       const pos = positionsRef.current[i];
       if (!pos) return;
+      
+      // Individual object speed and rotation
+      const individualSpeed = safeSpeed * movementSpeed * safeAnimationSpeed;
+      const individualRotation = safeRotation * safeAnimationSpeed;
+      
+      // Apply individual rotation to each object
+      mesh.rotation.x += individualRotation * 0.01 * timeScale;
+      mesh.rotation.y += individualRotation * 0.01 * timeScale;
+      mesh.rotation.z += individualRotation * 0.005 * timeScale;
+      
       let x = pos[0];
       let y = pos[1];
       let z = pos[2];
       if (movementPattern === 'orbit') {
-        x = pos[0] + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
-        y = pos[1] + Math.cos(scaledTime + i * 0.5) * 1.5 * finalSpeed * safeDistance;
-        z = pos[2] + Math.sin(scaledTime * 0.7 + i) * 1 * finalSpeed * safeDistance;
+        x = pos[0] + Math.sin(scaledTime + i) * 2 * individualSpeed * safeDistance;
+        y = pos[1] + Math.cos(scaledTime + i * 0.5) * 1.5 * individualSpeed * safeDistance;
+        z = pos[2] + Math.sin(scaledTime * 0.7 + i) * 1 * individualSpeed * safeDistance;
       } else if (movementPattern === 'verticalSine') {
-        y = pos[1] + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+        y = pos[1] + Math.sin(scaledTime + i) * 2 * individualSpeed * safeDistance;
       } else if (movementPattern === 'random') {
-        x = pos[0] + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
-        y = pos[1] + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
-        z = pos[2] + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        x = pos[0] + (Math.random() - 0.5) * 0.5 * individualSpeed * safeDistance;
+        y = pos[1] + (Math.random() - 0.5) * 0.5 * individualSpeed * safeDistance;
+        z = pos[2] + (Math.random() - 0.5) * 0.5 * individualSpeed * safeDistance;
       }
       if (waveIntensity > 0) {
         x += Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
@@ -245,9 +273,27 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
       } else {
         trailObjectGroup.position.set(x, y, z);
       }
-      // Rotation
-      mesh.rotation.x += safeRotation * 0.01;
-      mesh.rotation.y += safeRotation * 0.015;
+      
+      // Apply individual object pulsing
+      if (pulseEnabled && material) {
+        if (material.emissiveIntensity !== undefined) {
+          const pulsePhase = pulseTimeRef.current + i * 0.5;
+          const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
+          const newEmissiveIntensity = glowIntensity * 2.0 * pulseIntensity * pulseSize;
+          material.emissiveIntensity = newEmissiveIntensity;
+        }
+        
+        // Also animate the pulsing glow mesh if it exists
+        if (trailObjectGroup.children.length > 1) {
+          const glowMesh = trailObjectGroup.children[1] as THREE.Mesh;
+          const glowMaterial = glowMesh.material as THREE.MeshBasicMaterial;
+          if (glowMaterial && glowMaterial.opacity !== undefined) {
+            const pulsePhase = pulseTimeRef.current + i * 0.5;
+            const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
+            glowMaterial.opacity = glowIntensity * 0.3 * pulseIntensity * pulseSize;
+          }
+        }
+      }
     });
   });
 
@@ -266,10 +312,10 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
             'torusTrails'
           }
           geometry={geometries[i]}
-          material={sharedMaterial}
+          material={materials[i]}
         >
           <group position={position}>
-            <mesh geometry={geometries[i]} material={sharedMaterial} />
+            <mesh geometry={geometries[i]} material={materials[i]} />
           </group>
         </TrailObject>
       ))}
@@ -285,7 +331,7 @@ const OptimizedParticles: React.FC = () => {
   
   // Apply your existing safety checks
   const safeCount = Math.max(0, Math.min(particles.count, 2000));
-  const safeSize = Math.max(0.1, Math.min(particles.size, 5.0));
+  const safeSize = Math.max(0.1, Math.min(particles.size, 15.0));
   const safeSpeed = Math.max(0.1, Math.min(particles.speed, 10.0));
   const safeSpread = Math.max(10, Math.min(particles.spread, 100));
   const safeOpacity = Math.max(0.1, Math.min(particles.opacity, 1.0));

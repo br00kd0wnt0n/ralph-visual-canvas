@@ -73,6 +73,9 @@ const PresetControls: React.FC = React.memo(() => {
           }
         };
         
+        console.log(`☁️ Saving cloud preset "${presetName}" with globalAnimationSpeed:`, currentState.globalAnimationSpeed);
+        console.log(`☁️ Full cloud preset data:`, presetData);
+        
         await PresetClient.createPreset(presetData);
         await refreshCloudPresets();
       }
@@ -98,6 +101,9 @@ const PresetControls: React.FC = React.memo(() => {
         const presetId = selectedCloudPreset;
         const preset = await PresetClient.getPresetById(presetId);
         if (preset) {
+          console.log(`☁️ Loading cloud preset "${preset.name}" with globalAnimationSpeed:`, preset.data.globalAnimationSpeed);
+          console.log(`☁️ Full cloud preset data:`, preset.data);
+          
           const currentState = useVisualStore.getState();
           
           // Apply preset data to store
@@ -123,6 +129,10 @@ const PresetControls: React.FC = React.memo(() => {
           }
           if (preset.data.backgroundConfig) {
             currentState.updateBackgroundConfig(preset.data.backgroundConfig);
+          }
+          if (typeof preset.data.globalAnimationSpeed === 'number') {
+            currentState.updateGlobalAnimationSpeed(preset.data.globalAnimationSpeed);
+            console.log(`☁️ Applied globalAnimationSpeed:`, preset.data.globalAnimationSpeed);
           }
         }
       }

@@ -98,6 +98,8 @@ export interface VisualState {
       organicness: number;
       movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
       distance: number;
+      pulseEnabled: boolean;
+      pulseSize: number;
     };
     cubes: {
       count: number;
@@ -109,6 +111,8 @@ export interface VisualState {
       organicness: number;
       movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
       distance: number;
+      pulseEnabled: boolean;
+      pulseSize: number;
     };
     toruses: {
       count: number;
@@ -120,6 +124,8 @@ export interface VisualState {
       organicness: number;
       movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
       distance: number;
+      pulseEnabled: boolean;
+      pulseSize: number;
     };
     blobs: {
       count: number;
@@ -130,6 +136,8 @@ export interface VisualState {
       organicness: number;
       movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
       distance: number;
+      pulseEnabled: boolean;
+      pulseSize: number;
     };
     crystals: {
       count: number;
@@ -164,6 +172,8 @@ export interface VisualState {
     spread: number;
     movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
     distance: number;
+    pulseEnabled: boolean;
+    pulseSize: number;
   };
   
   // ENHANCED: Global Effects System
@@ -287,6 +297,7 @@ export interface VisualState {
       speed: number;
       amplitude: number;
       contourLevels: number;
+      preset: number; // 1-4 for different wave interference patterns
       edgeFade: {
         enabled: boolean;
         fadeStart: number; // Start fading at this distance from center (0-1)
@@ -392,7 +403,7 @@ export interface VisualActions {
   // UI Actions
   toggleDashboards: () => void;
   setDashboardsVisible: (visible: boolean) => void;
-  toggleCameraPositioningMode: () => void; // NEW: Toggle camera positioning mode
+  toggleCameraPositioningMode: () => void; // NEW: Enable direct camera control on live view
   setCameraPositioningMode: (enabled: boolean) => void; // NEW: Set camera positioning mode
   
   updateBackground: (updates: Partial<VisualState['background']>) => void;
@@ -401,6 +412,7 @@ export interface VisualActions {
   updateGlobalEffects: (updates: Partial<VisualState['globalEffects']>) => void;
   updateEffects: (updates: Partial<VisualState['effects']>) => void;
   updateCamera: (updates: Partial<VisualState['camera']>) => void;
+  updateGlobalAnimationSpeed: (speed: number) => void; // NEW: Update global animation speed
   resetToDefaults: () => void;
   savePreset: (name: string) => void;
   loadPreset: (name: string) => void;
@@ -410,7 +422,7 @@ export interface VisualActions {
   resetToGlobalDefaults: () => void;
   resetCameraToDefaults: () => void;
   resetVisualEffectsToDefaults: () => void;
-  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => void;
+  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: any) => void;
   forceApplyGlobalDefaults: () => void;
   getGlobalDefaults: () => typeof GLOBAL_DEFAULTS;
   clearCachedDefaults: () => void;
@@ -420,10 +432,11 @@ export interface VisualActions {
 }
 
 // Update the VisualPreset type to use VisualState
-type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset' | 'updateBackgroundConfig' | 'resetToGlobalDefaults' | 'resetCameraToDefaults' | 'resetVisualEffectsToDefaults' | 'updateGlobalDefaults' | 'forceApplyGlobalDefaults' | 'getGlobalDefaults'> & {
+type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'updateGlobalAnimationSpeed' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset' | 'updateBackgroundConfig' | 'resetToGlobalDefaults' | 'resetCameraToDefaults' | 'resetVisualEffectsToDefaults' | 'updateGlobalDefaults' | 'forceApplyGlobalDefaults' | 'getGlobalDefaults'> & {
   savedAt: string;
   version: string;
   location: string;
+  globalAnimationSpeed: number; // Explicitly include this
 };
 
 type PresetStorage = {
@@ -511,6 +524,8 @@ export const GLOBAL_DEFAULTS = {
       organicness: 0.3,
       movementPattern: 'verticalSine' as const,
       distance: 2.0,
+      pulseEnabled: false,
+      pulseSize: 1.0,
     },
     cubes: {
       count: 10,
@@ -522,6 +537,8 @@ export const GLOBAL_DEFAULTS = {
       organicness: 0.2,
       movementPattern: 'orbit' as const,
       distance: 2.5,
+      pulseEnabled: false,
+      pulseSize: 1.0,
     },
     toruses: {
       count: 8,
@@ -533,6 +550,8 @@ export const GLOBAL_DEFAULTS = {
       organicness: 0.4,
       movementPattern: 'verticalSine' as const,
       distance: 2.0,
+      pulseEnabled: false,
+      pulseSize: 1.0,
     },
     blobs: {
       count: 6,
@@ -543,6 +562,8 @@ export const GLOBAL_DEFAULTS = {
       organicness: 0.8,
       movementPattern: 'orbit' as const,
       distance: 3.0,
+      pulseEnabled: false,
+      pulseSize: 1.0,
     },
     crystals: {
       count: 8,
@@ -575,6 +596,8 @@ export const GLOBAL_DEFAULTS = {
     spread: 40,
     movementPattern: 'random' as const,
     distance: 1.5,
+    pulseEnabled: false,
+    pulseSize: 1.0,
   },
 };
 
@@ -675,6 +698,8 @@ const defaultState: VisualState = {
       organicness: GLOBAL_DEFAULTS.geometric.spheres.organicness,
       movementPattern: GLOBAL_DEFAULTS.geometric.spheres.movementPattern,
       distance: GLOBAL_DEFAULTS.geometric.spheres.distance,
+      pulseEnabled: GLOBAL_DEFAULTS.geometric.spheres.pulseEnabled,
+      pulseSize: GLOBAL_DEFAULTS.geometric.spheres.pulseSize,
     },
     cubes: {
       count: GLOBAL_DEFAULTS.geometric.cubes.count,
@@ -686,6 +711,8 @@ const defaultState: VisualState = {
       organicness: GLOBAL_DEFAULTS.geometric.cubes.organicness,
       movementPattern: GLOBAL_DEFAULTS.geometric.cubes.movementPattern,
       distance: GLOBAL_DEFAULTS.geometric.cubes.distance,
+      pulseEnabled: GLOBAL_DEFAULTS.geometric.cubes.pulseEnabled,
+      pulseSize: GLOBAL_DEFAULTS.geometric.cubes.pulseSize,
     },
     toruses: {
       count: GLOBAL_DEFAULTS.geometric.toruses.count,
@@ -697,6 +724,8 @@ const defaultState: VisualState = {
       organicness: GLOBAL_DEFAULTS.geometric.toruses.organicness,
       movementPattern: GLOBAL_DEFAULTS.geometric.toruses.movementPattern,
       distance: GLOBAL_DEFAULTS.geometric.toruses.distance,
+      pulseEnabled: GLOBAL_DEFAULTS.geometric.toruses.pulseEnabled,
+      pulseSize: GLOBAL_DEFAULTS.geometric.toruses.pulseSize,
     },
     blobs: {
       count: GLOBAL_DEFAULTS.geometric.blobs.count,
@@ -707,6 +736,8 @@ const defaultState: VisualState = {
       organicness: GLOBAL_DEFAULTS.geometric.blobs.organicness,
       movementPattern: GLOBAL_DEFAULTS.geometric.blobs.movementPattern,
       distance: GLOBAL_DEFAULTS.geometric.blobs.distance,
+      pulseEnabled: GLOBAL_DEFAULTS.geometric.blobs.pulseEnabled,
+      pulseSize: GLOBAL_DEFAULTS.geometric.blobs.pulseSize,
     },
     crystals: {
       count: 8,
@@ -739,6 +770,8 @@ const defaultState: VisualState = {
     spread: GLOBAL_DEFAULTS.particles.spread,
     movementPattern: GLOBAL_DEFAULTS.particles.movementPattern,
     distance: GLOBAL_DEFAULTS.particles.distance,
+    pulseEnabled: GLOBAL_DEFAULTS.particles.pulseEnabled,
+    pulseSize: GLOBAL_DEFAULTS.particles.pulseSize,
   },
   globalEffects: {
     atmosphericBlur: {
@@ -851,6 +884,7 @@ const defaultState: VisualState = {
       speed: 0.5,
       amplitude: 0.5,
       contourLevels: 5,
+      preset: 1,
       edgeFade: {
         enabled: true,
         fadeStart: 0.3,
@@ -978,6 +1012,17 @@ export const useVisualStore = create<Store>((set, get) => ({
     }));
   },
 
+  updateGlobalAnimationSpeed: (speed: number) => {
+    console.log(`🎛️ updateGlobalAnimationSpeed called with:`, speed);
+    set((state) => {
+      const clampedSpeed = clampAnimationSpeed(speed);
+      console.log(`🎛️ Setting globalAnimationSpeed from ${state.globalAnimationSpeed} to ${clampedSpeed}`);
+      return {
+        globalAnimationSpeed: clampedSpeed
+      };
+    });
+  },
+
   resetToDefaults: () => set(defaultState),
 
   savePreset: (name) => {
@@ -998,11 +1043,20 @@ export const useVisualStore = create<Store>((set, get) => ({
       version: '1.0'
     };
     
+    console.log(`💾 Saving preset "${name}" with globalAnimationSpeed:`, state.globalAnimationSpeed);
+    console.log(`💾 Full preset object:`, preset);
+    
     try {
       const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
       presets[name] = preset;
       localStorage.setItem('visualPresets', JSON.stringify(presets));
+      console.log(`✅ Preset "${name}" saved successfully`);
+      
+      // Verify what was actually saved
+      const savedPresets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+      console.log(`🔍 Verification - saved preset globalAnimationSpeed:`, savedPresets[name]?.globalAnimationSpeed);
     } catch (error) {
+      console.error('❌ Error saving preset:', error);
     }
   },
 
@@ -1011,6 +1065,9 @@ export const useVisualStore = create<Store>((set, get) => ({
       const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
       if (presets[name]) {
         const preset = presets[name];
+        
+        console.log(`📂 Loading preset "${name}" with globalAnimationSpeed:`, preset.globalAnimationSpeed);
+        console.log(`📂 Full preset object:`, preset);
         
         set((state) => {
           // Deep merge for globalEffects to ensure all nested properties are preserved
@@ -1045,6 +1102,10 @@ export const useVisualStore = create<Store>((set, get) => ({
             }
           };
 
+          const newGlobalAnimationSpeed = typeof preset.globalAnimationSpeed === 'number' ? preset.globalAnimationSpeed : state.globalAnimationSpeed;
+          console.log(`🔄 Setting globalAnimationSpeed from ${state.globalAnimationSpeed} to ${newGlobalAnimationSpeed}`);
+          console.log(`🔄 Type check - preset.globalAnimationSpeed:`, typeof preset.globalAnimationSpeed, preset.globalAnimationSpeed);
+
           return {
             ...state,
             ui: { ...state.ui, ...(isPlainObject(preset.ui) ? preset.ui : {}) },
@@ -1055,11 +1116,13 @@ export const useVisualStore = create<Store>((set, get) => ({
             globalEffects: mergedGlobalEffects,
             effects: { ...state.effects, ...(isPlainObject(preset.effects) ? preset.effects : {}) },
             camera: { ...state.camera, ...(isPlainObject(preset.camera) ? preset.camera : {}) },
-            globalAnimationSpeed: typeof preset.globalAnimationSpeed === 'number' ? preset.globalAnimationSpeed : state.globalAnimationSpeed,
+            globalAnimationSpeed: newGlobalAnimationSpeed,
             globalBlendMode: isPlainObject(preset.globalBlendMode) ? preset.globalBlendMode : state.globalBlendMode,
             location: typeof preset.location === 'string' ? preset.location : state.location,
           };
         });
+        
+        console.log(`✅ Preset "${name}" loaded successfully`);
       } else {
         console.warn(`Preset "${name}" not found`);
       }
@@ -1098,7 +1161,7 @@ export const useVisualStore = create<Store>((set, get) => ({
   },
 
   // Global defaults management
-  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: Partial<typeof GLOBAL_DEFAULTS[keyof typeof GLOBAL_DEFAULTS]>) => {
+  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: any) => {
     // Update the global defaults (this affects future resets)
     Object.assign(GLOBAL_DEFAULTS[category], updates);
     

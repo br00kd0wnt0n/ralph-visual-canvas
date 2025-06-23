@@ -36,7 +36,10 @@ const SelectControl = React.memo(({
 ));
 
 export const GlobalEffectsDashboard = () => {
-  const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera, geometric, updateGeometric } = useVisualStore();
+  const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera, geometric, updateGeometric, globalAnimationSpeed, updateGlobalAnimationSpeed } = useVisualStore();
+
+  // Debug logging for global animation speed
+  console.log(`🎯 GlobalEffectsDashboard render - globalAnimationSpeed:`, globalAnimationSpeed);
 
   const blendModeOptions = useMemo(() => [
     { value: 'screen', label: 'Screen' },
@@ -60,6 +63,29 @@ export const GlobalEffectsDashboard = () => {
       {/* Enhanced Preset Controls */}
       <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 backdrop-blur-sm rounded-lg p-4 mb-6 border border-purple-500/20">
         <PresetControls />
+      </div>
+
+      {/* Global Animation Speed */}
+      <div className={styles.controlSection}>
+        <h3>Global Animation Speed</h3>
+        <SliderControl
+          label="Speed Multiplier"
+          value={globalAnimationSpeed}
+          min={0.1}
+          max={3.0}
+          step={0.1}
+          onChange={(value: number) => updateGlobalAnimationSpeed(value)}
+        />
+        <div className="text-xs text-gray-400 mt-1">
+          {globalAnimationSpeed.toFixed(1)}x
+          {globalAnimationSpeed > 2.0 && (
+            <span className="text-yellow-400 ml-2">⚠️ High speed may affect performance</span>
+          )}
+        </div>
+        <div className="text-xs text-gray-400 mt-2">
+          This controls the global animation speed multiplier that affects all animated elements in the scene.
+          Lower values create slower, more cinematic animations, while higher values create faster, more energetic movements.
+        </div>
       </div>
 
       {/* Atmospheric Blur */}

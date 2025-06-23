@@ -5,6 +5,8 @@ import * as THREE from 'three';
 
 export const Particles = () => {
   const { particles, globalEffects, globalAnimationSpeed } = useVisualStore();
+  const { shapeGlow } = globalEffects;
+  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
 
   const particlePositions = useMemo(() => {
     const positions = [];
@@ -19,21 +21,27 @@ export const Particles = () => {
   }, [particles.count, particles.spread]);
 
   const particleRefs = useRef<THREE.Mesh[]>([]);
+  const pulseTimeRef = useRef(0);
 
   // Use a single geometry instance for all particles
   const particleGeometry = useMemo(() => {
     return new THREE.SphereGeometry(0.5, 8, 6); // base size, will be scaled
   }, []);
 
-  const particleMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
-      color: particles.color,
-      transparent: true,
-      opacity: particles.opacity,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+  // Individual materials for each particle
+  const particleMaterials = useMemo(() => {
+    return Array.from({ length: particles.count }, () => {
+      return new THREE.MeshStandardMaterial({
+        color: particles.color,
+        transparent: true,
+        opacity: particles.opacity,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        emissive: new THREE.Color(particles.color),
+        emissiveIntensity: 0,
+      });
     });
-  }, [particles.color, particles.opacity]);
+  }, [particles.count, particles.color, particles.opacity]);
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;
@@ -45,6 +53,28 @@ export const Particles = () => {
     const scale = Math.max(0.01, particles.size);
     const movementPattern = particles.movementPattern || 'random';
     const safeDistance = isNaN(particles.distance) || particles.distance < 0 ? 1.5 : particles.distance;
+    const pulseEnabled = particles.pulseEnabled || false;
+    const pulseSize = isNaN(particles.pulseSize) || particles.pulseSize < 0 ? 1.0 : particles.pulseSize;
+    
+    // Debug logging for pulsing state
+    if (pulseEnabled && Math.random() < 0.001) {
+      console.log(`🔍 [particles] Pulsing Debug:`, {
+        pulseEnabled,
+        pulseSize,
+        glowIntensity,
+        shapeGlow: {
+          enabled: shapeGlow.enabled,
+          intensity: shapeGlow.intensity,
+          useObjectColor: shapeGlow.useObjectColor,
+          customColor: shapeGlow.customColor
+        }
+      });
+    }
+
+    // Update pulse time for individual particle pulsing
+    if (pulseEnabled) {
+      pulseTimeRef.current += state.clock.getDelta() * safeAnimationSpeed;
+    }
 
     particleRefs.current.forEach((mesh, i) => {
       if (mesh && particlePositions[i]) {
@@ -73,6 +103,29 @@ export const Particles = () => {
           z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         }
         mesh.position.set(x, y, z);
+        
+        // Apply individual particle pulsing
+        if (pulseEnabled) {
+          const material = particleMaterials[i]; // Use individual material
+          if (material && material.emissiveIntensity !== undefined) {
+            const pulsePhase = pulseTimeRef.current + i * 0.3;
+            const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
+            const newEmissiveIntensity = glowIntensity * 1.5 * pulseIntensity * pulseSize;
+            material.emissiveIntensity = newEmissiveIntensity;
+            
+            // Debug logging for first particle only
+            if (i === 0 && Math.random() < 0.01) {
+              console.log(`✨ [particle-${i}] Pulsing Animation:`, {
+                pulsePhase: pulsePhase.toFixed(2),
+                pulseIntensity: pulseIntensity.toFixed(3),
+                newEmissiveIntensity: newEmissiveIntensity.toFixed(3),
+                materialType: material.type,
+                hasEmissive: 'emissive' in material,
+                emissiveColor: material.emissive?.getHexString()
+              });
+            }
+          }
+        }
       }
     });
   });
@@ -87,7 +140,7 @@ export const Particles = () => {
           }}
           position={[pos.x, pos.y, pos.z]}
           geometry={particleGeometry}
-          material={particleMaterial}
+          material={particleMaterials[i]}
         />
       ))}
     </group>
