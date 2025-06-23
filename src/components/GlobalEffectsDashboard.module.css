@@ -47,22 +47,6 @@
   color: #fff;
 }
 
-.controlSection {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-}
-
-.controlSection h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .subSection {
   margin: 1rem 0;
   padding: 1rem;
@@ -200,11 +184,10 @@
 .colorControls input[type="color"] {
   width: 100%;
   height: 32px;
-  padding: 0;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: none;
   border-radius: 4px;
-  background: none;
   cursor: pointer;
+  background: none;
 }
 
 .colorControls input[type="color"]:disabled {
@@ -217,35 +200,30 @@
 }
 
 .colorControls input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 2px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .colorRow {
   display: flex;
-  gap: 0.5rem;
   align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
 .removeColor {
-  background: rgba(255, 0, 0, 0.2);
-  color: #ff4444;
+  padding: 0.25rem 0.5rem;
+  background: #dc2626;
+  color: white;
   border: none;
   border-radius: 4px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0;
+  font-size: 0.8rem;
   transition: all 0.2s ease;
 }
 
 .removeColor:hover:not(:disabled) {
-  background: rgba(255, 0, 0, 0.3);
+  background: #b91c1c;
 }
 
 .removeColor:disabled {
@@ -254,20 +232,19 @@
 }
 
 .addColor {
-  background: rgba(0, 255, 0, 0.2);
-  color: #44ff44;
+  padding: 0.5rem 1rem;
+  background: #059669;
+  color: white;
   border: none;
   border-radius: 4px;
-  padding: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
-  width: 100%;
-  margin-top: 0.5rem;
   transition: all 0.2s ease;
+  margin-top: 0.5rem;
 }
 
 .addColor:hover:not(:disabled) {
-  background: rgba(0, 255, 0, 0.3);
+  background: #047857;
 }
 
 .addColor:disabled {
@@ -275,7 +252,6 @@
   cursor: not-allowed;
 }
 
-/* Scrollbar styles */
 .dashboard::-webkit-scrollbar {
   width: 8px;
 }
@@ -296,19 +272,18 @@
 
 .textInput {
   width: 100%;
-  padding: 8px 12px;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
+  border-radius: 4px;
   color: #fff;
-  font-size: 13px;
-  margin-bottom: 8px;
+  font-size: 0.9rem;
+  outline: none;
   transition: all 0.2s ease;
 }
 
 .textInput:focus {
-  outline: none;
-  border-color: rgba(0, 255, 136, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.15);
 }
 
@@ -319,25 +294,24 @@
 
 .inputGroup {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: 0.5rem;
+  align-items: flex-end;
 }
 
 .button {
-  background: rgba(0, 255, 136, 0.2);
-  border: 1px solid rgba(0, 255, 136, 0.4);
-  color: #00ff88;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .button:hover:not(:disabled) {
-  background: rgba(0, 255, 136, 0.3);
-  border-color: rgba(0, 255, 136, 0.6);
+  background: #2563eb;
 }
 
 .button:disabled {
@@ -351,33 +325,29 @@
 }
 
 .buttonDanger {
-  background: rgba(255, 0, 0, 0.2);
-  border: 1px solid rgba(255, 0, 0, 0.4);
-  color: #ff4444;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .buttonDanger:hover:not(:disabled) {
-  background: rgba(255, 0, 0, 0.3);
-  border-color: rgba(255, 0, 0, 0.6);
+  background: #b91c1c;
 }
 
 .buttonGroup {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .emptyState {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
   text-align: center;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 2rem;
 } 

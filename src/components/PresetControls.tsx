@@ -74,6 +74,7 @@ const PresetControls: React.FC = React.memo(() => {
         };
         
         console.log(`☁️ Saving cloud preset "${presetName}" with globalAnimationSpeed:`, currentState.globalAnimationSpeed);
+        console.log(`☁️ Saving cloud preset "${presetName}" with DoF settings:`, currentState.camera.depthOfField);
         console.log(`☁️ Full cloud preset data:`, presetData);
         
         await PresetClient.createPreset(presetData);
@@ -102,6 +103,7 @@ const PresetControls: React.FC = React.memo(() => {
         const preset = await PresetClient.getPresetById(presetId);
         if (preset) {
           console.log(`☁️ Loading cloud preset "${preset.name}" with globalAnimationSpeed:`, preset.data.globalAnimationSpeed);
+          console.log(`☁️ Loading cloud preset "${preset.name}" with DoF settings:`, preset.data.camera?.depthOfField);
           console.log(`☁️ Full cloud preset data:`, preset.data);
           
           const currentState = useVisualStore.getState();
@@ -122,6 +124,7 @@ const PresetControls: React.FC = React.memo(() => {
             currentState.updateEffects(preset.data.effects);
           }
           if (preset.data.camera) {
+            console.log(`☁️ Applying camera settings including DoF:`, preset.data.camera);
             currentState.updateCamera(preset.data.camera);
           }
           if (preset.data.background) {

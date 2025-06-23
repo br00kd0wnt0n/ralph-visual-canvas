@@ -4,6 +4,7 @@ import styles from './GlobalEffectsDashboard.module.css';
 import SliderControl from './SliderControl';
 import ToggleControl from './ToggleControl';
 import PresetControls from './PresetControls';
+import CollapsibleSection from './CollapsibleSection';
 
 const SelectControl = React.memo(({ 
   label, 
@@ -54,20 +55,17 @@ export const GlobalEffectsDashboard = () => {
     <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 text-white shadow-xl">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-blue-400">Global Effects</h2>
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-xs text-green-400">Active</span>
-        </div>
       </div>
 
       {/* Enhanced Preset Controls */}
-      <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 backdrop-blur-sm rounded-lg p-4 mb-6 border border-purple-500/20">
-        <PresetControls />
-      </div>
+      <CollapsibleSection title="Preset Controls" defaultExpanded={true}>
+        <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
+          <PresetControls />
+        </div>
+      </CollapsibleSection>
 
       {/* Global Animation Speed */}
-      <div className={styles.controlSection}>
-        <h3>Global Animation Speed</h3>
+      <CollapsibleSection title="Global Animation Speed" defaultExpanded={true}>
         <SliderControl
           label="Speed Multiplier"
           value={globalAnimationSpeed}
@@ -86,11 +84,10 @@ export const GlobalEffectsDashboard = () => {
           This controls the global animation speed multiplier that affects all animated elements in the scene.
           Lower values create slower, more cinematic animations, while higher values create faster, more energetic movements.
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Atmospheric Blur */}
-      <div className={styles.controlSection}>
-        <h3>Atmospheric Blur</h3>
+      <CollapsibleSection title="Atmospheric Blur">
         <ToggleControl
           label="Enable"
           value={globalEffects.atmosphericBlur.enabled}
@@ -118,11 +115,10 @@ export const GlobalEffectsDashboard = () => {
             atmosphericBlur: { ...globalEffects.atmosphericBlur, layers: value }
           })}
         />
-      </div>
+      </CollapsibleSection>
 
       {/* Color Blending */}
-      <div className={styles.controlSection}>
-        <h3>Color Blending</h3>
+      <CollapsibleSection title="Color Blending">
         <ToggleControl
           label="Enable"
           value={globalEffects.colorBlending.enabled}
@@ -148,11 +144,10 @@ export const GlobalEffectsDashboard = () => {
             colorBlending: { ...globalEffects.colorBlending, intensity: value }
           })}
         />
-      </div>
+      </CollapsibleSection>
 
       {/* Shape Glow */}
-      <div className={styles.controlSection}>
-        <h3>Shape Glow</h3>
+      <CollapsibleSection title="Shape Glow">
         <ToggleControl
           label="Enable"
           value={globalEffects.shapeGlow.enabled}
@@ -218,11 +213,10 @@ export const GlobalEffectsDashboard = () => {
             })}
           />
         )}
-      </div>
+      </CollapsibleSection>
 
       {/* Chromatic Effects */}
-      <div className={styles.controlSection}>
-        <h3>Chromatic Effects</h3>
+      <CollapsibleSection title="Chromatic Effects">
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.enabled}
@@ -292,11 +286,10 @@ export const GlobalEffectsDashboard = () => {
             chromatic: { ...globalEffects.chromatic, prism: value }
           })}
         />
-      </div>
+      </CollapsibleSection>
 
       {/* Rainbow Effect */}
-      <div className={styles.controlSection}>
-        <h3>Rainbow Effect</h3>
+      <CollapsibleSection title="Rainbow Effect">
         <ToggleControl
           label="Enable"
           value={globalEffects.chromatic.rainbow.enabled}
@@ -441,11 +434,10 @@ export const GlobalEffectsDashboard = () => {
             Add Color
           </button>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Distortion */}
-      <div className={styles.controlSection}>
-        <h3>Distortion</h3>
+      <CollapsibleSection title="Distortion">
         <ToggleControl
           label="Enable"
           value={globalEffects.distortion.enabled}
@@ -489,11 +481,10 @@ export const GlobalEffectsDashboard = () => {
             distortion: { ...globalEffects.distortion, frequency: value }
           })}
         />
-      </div>
+      </CollapsibleSection>
 
       {/* Volumetric Effects */}
-      <div className={styles.controlSection}>
-        <h3>Volumetric</h3>
+      <CollapsibleSection title="Volumetric">
         <ToggleControl
           label="Enable"
           value={globalEffects.volumetric.enabled}
@@ -532,11 +523,10 @@ export const GlobalEffectsDashboard = () => {
             })}
           />
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Enhanced Post-Processing */}
-      <div className={styles.controlSection}>
-        <h3>Enhanced Post-FX</h3>
+      <CollapsibleSection title="Enhanced Post-FX">
         <SliderControl
           label="Brightness"
           value={effects.brightness || 1.0}
@@ -551,7 +541,7 @@ export const GlobalEffectsDashboard = () => {
           max={1}
           onChange={(value: number) => updateEffects({ vignette: value })}
         />
-      </div>
+      </CollapsibleSection>
     </div>
   );
 };

@@ -521,7 +521,7 @@ export const GLOBAL_DEFAULTS = {
       speed: 1.5,
       rotation: 0,
       opacity: 0.9,
-      organicness: 0.3,
+      organicness: 0.8,
       movementPattern: 'verticalSine' as const,
       distance: 2.0,
       pulseEnabled: false,
@@ -534,7 +534,7 @@ export const GLOBAL_DEFAULTS = {
       rotation: 1.2,
       speed: 1.0,
       opacity: 0.8,
-      organicness: 0.2,
+      organicness: 0.6,
       movementPattern: 'orbit' as const,
       distance: 2.5,
       pulseEnabled: false,
@@ -547,7 +547,7 @@ export const GLOBAL_DEFAULTS = {
       speed: 1.2,
       rotation: 0,
       opacity: 0.7,
-      organicness: 0.4,
+      organicness: 1.0,
       movementPattern: 'verticalSine' as const,
       distance: 2.0,
       pulseEnabled: false,
@@ -559,7 +559,7 @@ export const GLOBAL_DEFAULTS = {
       color: '#9370db',
       speed: 1.0,
       opacity: 1.0,
-      organicness: 0.8,
+      organicness: 1.5,
       movementPattern: 'orbit' as const,
       distance: 3.0,
       pulseEnabled: false,
@@ -1044,6 +1044,7 @@ export const useVisualStore = create<Store>((set, get) => ({
     };
     
     console.log(`💾 Saving preset "${name}" with globalAnimationSpeed:`, state.globalAnimationSpeed);
+    console.log(`💾 Saving preset "${name}" with DoF settings:`, state.camera.depthOfField);
     console.log(`💾 Full preset object:`, preset);
     
     try {
@@ -1055,6 +1056,7 @@ export const useVisualStore = create<Store>((set, get) => ({
       // Verify what was actually saved
       const savedPresets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
       console.log(`🔍 Verification - saved preset globalAnimationSpeed:`, savedPresets[name]?.globalAnimationSpeed);
+      console.log(`🔍 Verification - saved preset DoF settings:`, savedPresets[name]?.camera?.depthOfField);
     } catch (error) {
       console.error('❌ Error saving preset:', error);
     }
@@ -1067,6 +1069,7 @@ export const useVisualStore = create<Store>((set, get) => ({
         const preset = presets[name];
         
         console.log(`📂 Loading preset "${name}" with globalAnimationSpeed:`, preset.globalAnimationSpeed);
+        console.log(`📂 Loading preset "${name}" with DoF settings:`, preset.camera?.depthOfField);
         console.log(`📂 Full preset object:`, preset);
         
         set((state) => {
@@ -1106,6 +1109,18 @@ export const useVisualStore = create<Store>((set, get) => ({
           console.log(`🔄 Setting globalAnimationSpeed from ${state.globalAnimationSpeed} to ${newGlobalAnimationSpeed}`);
           console.log(`🔄 Type check - preset.globalAnimationSpeed:`, typeof preset.globalAnimationSpeed, preset.globalAnimationSpeed);
 
+          // Deep merge camera settings including DoF
+          const mergedCamera = {
+            ...state.camera,
+            ...(isPlainObject(preset.camera) ? preset.camera : {}),
+            depthOfField: {
+              ...state.camera.depthOfField,
+              ...(isPlainObject(preset.camera && preset.camera.depthOfField) ? preset.camera.depthOfField : {})
+            }
+          };
+          
+          console.log(`🔄 Setting DoF from:`, state.camera.depthOfField, `to:`, mergedCamera.depthOfField);
+
           return {
             ...state,
             ui: { ...state.ui, ...(isPlainObject(preset.ui) ? preset.ui : {}) },
@@ -1115,7 +1130,7 @@ export const useVisualStore = create<Store>((set, get) => ({
             particles: { ...state.particles, ...(isPlainObject(preset.particles) ? preset.particles : {}) },
             globalEffects: mergedGlobalEffects,
             effects: { ...state.effects, ...(isPlainObject(preset.effects) ? preset.effects : {}) },
-            camera: { ...state.camera, ...(isPlainObject(preset.camera) ? preset.camera : {}) },
+            camera: mergedCamera,
             globalAnimationSpeed: newGlobalAnimationSpeed,
             globalBlendMode: isPlainObject(preset.globalBlendMode) ? preset.globalBlendMode : state.globalBlendMode,
             location: typeof preset.location === 'string' ? preset.location : state.location,

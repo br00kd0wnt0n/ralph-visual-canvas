@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useVisualStore } from '../store/visualStore';
 import styles from './ShapeParticleDashboard.module.css';
+import CollapsibleSection from './CollapsibleSection';
 
 interface SliderControlProps {
   label: string;
@@ -32,11 +33,6 @@ interface SelectControlProps {
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
   disabled?: boolean;
-}
-
-interface ControlSectionProps {
-  title: string;
-  children: React.ReactNode;
 }
 
 const SliderControl: React.FC<SliderControlProps> = React.memo(({ 
@@ -131,20 +127,6 @@ const SelectControl: React.FC<SelectControlProps> = React.memo(({
   </div>
 ));
 
-const ControlSection: React.FC<ControlSectionProps> = React.memo(({ 
-  title, 
-  children 
-}) => {
-  return (
-    <div className={styles.controlSection}>
-      <h3>{title}</h3>
-      <div className={styles.controlContent}>
-        {children}
-      </div>
-    </div>
-  );
-});
-
 export const ShapeParticleDashboard = React.memo(() => {
   const { geometric, particles, globalEffects, updateGeometric, updateParticles, updateGlobalEffects } = useVisualStore();
 
@@ -152,15 +134,11 @@ export const ShapeParticleDashboard = React.memo(() => {
     <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 text-white shadow-xl">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-purple-400">Shapes & Particles</h2>
-        <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-xs text-green-400">Active</span>
-        </div>
       </div>
 
       <div className={styles.tabContent}>
         {/* Particles Controls */}
-        <ControlSection title="Particles">
+        <CollapsibleSection title="Particles" defaultExpanded={true}>
           <SliderControl
             label="Count"
             value={particles.count || 0}
@@ -198,48 +176,49 @@ export const ShapeParticleDashboard = React.memo(() => {
           />
           <SliderControl
             label="Spread"
-            value={particles.spread || 15}
-            min={1}
-            max={20}
+            value={particles.spread || 40}
+            min={10}
+            max={100}
             onChange={(value) => updateParticles({ spread: value })}
           />
-          <SliderControl
-            label="Distance"
-            value={particles.distance || 1.5}
-            min={0.1}
-            max={10}
-            step={0.1}
-            onChange={(value) => updateParticles({ distance: value })}
-          />
-          <ToggleControl
-            label="Pulse"
-            value={particles.pulseEnabled}
-            onChange={(value) => updateParticles({ pulseEnabled: value })}
-          />
-          {particles.pulseEnabled && (
-            <SliderControl
-              label="Pulse Size"
-              value={particles.pulseSize}
-              min={0.1}
-              max={3}
-              onChange={(value) => updateParticles({ pulseSize: value })}
-            />
-          )}
           <SelectControl
             label="Movement Pattern"
-            value={particles.movementPattern}
+            value={particles.movementPattern || 'random'}
             options={[
               { value: 'orbit', label: 'Orbit' },
               { value: 'verticalSine', label: 'Vertical Sine' },
               { value: 'static', label: 'Static' },
               { value: 'random', label: 'Random' }
             ]}
-            onChange={value => updateParticles({ movementPattern: value as any })}
+            onChange={(value) => updateParticles({ movementPattern: value as any })}
           />
-        </ControlSection>
+          <SliderControl
+            label="Distance"
+            value={particles.distance || 1.5}
+            min={0.5}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateParticles({ distance: value })}
+          />
+          <ToggleControl
+            label="Pulse Enabled"
+            value={particles.pulseEnabled || false}
+            onChange={(value) => updateParticles({ pulseEnabled: value })}
+          />
+          {particles.pulseEnabled && (
+            <SliderControl
+              label="Pulse Size"
+              value={particles.pulseSize || 1.0}
+              min={0.5}
+              max={3.0}
+              step={0.1}
+              onChange={(value) => updateParticles({ pulseSize: value })}
+            />
+          )}
+        </CollapsibleSection>
 
         {/* Spheres Controls */}
-        <ControlSection title="Spheres">
+        <CollapsibleSection title="Spheres" defaultExpanded={true}>
           <SliderControl
             label="Count"
             value={geometric.spheres.count || 0}
@@ -259,7 +238,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Organicness"
             value={geometric.spheres.organicness || 0}
             min={0}
-            max={2}
+            max={5}
             onChange={(value) => updateGeometric('spheres', { organicness: value })}
           />
           <ColorControl
@@ -322,10 +301,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             ]}
             onChange={value => updateGeometric('spheres', { movementPattern: value as any })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Cubes Controls */}
-        <ControlSection title="Cubes">
+        <CollapsibleSection title="Cubes" defaultExpanded={true}>
           <SliderControl
             label="Count"
             value={geometric.cubes.count || 0}
@@ -345,7 +324,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Organicness"
             value={geometric.cubes.organicness || 0}
             min={0}
-            max={2}
+            max={5}
             onChange={(value) => updateGeometric('cubes', { organicness: value })}
           />
           <ColorControl
@@ -407,10 +386,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             ]}
             onChange={value => updateGeometric('cubes', { movementPattern: value as any })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Toruses Controls */}
-        <ControlSection title="Toruses">
+        <CollapsibleSection title="Toruses" defaultExpanded={true}>
           <SliderControl
             label="Count"
             value={geometric.toruses.count || 0}
@@ -430,7 +409,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Organicness"
             value={geometric.toruses.organicness || 0}
             min={0}
-            max={2}
+            max={5}
             onChange={(value) => updateGeometric('toruses', { organicness: value })}
           />
           <ColorControl
@@ -493,10 +472,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             ]}
             onChange={value => updateGeometric('toruses', { movementPattern: value as any })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Organic Blobs Controls */}
-        <ControlSection title="Organic Blobs">
+        <CollapsibleSection title="Organic Blobs" defaultExpanded={true}>
           <SliderControl
             label="Count"
             value={geometric.blobs.count || 0}
@@ -514,9 +493,9 @@ export const ShapeParticleDashboard = React.memo(() => {
           />
           <SliderControl
             label="Organicness"
-            value={geometric.blobs.organicness || 0.7}
+            value={geometric.blobs.organicness || 1.5}
             min={0}
-            max={2}
+            max={5}
             onChange={(value) => updateGeometric('blobs', { organicness: value })}
           />
           <SliderControl
@@ -571,10 +550,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             ]}
             onChange={value => updateGeometric('blobs', { movementPattern: value as any })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Metamorphosis Controls */}
-        <ControlSection title="Metamorphosis">
+        <CollapsibleSection title="Metamorphosis" defaultExpanded={true}>
           <ToggleControl
             label="Enable"
             value={globalEffects.metamorphosis.enabled}
@@ -637,10 +616,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.metamorphosis?.color || '#333333'}
             onChange={(value) => updateGeometric('metamorphosis', { color: value })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Fireflies Controls */}
-        <ControlSection title="Fireflies">
+        <CollapsibleSection title="Fireflies" defaultExpanded={true}>
           <ToggleControl
             label="Enable"
             value={globalEffects.fireflies.enabled}
@@ -693,10 +672,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.fireflies?.color || '#ffff88'}
             onChange={(value) => updateGeometric('fireflies', { color: value })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Wave Interference Controls */}
-        <ControlSection title="Wave Interference">
+        <CollapsibleSection title="Wave Interference" defaultExpanded={true}>
           <ToggleControl
             label="Enable"
             value={globalEffects.waveInterference.enabled}
@@ -810,10 +789,10 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.waveInterference?.color || '#333333'}
             onChange={(value) => updateGeometric('waveInterference', { color: value })}
           />
-        </ControlSection>
+        </CollapsibleSection>
 
         {/* Layered Sine Waves Controls */}
-        <ControlSection title="Layered Sine Waves">
+        <CollapsibleSection title="Layered Sine Waves" defaultExpanded={true}>
           <ToggleControl
             label="Enable"
             value={globalEffects.layeredSineWaves?.enabled ?? false}
@@ -967,7 +946,7 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={geometric.layeredSineWaves?.color || '#323232'}
             onChange={(value) => updateGeometric('layeredSineWaves', { color: value })}
           />
-        </ControlSection>
+        </CollapsibleSection>
       </div>
     </div>
   );
