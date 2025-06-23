@@ -1488,24 +1488,6 @@ const EnhancedVisualCanvas = () => {
             </div>
           )}
           
-          {/* Depth of Field Indicator */}
-          {camera.depthOfField.enabled && (
-            <div style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'rgba(0, 0, 0, 0.8)',
-              color: '#00ff00',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              fontSize: '12px',
-              zIndex: 10000,
-              border: '1px solid #00ff00'
-            }}>
-              DOF: {camera.depthOfField.blur.toFixed(1)} | {camera.depthOfField.bokehScale.toFixed(1)}
-            </div>
-          )}
-          
           <Canvas
             camera={{ 
               position: [0, 0, 25], // Default position - CameraSync will override this
