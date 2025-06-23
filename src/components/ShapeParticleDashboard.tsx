@@ -138,7 +138,7 @@ export const ShapeParticleDashboard = React.memo(() => {
 
       <div className={styles.tabContent}>
         {/* Particles Controls */}
-        <CollapsibleSection title="Particles" defaultExpanded={true}>
+        <CollapsibleSection title="Particles" defaultExpanded={false}>
           <SliderControl
             label="Count"
             value={particles.count || 0}
@@ -218,7 +218,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Spheres Controls */}
-        <CollapsibleSection title="Spheres" defaultExpanded={true}>
+        <CollapsibleSection title="Spheres" defaultExpanded={false}>
           <SliderControl
             label="Count"
             value={geometric.spheres.count || 0}
@@ -304,7 +304,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Cubes Controls */}
-        <CollapsibleSection title="Cubes" defaultExpanded={true}>
+        <CollapsibleSection title="Cubes" defaultExpanded={false}>
           <SliderControl
             label="Count"
             value={geometric.cubes.count || 0}
@@ -389,7 +389,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Toruses Controls */}
-        <CollapsibleSection title="Toruses" defaultExpanded={true}>
+        <CollapsibleSection title="Toruses" defaultExpanded={false}>
           <SliderControl
             label="Count"
             value={geometric.toruses.count || 0}
@@ -475,7 +475,7 @@ export const ShapeParticleDashboard = React.memo(() => {
         </CollapsibleSection>
 
         {/* Organic Blobs Controls */}
-        <CollapsibleSection title="Organic Blobs" defaultExpanded={true}>
+        <CollapsibleSection title="Organic Blobs" defaultExpanded={false}>
           <SliderControl
             label="Count"
             value={geometric.blobs.count || 0}
