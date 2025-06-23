@@ -984,11 +984,20 @@ const CameraControls = () => {
 
 // NEW: Auto-pan system component for cinematic camera movement
 const AutoPanSystem = () => {
-  const { camera, globalAnimationSpeed, updateCamera } = useVisualStore();
+  const { camera, globalAnimationSpeed, updateAutoPanAngle, updateCamera } = useVisualStore();
   const three = useThree();
+  const isInitializedRef = useRef(false);
+  const startPositionRef = useRef<THREE.Vector3 | null>(null);
+  const startTargetRef = useRef<THREE.Vector3 | null>(null);
   
   useFrame((state) => {
-    if (!camera.autoPan.enabled || !three.camera) return;
+    if (!camera.autoPan.enabled || !three.camera) {
+      // Reset initialization when auto-pan is disabled
+      isInitializedRef.current = false;
+      startPositionRef.current = null;
+      startTargetRef.current = null;
+      return;
+    }
     
     const time = state.clock.elapsedTime;
     const { speed, radius, height, easing, currentAngle } = camera.autoPan;
@@ -996,10 +1005,25 @@ const AutoPanSystem = () => {
     // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
     
-    // Calculate new angle with speed and global animation speed
-    const newAngle = currentAngle + (speed * safeAnimationSpeed * 0.01);
+    // Initialize auto-pan from current camera position on first frame
+    if (!isInitializedRef.current) {
+      startPositionRef.current = three.camera.position.clone();
+      startTargetRef.current = new THREE.Vector3(0, 0, 0); // Always look at center
+      isInitializedRef.current = true;
+      
+      // Calculate initial angle based on current camera position
+      const currentX = three.camera.position.x;
+      const currentZ = three.camera.position.z;
+      const initialAngle = Math.atan2(currentZ, currentX);
+      
+      // Update the store with the initial angle
+      updateAutoPanAngle(initialAngle);
+    }
     
-    // Calculate new camera position using circular motion
+    // Calculate new angle with slower speed for more cinematic movement
+    const newAngle = currentAngle + (speed * safeAnimationSpeed * 0.005); // Reduced from 0.01 to 0.005 for slower movement
+    
+    // Calculate new camera position using circular motion around the center
     const newX = Math.cos(newAngle) * radius;
     const newZ = Math.sin(newAngle) * radius;
     const newY = height;
@@ -1014,15 +1038,8 @@ const AutoPanSystem = () => {
     // Always look at the center (0, 0, 0)
     three.camera.lookAt(0, 0, 0);
     
-    // Update the store with new position and angle
-    updateCamera({
-      position: [currentPosition.x, currentPosition.y, currentPosition.z],
-      target: [0, 0, 0],
-      autoPan: {
-        ...camera.autoPan,
-        currentAngle: newAngle
-      }
-    });
+    // Update only the auto-pan angle using the new dedicated function
+    updateAutoPanAngle(newAngle);
   });
   
   return null;

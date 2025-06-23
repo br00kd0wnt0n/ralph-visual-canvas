@@ -443,6 +443,7 @@ export interface VisualActions {
   setLocation: (location: string) => void;
   setCanvasError: (error: Error | null) => void;
   clearCanvasError: () => void;
+  updateAutoPanAngle: (newAngle: number) => void; // NEW: Function to update only auto-pan angle without affecting enabled state
 }
 
 // Update the VisualPreset type to use VisualState
@@ -479,10 +480,10 @@ export const GLOBAL_DEFAULTS = {
     maxPolarAngle: Math.PI,
     autoPan: {
       enabled: false,
-      speed: 0.3,
+      speed: 0.15,
       radius: 15,
       height: 3,
-      easing: 0.02,
+      easing: 0.015,
       currentAngle: 0,
     },
     depthOfField: {
@@ -1000,15 +1001,18 @@ export const useVisualStore = create<Store>((set, get) => ({
   },
 
   toggleAutoPan: () => {
-    set((state) => ({
-      camera: {
-        ...state.camera,
-        autoPan: {
-          ...state.camera.autoPan,
-          enabled: !state.camera.autoPan.enabled
+    set((state) => {
+      const newEnabled = !state.camera.autoPan.enabled;
+      return {
+        camera: {
+          ...state.camera,
+          autoPan: {
+            ...state.camera.autoPan,
+            enabled: newEnabled
+          }
         }
-      }
-    }));
+      };
+    });
   },
 
   updateBackground: (updates) => {
@@ -1046,7 +1050,13 @@ export const useVisualStore = create<Store>((set, get) => ({
 
   updateCamera: (updates) => {
     set((state) => ({
-      camera: { ...state.camera, ...updates }
+      camera: { 
+        ...state.camera, 
+        ...updates,
+        // Deep merge for nested objects like autoPan
+        autoPan: updates.autoPan ? { ...state.camera.autoPan, ...updates.autoPan } : state.camera.autoPan,
+        depthOfField: updates.depthOfField ? { ...state.camera.depthOfField, ...updates.depthOfField } : state.camera.depthOfField
+      }
     }));
   },
 
@@ -1324,6 +1334,19 @@ export const useVisualStore = create<Store>((set, get) => ({
 
   setCanvasError: (error) => set({ error }),
   clearCanvasError: () => set({ error: null }),
+
+  // NEW: Function to update only auto-pan angle without affecting enabled state
+  updateAutoPanAngle: (newAngle: number) => {
+    set((state) => ({
+      camera: {
+        ...state.camera,
+        autoPan: {
+          ...state.camera.autoPan,
+          currentAngle: newAngle
+        }
+      }
+    }));
+  },
 }));
 
 function isPlainObject(obj: any): obj is object {

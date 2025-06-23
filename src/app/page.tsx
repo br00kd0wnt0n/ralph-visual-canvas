@@ -32,20 +32,6 @@ export default function Home() {
     }
   }, [loadPreset, getAvailablePresets]);
 
-  // Handle three-state camera mode toggle: normal -> manual -> auto-pan -> normal
-  const handleCameraModeToggle = () => {
-    if (camera.autoPan.enabled) {
-      // Currently in auto-pan mode, disable it and return to normal
-      toggleAutoPan();
-    } else if (ui.cameraPositioningMode) {
-      // Currently in manual positioning mode, enable auto-pan
-      toggleAutoPan();
-    } else {
-      // Currently in normal mode, enable manual positioning
-      toggleCameraPositioningMode();
-    }
-  };
-
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Enhanced Visual Canvas */}
@@ -72,7 +58,8 @@ export default function Home() {
         onAIToggle={() => setShowAITest(!showAITest)}
         isCameraPositioningMode={ui.cameraPositioningMode}
         isAutoPanEnabled={camera.autoPan.enabled}
-        onCameraModeToggle={handleCameraModeToggle}
+        onCameraPositioningToggle={toggleCameraPositioningMode}
+        onAutoPanToggle={toggleAutoPan}
         isTrailControlsOpen={showTrailControls}
         onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
         isPerformanceOpen={showPerformance}
