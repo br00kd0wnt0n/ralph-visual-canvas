@@ -380,6 +380,15 @@ export interface VisualState {
     maxDistance: number;
     minPolarAngle: number;
     maxPolarAngle: number;
+    // Auto-pan system for cinematic lookaround
+    autoPan: {
+      enabled: boolean;
+      speed: number;
+      radius: number;
+      height: number;
+      easing: number;
+      currentAngle: number;
+    };
     // Depth of Field settings
     depthOfField: {
       enabled: boolean;
@@ -409,6 +418,7 @@ export interface VisualActions {
   setDashboardsVisible: (visible: boolean) => void;
   toggleCameraPositioningMode: () => void; // NEW: Enable direct camera control on live view
   setCameraPositioningMode: (enabled: boolean) => void; // NEW: Set camera positioning mode
+  toggleAutoPan: () => void; // NEW: Toggle auto-pan cinematic movement
   
   updateBackground: (updates: Partial<VisualState['background']>) => void;
   updateGeometric: (shape: keyof VisualState['geometric'], updates: Partial<VisualState['geometric'][keyof VisualState['geometric']]>) => void;
@@ -467,6 +477,14 @@ export const GLOBAL_DEFAULTS = {
     maxDistance: 50,
     minPolarAngle: 0,
     maxPolarAngle: Math.PI,
+    autoPan: {
+      enabled: false,
+      speed: 0.3,
+      radius: 15,
+      height: 3,
+      easing: 0.02,
+      currentAngle: 0,
+    },
     depthOfField: {
       enabled: false,
       focusDistance: 10,
@@ -978,6 +996,18 @@ export const useVisualStore = create<Store>((set, get) => ({
   setCameraPositioningMode: (enabled: boolean) => {
     set((state) => ({
       ui: { ...state.ui, cameraPositioningMode: enabled }
+    }));
+  },
+
+  toggleAutoPan: () => {
+    set((state) => ({
+      camera: {
+        ...state.camera,
+        autoPan: {
+          ...state.camera.autoPan,
+          enabled: !state.camera.autoPan.enabled
+        }
+      }
     }));
   },
 

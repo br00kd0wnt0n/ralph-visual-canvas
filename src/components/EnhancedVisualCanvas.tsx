@@ -982,6 +982,52 @@ const CameraControls = () => {
   );
 };
 
+// NEW: Auto-pan system component for cinematic camera movement
+const AutoPanSystem = () => {
+  const { camera, globalAnimationSpeed, updateCamera } = useVisualStore();
+  const three = useThree();
+  
+  useFrame((state) => {
+    if (!camera.autoPan.enabled || !three.camera) return;
+    
+    const time = state.clock.elapsedTime;
+    const { speed, radius, height, easing, currentAngle } = camera.autoPan;
+    
+    // Safety check: clamp global animation speed to prevent crashes
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    
+    // Calculate new angle with speed and global animation speed
+    const newAngle = currentAngle + (speed * safeAnimationSpeed * 0.01);
+    
+    // Calculate new camera position using circular motion
+    const newX = Math.cos(newAngle) * radius;
+    const newZ = Math.sin(newAngle) * radius;
+    const newY = height;
+    
+    // Apply easing to smooth the movement
+    const currentPosition = three.camera.position;
+    const targetPosition = new THREE.Vector3(newX, newY, newZ);
+    
+    // Smooth interpolation with easing
+    currentPosition.lerp(targetPosition, easing);
+    
+    // Always look at the center (0, 0, 0)
+    three.camera.lookAt(0, 0, 0);
+    
+    // Update the store with new position and angle
+    updateCamera({
+      position: [currentPosition.x, currentPosition.y, currentPosition.z],
+      target: [0, 0, 0],
+      autoPan: {
+        ...camera.autoPan,
+        currentAngle: newAngle
+      }
+    });
+  });
+  
+  return null;
+};
+
 const EnhancedVisualCanvas = () => {
   const visualStore = useVisualStore();
   const { globalEffects, effects, camera, backgroundConfig, ui, globalBlendMode } = visualStore;
@@ -1567,6 +1613,7 @@ const EnhancedVisualCanvas = () => {
           >
             <CameraSync />
             <CameraControls />
+            <AutoPanSystem />
             <Scene />
           </Canvas>
         </div>

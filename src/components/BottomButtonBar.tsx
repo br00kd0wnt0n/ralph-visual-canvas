@@ -12,8 +12,8 @@ interface BottomButtonBarProps {
   onGlobalDefaultsToggle: () => void;
   isAIOpen: boolean;
   onAIToggle: () => void;
-  isCameraMode: boolean;
-  onCameraModeToggle: () => void;
+  isAutoPanEnabled: boolean;
+  onAutoPanToggle: () => void;
   isTrailControlsOpen: boolean;
   onTrailControlsToggle: () => void;
   isPerformanceOpen: boolean;
@@ -27,8 +27,8 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
   onGlobalDefaultsToggle,
   isAIOpen,
   onAIToggle,
-  isCameraMode,
-  onCameraModeToggle,
+  isAutoPanEnabled,
+  onAutoPanToggle,
   isTrailControlsOpen,
   onTrailControlsToggle,
   isPerformanceOpen,
@@ -60,8 +60,8 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
             className="toggleButton"
             style={{
               zIndex: 2000,
-              background: isCameraMode ? 'rgba(37, 99, 235, 0.9)' : 'rgba(0, 0, 0, 0.8)',
-              border: isCameraMode ? '2px solid #2563eb' : '1px solid rgba(255,255,255,0.2)',
+              background: isAutoPanEnabled ? 'rgba(37, 99, 235, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+              border: isAutoPanEnabled ? '2px solid #2563eb' : '1px solid rgba(255,255,255,0.2)',
               borderRadius: '50%',
               width: 50,
               height: 50,
@@ -70,13 +70,13 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
               justifyContent: 'center',
               cursor: 'pointer',
               fontSize: 20,
-              color: isCameraMode ? 'white' : 'white',
-              boxShadow: isCameraMode ? '0 4px 16px rgba(37,99,235,0.3)' : '0 4px 12px rgba(0,0,0,0.3)',
+              color: isAutoPanEnabled ? 'white' : 'white',
+              boxShadow: isAutoPanEnabled ? '0 4px 16px rgba(37,99,235,0.3)' : '0 4px 12px rgba(0,0,0,0.3)',
               transition: 'all 0.3s ease',
               pointerEvents: 'auto',
             }}
-            title={isCameraMode ? 'Disable Camera Positioning Mode' : 'Enable Camera Positioning Mode'}
-            onClick={onCameraModeToggle}
+            title={isAutoPanEnabled ? 'Disable Auto Pan Mode' : 'Enable Auto Pan Mode'}
+            onClick={onAutoPanToggle}
           >
             🎥
           </button>

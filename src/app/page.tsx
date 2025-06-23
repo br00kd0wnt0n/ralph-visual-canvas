@@ -15,7 +15,7 @@ import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
 
 export default function Home() {
-  const { ui, toggleDashboards, toggleCameraPositioningMode, loadPreset, getAvailablePresets } = useVisualStore();
+  const { ui, toggleDashboards, toggleAutoPan, loadPreset, getAvailablePresets, camera } = useVisualStore();
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
   const [showAITest, setShowAITest] = useState(false);
   const [showTrailControls, setShowTrailControls] = useState(false);
@@ -56,8 +56,8 @@ export default function Home() {
         onGlobalDefaultsToggle={() => setShowGlobalDefaults(!showGlobalDefaults)}
         isAIOpen={showAITest}
         onAIToggle={() => setShowAITest(!showAITest)}
-        isCameraMode={ui.cameraPositioningMode}
-        onCameraModeToggle={toggleCameraPositioningMode}
+        isAutoPanEnabled={camera.autoPan.enabled}
+        onAutoPanToggle={toggleAutoPan}
         isTrailControlsOpen={showTrailControls}
         onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
         isPerformanceOpen={showPerformance}
