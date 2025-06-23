@@ -43,19 +43,36 @@ export const Particles = () => {
     // Calculate final speed: individual particle speed * global animation speed
     const finalSpeed = particles.speed * safeAnimationSpeed;
     const scale = Math.max(0.01, particles.size);
+    const movementPattern = particles.movementPattern || 'random';
+    const safeDistance = isNaN(particles.distance) || particles.distance < 0 ? 1.5 : particles.distance;
 
     particleRefs.current.forEach((mesh, i) => {
       if (mesh) {
         // Set scale based on slider
         mesh.scale.set(scale, scale, scale);
-        // Base movement with individual speed * global animation speed
-        mesh.position.y += Math.sin(time + i) * 0.01 * finalSpeed;
+        // Movement pattern logic
+        let x = particlePositions[i].x;
+        let y = particlePositions[i].y;
+        let z = particlePositions[i].z;
+        if (movementPattern === 'orbit') {
+          x = particlePositions[i].x + Math.sin(time + i) * 2 * finalSpeed * safeDistance;
+          y = particlePositions[i].y + Math.cos(time + i * 0.5) * 1.5 * finalSpeed * safeDistance;
+          z = particlePositions[i].z + Math.sin(time * 0.7 + i) * 1 * finalSpeed * safeDistance;
+        } else if (movementPattern === 'verticalSine') {
+          y = particlePositions[i].y + Math.sin(time + i) * 2 * finalSpeed * safeDistance;
+        } else if (movementPattern === 'random') {
+          x = particlePositions[i].x + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+          y = particlePositions[i].y + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+          z = particlePositions[i].z + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        }
+        // 'static' does nothing
         // Add turbulence with individual speed * global animation speed
         if (turbulence > 0) {
-          mesh.position.x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
-          mesh.position.y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
-          mesh.position.z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         }
+        mesh.position.set(x, y, z);
       }
     });
   });

@@ -93,8 +93,11 @@ export interface VisualState {
       size: number;
       color: string;
       speed: number;
+      rotation: number;
       opacity: number;
       organicness: number;
+      movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
+      distance: number;
     };
     cubes: {
       count: number;
@@ -104,14 +107,19 @@ export interface VisualState {
       speed: number;
       opacity: number;
       organicness: number;
+      movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
+      distance: number;
     };
     toruses: {
       count: number;
       size: number;
       color: string;
       speed: number;
+      rotation: number;
       opacity: number;
       organicness: number;
+      movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
+      distance: number;
     };
     blobs: {
       count: number;
@@ -120,6 +128,8 @@ export interface VisualState {
       speed: number;
       opacity: number;
       organicness: number;
+      movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
+      distance: number;
     };
     crystals: {
       count: number;
@@ -152,6 +162,8 @@ export interface VisualState {
     speed: number;
     opacity: number;
     spread: number;
+    movementPattern: 'orbit' | 'verticalSine' | 'static' | 'random';
+    distance: number;
   };
   
   // ENHANCED: Global Effects System
@@ -408,6 +420,7 @@ export interface VisualActions {
 type VisualPreset = Omit<VisualState, 'updateBackground' | 'updateGeometric' | 'updateParticles' | 'updateGlobalEffects' | 'updateEffects' | 'updateCamera' | 'resetToDefaults' | 'savePreset' | 'loadPreset' | 'getAvailablePresets' | 'deletePreset' | 'updateBackgroundConfig' | 'resetToGlobalDefaults' | 'resetCameraToDefaults' | 'resetVisualEffectsToDefaults' | 'updateGlobalDefaults' | 'forceApplyGlobalDefaults' | 'getGlobalDefaults'> & {
   savedAt: string;
   version: string;
+  location: string;
 };
 
 type PresetStorage = {
@@ -484,6 +497,82 @@ export const GLOBAL_DEFAULTS = {
     opacity: 0.5
   },
   location: 'New York City',
+  geometric: {
+    spheres: {
+      count: 12,
+      size: 1.5,
+      color: '#00ff88',
+      speed: 1.5,
+      rotation: 0,
+      opacity: 0.9,
+      organicness: 0.3,
+      movementPattern: 'verticalSine' as const,
+      distance: 2.0,
+    },
+    cubes: {
+      count: 10,
+      size: 1.2,
+      color: '#ff00cc',
+      rotation: 1.2,
+      speed: 1.0,
+      opacity: 0.8,
+      organicness: 0.2,
+      movementPattern: 'orbit' as const,
+      distance: 2.5,
+    },
+    toruses: {
+      count: 8,
+      size: 1.8,
+      color: '#ffa500',
+      speed: 1.2,
+      rotation: 0,
+      opacity: 0.7,
+      organicness: 0.4,
+      movementPattern: 'verticalSine' as const,
+      distance: 2.0,
+    },
+    blobs: {
+      count: 6,
+      size: 1.8,
+      color: '#9370db',
+      speed: 1.0,
+      opacity: 1.0,
+      organicness: 0.8,
+      movementPattern: 'orbit' as const,
+      distance: 3.0,
+    },
+    crystals: {
+      count: 8,
+      size: 1.0,
+      color: '#4ecdc4',
+      rotation: 2.0,
+      opacity: 0.9,
+      complexity: 16,
+      organicness: 0.2,
+    },
+    waveInterference: {
+      color: '#00ffff',
+    },
+    metamorphosis: {
+      color: '#00ffff',
+    },
+    fireflies: {
+      color: '#ffff00',
+    },
+    layeredSineWaves: {
+      color: '#ffff00',
+    },
+  },
+  particles: {
+    count: 800,
+    size: 0.1,
+    color: '#ff1493',
+    speed: 1.5,
+    opacity: 1.0,
+    spread: 40,
+    movementPattern: 'random' as const,
+    distance: 1.5,
+  },
 };
 
 // Safety function to clamp animation speed to prevent crashes
@@ -574,37 +663,47 @@ const defaultState: VisualState = {
   },
   geometric: {
     spheres: {
-      count: 12,
-      size: 1.2,
-      color: '#00ff88',
-      speed: 1.5,
-      opacity: 0.9,
-      organicness: 0.3,
+      count: GLOBAL_DEFAULTS.geometric.spheres.count,
+      size: GLOBAL_DEFAULTS.geometric.spheres.size,
+      color: GLOBAL_DEFAULTS.geometric.spheres.color,
+      speed: GLOBAL_DEFAULTS.geometric.spheres.speed,
+      rotation: GLOBAL_DEFAULTS.geometric.spheres.rotation,
+      opacity: GLOBAL_DEFAULTS.geometric.spheres.opacity,
+      organicness: GLOBAL_DEFAULTS.geometric.spheres.organicness,
+      movementPattern: GLOBAL_DEFAULTS.geometric.spheres.movementPattern,
+      distance: GLOBAL_DEFAULTS.geometric.spheres.distance,
     },
     cubes: {
-      count: 8,
-      size: 1.0,
-      color: '#4169e1',
-      rotation: 1.5,
-      speed: 1.0,
-      opacity: 0.8,
-      organicness: 0.2,
+      count: GLOBAL_DEFAULTS.geometric.cubes.count,
+      size: GLOBAL_DEFAULTS.geometric.cubes.size,
+      color: GLOBAL_DEFAULTS.geometric.cubes.color,
+      rotation: GLOBAL_DEFAULTS.geometric.cubes.rotation,
+      speed: GLOBAL_DEFAULTS.geometric.cubes.speed,
+      opacity: GLOBAL_DEFAULTS.geometric.cubes.opacity,
+      organicness: GLOBAL_DEFAULTS.geometric.cubes.organicness,
+      movementPattern: GLOBAL_DEFAULTS.geometric.cubes.movementPattern,
+      distance: GLOBAL_DEFAULTS.geometric.cubes.distance,
     },
     toruses: {
-      count: 5,
-      size: 1.5,
-      color: '#ffa500',
-      speed: 1.2,
-      opacity: 0.7,
-      organicness: 0.4,
+      count: GLOBAL_DEFAULTS.geometric.toruses.count,
+      size: GLOBAL_DEFAULTS.geometric.toruses.size,
+      color: GLOBAL_DEFAULTS.geometric.toruses.color,
+      speed: GLOBAL_DEFAULTS.geometric.toruses.speed,
+      rotation: GLOBAL_DEFAULTS.geometric.toruses.rotation,
+      opacity: GLOBAL_DEFAULTS.geometric.toruses.opacity,
+      organicness: GLOBAL_DEFAULTS.geometric.toruses.organicness,
+      movementPattern: GLOBAL_DEFAULTS.geometric.toruses.movementPattern,
+      distance: GLOBAL_DEFAULTS.geometric.toruses.distance,
     },
     blobs: {
-      count: 6,
-      size: 1.8,
-      color: '#9370db',
-      speed: 1.0,
-      opacity: 1.0,
-      organicness: 0.8,
+      count: GLOBAL_DEFAULTS.geometric.blobs.count,
+      size: GLOBAL_DEFAULTS.geometric.blobs.size,
+      color: GLOBAL_DEFAULTS.geometric.blobs.color,
+      speed: GLOBAL_DEFAULTS.geometric.blobs.speed,
+      opacity: GLOBAL_DEFAULTS.geometric.blobs.opacity,
+      organicness: GLOBAL_DEFAULTS.geometric.blobs.organicness,
+      movementPattern: GLOBAL_DEFAULTS.geometric.blobs.movementPattern,
+      distance: GLOBAL_DEFAULTS.geometric.blobs.distance,
     },
     crystals: {
       count: 8,
@@ -629,12 +728,14 @@ const defaultState: VisualState = {
     },
   },
   particles: {
-    count: 800,
-    size: 0.1,
-    color: '#ff1493',
-    speed: 1.5,
-    opacity: 1.0,
-    spread: 40,
+    count: GLOBAL_DEFAULTS.particles.count,
+    size: GLOBAL_DEFAULTS.particles.size,
+    color: GLOBAL_DEFAULTS.particles.color,
+    speed: GLOBAL_DEFAULTS.particles.speed,
+    opacity: GLOBAL_DEFAULTS.particles.opacity,
+    spread: GLOBAL_DEFAULTS.particles.spread,
+    movementPattern: GLOBAL_DEFAULTS.particles.movementPattern,
+    distance: GLOBAL_DEFAULTS.particles.distance,
   },
   globalEffects: {
     atmosphericBlur: {
@@ -888,6 +989,7 @@ export const useVisualStore = create<Store>((set, get) => ({
       camera: state.camera,
       globalAnimationSpeed: state.globalAnimationSpeed,
       globalBlendMode: state.globalBlendMode,
+      location: state.location,
       savedAt: new Date().toISOString(),
       version: '1.0'
     };
@@ -910,47 +1012,48 @@ export const useVisualStore = create<Store>((set, get) => ({
           // Deep merge for globalEffects to ensure all nested properties are preserved
           const mergedGlobalEffects = {
             ...state.globalEffects,
-            ...preset.globalEffects,
+            ...(isPlainObject(preset.globalEffects) ? preset.globalEffects : {}),
             // Ensure trails object is properly merged with all required properties
             trails: {
               ...state.globalEffects.trails,
-              ...(preset.globalEffects?.trails || {}),
+              ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails) ? preset.globalEffects.trails : {}),
               // Ensure all trail types have required properties
               sphereTrails: {
                 ...state.globalEffects.trails.sphereTrails,
-                ...(preset.globalEffects?.trails?.sphereTrails || {})
+                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.sphereTrails) ? preset.globalEffects.trails.sphereTrails : {})
               },
               cubeTrails: {
                 ...state.globalEffects.trails.cubeTrails,
-                ...(preset.globalEffects?.trails?.cubeTrails || {})
+                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.cubeTrails) ? preset.globalEffects.trails.cubeTrails : {})
               },
               blobTrails: {
                 ...state.globalEffects.trails.blobTrails,
-                ...(preset.globalEffects?.trails?.blobTrails || {})
+                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.blobTrails) ? preset.globalEffects.trails.blobTrails : {})
               },
               torusTrails: {
                 ...state.globalEffects.trails.torusTrails,
-                ...(preset.globalEffects?.trails?.torusTrails || {})
+                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.torusTrails) ? preset.globalEffects.trails.torusTrails : {})
               },
               particleTrails: {
                 ...state.globalEffects.trails.particleTrails,
-                ...(preset.globalEffects?.trails?.particleTrails || {})
+                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.particleTrails) ? preset.globalEffects.trails.particleTrails : {})
               }
             }
           };
 
           return {
             ...state,
-            ui: { ...state.ui, ...preset.ui },
-            background: { ...state.background, ...preset.background },
-            backgroundConfig: { ...state.backgroundConfig, ...preset.backgroundConfig },
-            geometric: { ...state.geometric, ...preset.geometric },
-            particles: { ...state.particles, ...preset.particles },
+            ui: { ...state.ui, ...(isPlainObject(preset.ui) ? preset.ui : {}) },
+            background: { ...state.background, ...(isPlainObject(preset.background) ? preset.background : {}) },
+            backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(preset.backgroundConfig) ? preset.backgroundConfig : {}) },
+            geometric: { ...state.geometric, ...(isPlainObject(preset.geometric) ? preset.geometric : {}) },
+            particles: { ...state.particles, ...(isPlainObject(preset.particles) ? preset.particles : {}) },
             globalEffects: mergedGlobalEffects,
-            effects: { ...state.effects, ...preset.effects },
-            camera: { ...state.camera, ...preset.camera },
-            globalAnimationSpeed: preset.globalAnimationSpeed ?? state.globalAnimationSpeed,
-            globalBlendMode: preset.globalBlendMode ?? state.globalBlendMode,
+            effects: { ...state.effects, ...(isPlainObject(preset.effects) ? preset.effects : {}) },
+            camera: { ...state.camera, ...(isPlainObject(preset.camera) ? preset.camera : {}) },
+            globalAnimationSpeed: typeof preset.globalAnimationSpeed === 'number' ? preset.globalAnimationSpeed : state.globalAnimationSpeed,
+            globalBlendMode: isPlainObject(preset.globalBlendMode) ? preset.globalBlendMode : state.globalBlendMode,
+            location: typeof preset.location === 'string' ? preset.location : state.location,
           };
         });
       } else {
@@ -1098,4 +1201,8 @@ export const useVisualStore = create<Store>((set, get) => ({
   },
 
   setLocation: (location: string) => set({ location }),
-})); 
+}));
+
+function isPlainObject(obj: any): obj is object {
+  return obj && typeof obj === 'object' && !Array.isArray(obj);
+} 

@@ -3,6 +3,11 @@ import { useFrame } from '@react-three/fiber';
 import { useVisualStore } from '../store/visualStore';
 import { constrainToViewport } from '../utils/backgroundLayout';
 import * as THREE from 'three';
+import { Cubes } from './Cubes';
+import { Spheres } from './Spheres';
+import { Toruses } from './Toruses';
+import { Particles } from './Particles';
+import { TrailObject } from './TrailObject';
 
 // Resource manager for shared geometries and materials
 class ResourceManager {
@@ -98,192 +103,177 @@ class ResourceManager {
   }
 }
 
-// Optimized shape component using instanced rendering
-interface OptimizedShapeProps {
-  type: 'cubes' | 'spheres' | 'toruses';
+// Utility: Seeded random for stable positions
+function mulberry32(seed: number) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
 }
 
-const OptimizedShape: React.FC<OptimizedShapeProps> = ({ type }) => {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+function useStableSeeds(count: number) {
+  const seedsRef = useRef<number[]>([]);
+  if (seedsRef.current.length !== count) {
+    seedsRef.current = Array.from({ length: count }, (_, i) => Math.floor(Math.random() * 1000000) + i * 1000);
+  }
+  return seedsRef.current;
+}
+
+const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) => {
+  const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
-  const resourceManager = ResourceManager.getInstance();
-  
-  // Get shape config from your existing store
-  const shapeConfig = geometric[type];
-  
-  // Apply your existing safety checks
-  const safeCount = Math.max(0, Math.min(shapeConfig.count || 0, 1000));
-  if (safeCount === 0 || !['cubes', 'spheres', 'toruses'].includes(type)) return null;
+  const shape = geometric[type];
+  const { shapeGlow } = globalEffects;
 
-  // Map plural to singular type safely
-  const shapeType =
-    type === 'cubes' ? 'cube' :
-    type === 'spheres' ? 'sphere' :
-    type === 'toruses' ? 'torus' :
-    undefined;
-  if (!shapeType) return null;
-
-  const safeSize = Math.max(0.1, Math.min(shapeConfig.size || 1, 10));
-  const safeSpeed = Math.max(0, Math.min(shapeConfig.speed || 1, 5));
-  const safeRotation = type === 'cubes' ? Math.max(0, Math.min((shapeConfig as any).rotation || 1, 5)) : 0;
-  const safeOpacity = Math.max(0, Math.min(shapeConfig.opacity || 1, 1));
-  const safeOrganicness = Math.max(0, Math.min((shapeConfig as any).organicness || 0, 1));
-  const safeAnimationSpeed = Math.max(0.01, Math.min(globalAnimationSpeed, 5));
-
-  // Get layer configuration from your existing background system
-  const layerConfig = backgroundConfig.enabled ? 
-    backgroundConfig.artisticLayout?.layers?.nearBackground : null;
+  // Layer config
+  const layerConfig = backgroundConfig.enabled ? backgroundConfig.artisticLayout?.layers?.nearBackground : null;
   const layerZ = layerConfig?.zPosition || 0;
+  const movementSpeed = 1.0;
 
-  // Create geometry and material using optimized system
-  const geometry = useMemo(() => {
-    return resourceManager.getOrganicGeometry(shapeType, safeSize, safeOrganicness);
-  }, [shapeType, safeSize, safeOrganicness]);
+  // Safety checks
+  const safeCount = isNaN(shape.count) || shape.count < 0 ? 0 : shape.count;
+  const safeSize = isNaN(shape.size) || shape.size <= 0 ? 1.0 : shape.size;
+  const safeOrganicness = isNaN(shape.organicness) || shape.organicness < 0 ? 0 : shape.organicness;
+  const safeOpacity = isNaN(shape.opacity) || shape.opacity < 0 ? 1.0 : shape.opacity;
+  const safeSpeed = isNaN(shape.speed) || shape.speed < 0 ? 1.0 : shape.speed;
+  const safeRotation = isNaN((shape as any).rotation) ? 1.0 : (shape as any).rotation;
+  const movementPattern = shape.movementPattern || 'orbit';
+  const safeDistance = isNaN(shape.distance) || shape.distance < 0 ? 2.0 : shape.distance;
 
-  const material = useMemo(() => {
-    return resourceManager.getMaterial(
-      shapeConfig.color,
-      safeOpacity,
-      globalEffects.shapeGlow.enabled ? globalEffects.shapeGlow : undefined
-    );
-  }, [shapeConfig.color, safeOpacity, globalEffects.shapeGlow]);
+  if (!shape || safeCount === 0) return null;
 
-  // Generate stable positions using your existing patterns
-  const instanceData = useMemo(() => {
-    const positions: THREE.Vector3[] = [];
-    const rotations: THREE.Euler[] = [];
-    const phases: number[] = [];
-    
-    for (let i = 0; i < safeCount; i++) {
-      // Use your existing position generation pattern
-      positions.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 50,
-        (Math.random() - 0.5) * 30,
-        (Math.random() - 0.5) * 40,
-      ));
-      
-      rotations.push(new THREE.Euler(
-        Math.random() * Math.PI * 2,
-        Math.random() * Math.PI * 2,
-        Math.random() * Math.PI * 2
-      ));
-      
-      phases.push(Math.random() * Math.PI * 2);
-    }
-    
-    return { positions, rotations, phases };
-  }, [safeCount]);
+  // Stable seeds and positions
+  const seeds = useStableSeeds(safeCount);
+  const positionsRef = useRef<[number, number, number][]>([]);
+  if (positionsRef.current.length !== safeCount) {
+    positionsRef.current = seeds.map((seed) => {
+      const rand = mulberry32(seed + 9999);
+      return [
+        (rand() - 0.5) * 50,
+        (rand() - 0.5) * 30,
+        (rand() - 0.5) * 40
+      ];
+    });
+  }
 
-  // Temporary objects for matrix calculations (avoids creating new objects each frame)
-  const tempObject = useMemo(() => new THREE.Object3D(), []);
+  // Shared material
+  const glowColor = shapeGlow.useObjectColor ? shape.color : (shapeGlow.customColor || shape.color);
+  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+  const sharedMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+    color: shape.color,
+    emissive: new THREE.Color(glowColor),
+    emissiveIntensity: glowIntensity * 2.0,
+    transparent: true,
+    opacity: shape.opacity,
+    blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+    metalness: glowIntensity > 0 ? 0.8 : 0.1,
+    roughness: glowIntensity > 0 ? 0.2 : 0.8
+  }), [shape.color, glowColor, glowIntensity, shape.opacity]);
+
+  // Individual organic geometries
+  const geometries = useMemo(() => {
+    return Array.from({ length: safeCount }, () => {
+      let geometry: THREE.BufferGeometry;
+      if (type === 'cubes') {
+        geometry = new THREE.BoxGeometry(safeSize, safeSize, safeSize);
+      } else if (type === 'spheres') {
+        geometry = new THREE.SphereGeometry(safeSize, 16, 16);
+      } else {
+        geometry = new THREE.TorusGeometry(safeSize, safeSize * 0.3, 8, 16);
+      }
+      if (safeOrganicness > 0) {
+        const positions = geometry.attributes.position.array;
+        for (let i = 0; i < positions.length; i += 3) {
+          const noise = (Math.random() - 0.5) * safeOrganicness;
+          positions[i] += noise;
+          positions[i + 1] += noise;
+          positions[i + 2] += noise;
+        }
+        geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals();
+      }
+      return geometry;
+    });
+  }, [safeCount, safeSize, safeOrganicness, type]);
+
+  // Frame counter for constraint optimization
   const frameCountRef = useRef(0);
 
   useFrame((state) => {
-    if (!meshRef.current || safeCount === 0) return;
-    
+    if (!groupRef.current) return;
     const time = state.clock.elapsedTime;
-    const timeScale = backgroundConfig.timeScale || 1;
-    const scaledTime = time * timeScale * safeAnimationSpeed;
-    
-    // Your existing distortion effects
-    const waveIntensity = (globalEffects.distortion?.wave || 0) * 2;
-    const rippleIntensity = (globalEffects.distortion?.ripple || 0) * 3;
-    const frequency = globalEffects.distortion?.frequency || 1;
-    
-    // Calculate final speeds using your existing patterns
-    const finalMovementSpeed = safeSpeed * safeAnimationSpeed;
-    const finalRotationSpeed = safeRotation * safeAnimationSpeed;
-
-    // Performance optimization: apply viewport constraints less frequently
+    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    const scaledTime = time * safeAnimationSpeed;
+    const waveIntensity = globalEffects.distortion.wave * 2;
+    const rippleIntensity = globalEffects.distortion.ripple * 3;
+    const finalSpeed = safeSpeed * movementSpeed * safeAnimationSpeed;
+    const finalRotation = safeRotation * safeAnimationSpeed;
     frameCountRef.current++;
-    const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 5 === 0;
-
-    // Update instances using your EXACT existing animation patterns
-    for (let i = 0; i < safeCount; i++) {
-      const originalPos = instanceData.positions[i];
-      const originalRot = instanceData.rotations[i];
-      const phase = instanceData.phases[i];
-      
-      // Position calculation matching your existing components exactly
-      let x = originalPos.x;
-      let y = originalPos.y;
-      let z = originalPos.z;
-      
-      if (type === 'cubes') {
-        // Match your Cubes.tsx animation exactly
-        x = originalPos.x + Math.sin(scaledTime + i) * 2 * finalMovementSpeed;
-        y = originalPos.y + Math.cos(scaledTime + i * 0.5) * 1.5 * finalMovementSpeed;
-        z = originalPos.z + Math.sin(scaledTime * 0.7 + i) * 1 * finalMovementSpeed;
-      } else if (type === 'spheres' || type === 'toruses') {
-        // Match your Spheres/Toruses animation exactly
-        y = originalPos.y + Math.sin(scaledTime + i) * 2 * finalMovementSpeed;
-        x = originalPos.x;
-        z = originalPos.z;
+    const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 3 === 0;
+    groupRef.current.children.forEach((child, i) => {
+      const trailObjectGroup = child as THREE.Group;
+      const mesh = trailObjectGroup.children[0] as THREE.Mesh;
+      const pos = positionsRef.current[i];
+      if (!pos) return;
+      let x = pos[0];
+      let y = pos[1];
+      let z = pos[2];
+      if (movementPattern === 'orbit') {
+        x = pos[0] + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+        y = pos[1] + Math.cos(scaledTime + i * 0.5) * 1.5 * finalSpeed * safeDistance;
+        z = pos[2] + Math.sin(scaledTime * 0.7 + i) * 1 * finalSpeed * safeDistance;
+      } else if (movementPattern === 'verticalSine') {
+        y = pos[1] + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+      } else if (movementPattern === 'random') {
+        x = pos[0] + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        y = pos[1] + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        z = pos[2] + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
       }
-      
-      // Apply your existing wave distortion
       if (waveIntensity > 0) {
-        x += Math.sin(scaledTime * frequency + i) * waveIntensity;
-        z += Math.cos(scaledTime * frequency + i * 0.5) * waveIntensity;
+        x += Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
+        z += Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
       }
-      
-      // Apply your existing ripple effect
       if (rippleIntensity > 0) {
-        const distance = Math.sqrt(x * x + z * z);
+        const distance = Math.sqrt(x ** 2 + z ** 2);
         y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
       }
-      
-      // Apply viewport constraints using your existing system (less frequently for performance)
-      if (shouldApplyConstraints && backgroundConfig.enabled) {
-        const constrainedPosition = constrainToViewport({ x, y, z }, layerZ);
-        tempObject.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
+      if (shouldApplyConstraints) {
+        const constrained = constrainToViewport({ x, y, z }, layerZ);
+        trailObjectGroup.position.set(constrained.x, constrained.y, constrained.z);
       } else {
-        tempObject.position.set(x, y, z);
+        trailObjectGroup.position.set(x, y, z);
       }
-      
-      // Rotation using your existing patterns
-      if (type === 'cubes') {
-        // Match your cubes rotation exactly
-        tempObject.rotation.set(
-          originalRot.x + scaledTime * finalRotationSpeed * 0.01,
-          originalRot.y + scaledTime * finalRotationSpeed * 0.015,
-          originalRot.z
-        );
-      } else if (type === 'spheres') {
-        // Match spheres rotation (group rotation is handled by the group)
-        tempObject.rotation.set(
-          originalRot.x + scaledTime * finalMovementSpeed * 0.5,
-          originalRot.y + scaledTime * finalMovementSpeed * 0.3,
-          originalRot.z
-        );
-      } else if (type === 'toruses') {
-        // Match toruses rotation
-        tempObject.rotation.set(
-          originalRot.x + scaledTime * finalMovementSpeed * 0.5,
-          originalRot.y + scaledTime * finalMovementSpeed * 0.3,
-          originalRot.z
-        );
-      }
-      
-      // Scale (default to 1, can be animated if needed)
-      tempObject.scale.setScalar(1);
-      
-      // Update matrix
-      tempObject.updateMatrix();
-      meshRef.current.setMatrixAt(i, tempObject.matrix);
-    }
-    
-    meshRef.current.instanceMatrix.needsUpdate = true;
+      // Rotation
+      mesh.rotation.x += safeRotation * 0.01;
+      mesh.rotation.y += safeRotation * 0.015;
+    });
   });
 
-  if (safeCount === 0) return null;
-
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[geometry, material, safeCount]}
-      frustumCulled={true}
-    />
+    <group ref={groupRef} key={`${type}-${safeCount}`}> 
+      {positionsRef.current.map((position, i) => (
+        <TrailObject
+          key={`${type}-${i}-${safeCount}`}
+          id={`${type}-${i}`}
+          color={new THREE.Color(shape.color)}
+          size={safeSize}
+          velocityThreshold={0.05}
+          trailType={
+            type === 'cubes' ? 'cubeTrails' :
+            type === 'spheres' ? 'sphereTrails' :
+            'torusTrails'
+          }
+          geometry={geometries[i]}
+          material={sharedMaterial}
+        >
+          <group position={position}>
+            <mesh geometry={geometries[i]} material={sharedMaterial} />
+          </group>
+        </TrailObject>
+      ))}
+    </group>
   );
 };
 
@@ -300,6 +290,8 @@ const OptimizedParticles: React.FC = () => {
   const safeSpread = Math.max(10, Math.min(particles.spread, 100));
   const safeOpacity = Math.max(0.1, Math.min(particles.opacity, 1.0));
   const safeAnimationSpeed = Math.max(0.01, Math.min(globalAnimationSpeed, 5));
+  const movementPattern = particles.movementPattern || 'random';
+  const safeDistance = isNaN(particles.distance) || particles.distance < 0 ? 1.5 : particles.distance;
 
   // Create shared geometry and material
   const geometry = useMemo(() => new THREE.SphereGeometry(0.1, 8, 6), []);
@@ -356,19 +348,26 @@ const OptimizedParticles: React.FC = () => {
     for (let i = 0; i < safeCount; i++) {
       const originalPos = instanceData.positions[i];
       
-      // Match your existing particle animation
       let x = originalPos.x;
-      let y = originalPos.y + Math.sin(scaledTime + i) * 0.01 * finalSpeed;
+      let y = originalPos.y;
       let z = originalPos.z;
-      
-      // Add turbulence matching your existing pattern
+      if (movementPattern === 'orbit') {
+        x = originalPos.x + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+        y = originalPos.y + Math.cos(scaledTime + i * 0.5) * 1.5 * finalSpeed * safeDistance;
+        z = originalPos.z + Math.sin(scaledTime * 0.7 + i) * 1 * finalSpeed * safeDistance;
+      } else if (movementPattern === 'verticalSine') {
+        y = originalPos.y + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+      } else if (movementPattern === 'random') {
+        x = originalPos.x + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        y = originalPos.y + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        z = originalPos.z + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+      }
       if (turbulence > 0) {
         x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
       }
       
-      // Apply viewport constraints (less frequently)
       if (shouldApplyConstraints && backgroundConfig.enabled) {
         const constrainedPosition = constrainToViewport({ x, y, z }, layerZ);
         tempObject.position.set(constrainedPosition.x, constrainedPosition.y, constrainedPosition.z);
@@ -376,7 +375,6 @@ const OptimizedParticles: React.FC = () => {
         tempObject.position.set(x, y, z);
       }
       
-      // Set scale based on size
       tempObject.scale.setScalar(safeSize);
       tempObject.rotation.set(0, 0, 0);
       
@@ -400,15 +398,23 @@ const OptimizedParticles: React.FC = () => {
 
 // Main optimized geometric system
 export const OptimizedGeometricSystem: React.FC = () => {
-  const { geometric, particles } = useVisualStore();
-  
+  const { geometric, particles, globalEffects } = useVisualStore();
+  const trails = globalEffects.trails;
+
   return (
     <group>
-      {/* Replace individual components with optimized versions */}
-      {geometric.cubes.count > 0 && <OptimizedShape type="cubes" />}
-      {geometric.spheres.count > 0 && <OptimizedShape type="spheres" />}
-      {geometric.toruses.count > 0 && <OptimizedShape type="toruses" />}
-      {particles.count > 0 && <OptimizedParticles />}
+      {/* Cubes */}
+      {geometric.cubes.count > 0 && <OrganicShapeList type="cubes" />}
+      {/* Spheres */}
+      {geometric.spheres.count > 0 && <OrganicShapeList type="spheres" />}
+      {/* Toruses */}
+      {geometric.toruses.count > 0 && <OrganicShapeList type="toruses" />}
+      {/* Particles (keep instanced for perf) */}
+      {particles.count > 0 && (
+        trails?.particleTrails?.enabled
+          ? <Particles />
+          : <OptimizedParticles />
+      )}
     </group>
   );
 };

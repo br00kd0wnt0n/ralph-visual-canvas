@@ -87,9 +87,9 @@ const GeometricShapes = () => {
         const originalX = Math.cos(i * Math.PI * 2 / geometric.cubes.count) * 4;
         const originalY = Math.sin(i * Math.PI * 2 / geometric.cubes.count) * 4;
         return (
-          <Box
-            key={`cube-${i}`}
-            args={[geometric.cubes.size, geometric.cubes.size, geometric.cubes.size]}
+        <Box
+          key={`cube-${i}`}
+          args={[geometric.cubes.size, geometric.cubes.size, geometric.cubes.size]}
             position={[originalX, originalY, 0]}
             userData={{ 
               type: 'cube', 
@@ -97,13 +97,13 @@ const GeometricShapes = () => {
               speed: geometric.cubes.speed,
               originalPosition: [originalX, originalY, 0]
             }}
-          >
-            <meshBasicMaterial
-              color={geometric.cubes.color}
-              transparent
-              opacity={geometric.cubes.opacity}
-            />
-          </Box>
+        >
+          <meshBasicMaterial
+            color={geometric.cubes.color}
+            transparent
+            opacity={geometric.cubes.opacity}
+          />
+        </Box>
         );
       })}
 

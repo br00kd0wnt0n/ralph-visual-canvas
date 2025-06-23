@@ -26,6 +26,14 @@ interface ToggleControlProps {
   disabled?: boolean;
 }
 
+interface SelectControlProps {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}
+
 interface ControlSectionProps {
   title: string;
   children: React.ReactNode;
@@ -88,6 +96,38 @@ const ToggleControl: React.FC<ToggleControlProps> = React.memo(({
       onChange={(e) => onChange(e.target.checked)}
       disabled={disabled}
     />
+  </div>
+));
+
+const SelectControl: React.FC<SelectControlProps> = React.memo(({ 
+  label, 
+  value, 
+  options, 
+  onChange, 
+  disabled = false 
+}) => (
+  <div className={styles.controlGroup}>
+    <label className={disabled ? styles.disabled : ''}>{label}</label>
+    <select
+      className={styles.select}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+      style={{
+        backgroundColor: '#374151',
+        color: '#ffffff',
+        border: '1px solid #4B5563',
+        borderRadius: '4px',
+        padding: '4px 8px',
+        fontSize: '14px'
+      }}
+    >
+      {options.map(opt => (
+        <option key={opt.value} value={opt.value} style={{ backgroundColor: '#374151', color: '#ffffff' }}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   </div>
 ));
 
@@ -163,6 +203,25 @@ export const ShapeParticleDashboard = React.memo(() => {
             max={20}
             onChange={(value) => updateParticles({ spread: value })}
           />
+          <SliderControl
+            label="Distance"
+            value={particles.distance || 1.5}
+            min={0.1}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateParticles({ distance: value })}
+          />
+          <SelectControl
+            label="Movement Pattern"
+            value={particles.movementPattern}
+            options={[
+              { value: 'orbit', label: 'Orbit' },
+              { value: 'verticalSine', label: 'Vertical Sine' },
+              { value: 'static', label: 'Static' },
+              { value: 'random', label: 'Random' }
+            ]}
+            onChange={value => updateParticles({ movementPattern: value as any })}
+          />
         </ControlSection>
 
         {/* Spheres Controls */}
@@ -202,11 +261,38 @@ export const ShapeParticleDashboard = React.memo(() => {
             onChange={(value) => updateGeometric('spheres', { speed: value })}
           />
           <SliderControl
+            label="Rotation"
+            value={geometric.spheres.rotation || 1.0}
+            min={0}
+            max={5}
+            step={0.01}
+            onChange={(value) => updateGeometric('spheres', { rotation: value })}
+          />
+          <SliderControl
             label="Opacity"
             value={geometric.spheres.opacity || 0.7}
             min={0}
             max={1}
             onChange={(value) => updateGeometric('spheres', { opacity: value })}
+          />
+          <SliderControl
+            label="Distance"
+            value={geometric.spheres.distance || 2.0}
+            min={0.1}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateGeometric('spheres', { distance: value })}
+          />
+          <SelectControl
+            label="Movement Pattern"
+            value={geometric.spheres.movementPattern}
+            options={[
+              { value: 'orbit', label: 'Orbit' },
+              { value: 'verticalSine', label: 'Vertical Sine' },
+              { value: 'static', label: 'Static' },
+              { value: 'random', label: 'Random' }
+            ]}
+            onChange={value => updateGeometric('spheres', { movementPattern: value as any })}
           />
         </ControlSection>
 
@@ -260,6 +346,25 @@ export const ShapeParticleDashboard = React.memo(() => {
             max={1}
             onChange={(value) => updateGeometric('cubes', { opacity: value })}
           />
+          <SliderControl
+            label="Distance"
+            value={geometric.cubes.distance || 2.5}
+            min={0.1}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateGeometric('cubes', { distance: value })}
+          />
+          <SelectControl
+            label="Movement Pattern"
+            value={geometric.cubes.movementPattern}
+            options={[
+              { value: 'orbit', label: 'Orbit' },
+              { value: 'verticalSine', label: 'Vertical Sine' },
+              { value: 'static', label: 'Static' },
+              { value: 'random', label: 'Random' }
+            ]}
+            onChange={value => updateGeometric('cubes', { movementPattern: value as any })}
+          />
         </ControlSection>
 
         {/* Toruses Controls */}
@@ -299,11 +404,38 @@ export const ShapeParticleDashboard = React.memo(() => {
             onChange={(value) => updateGeometric('toruses', { speed: value })}
           />
           <SliderControl
+            label="Rotation"
+            value={geometric.toruses.rotation || 1.0}
+            min={0}
+            max={5}
+            step={0.01}
+            onChange={(value) => updateGeometric('toruses', { rotation: value })}
+          />
+          <SliderControl
             label="Opacity"
             value={geometric.toruses.opacity || 0.5}
             min={0}
             max={1}
             onChange={(value) => updateGeometric('toruses', { opacity: value })}
+          />
+          <SliderControl
+            label="Distance"
+            value={geometric.toruses.distance || 2.0}
+            min={0.1}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateGeometric('toruses', { distance: value })}
+          />
+          <SelectControl
+            label="Movement Pattern"
+            value={geometric.toruses.movementPattern}
+            options={[
+              { value: 'orbit', label: 'Orbit' },
+              { value: 'verticalSine', label: 'Vertical Sine' },
+              { value: 'static', label: 'Static' },
+              { value: 'random', label: 'Random' }
+            ]}
+            onChange={value => updateGeometric('toruses', { movementPattern: value as any })}
           />
         </ControlSection>
 
@@ -349,6 +481,25 @@ export const ShapeParticleDashboard = React.memo(() => {
             label="Color"
             value={geometric.blobs.color || '#9370db'}
             onChange={(value) => updateGeometric('blobs', { color: value })}
+          />
+          <SliderControl
+            label="Distance"
+            value={geometric.blobs.distance || 3.0}
+            min={0.1}
+            max={10}
+            step={0.1}
+            onChange={(value) => updateGeometric('blobs', { distance: value })}
+          />
+          <SelectControl
+            label="Movement Pattern"
+            value={geometric.blobs.movementPattern}
+            options={[
+              { value: 'orbit', label: 'Orbit' },
+              { value: 'verticalSine', label: 'Vertical Sine' },
+              { value: 'static', label: 'Static' },
+              { value: 'random', label: 'Random' }
+            ]}
+            onChange={value => updateGeometric('blobs', { movementPattern: value as any })}
           />
         </ControlSection>
 

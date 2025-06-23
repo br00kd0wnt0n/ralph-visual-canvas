@@ -22,6 +22,7 @@ import { ArtisticPresets } from './artistic/ArtisticConfigSystem';
 import { ArtisticCanvas, PaintingObject, ArtisticCanvasOverlay } from './artistic/ArtisticCanvasSystem';
 import type { ArtisticCanvasConfig } from '../types/artistic';
 import { OptimizedGeometricSystem } from './OptimizedGeometricSystem';
+import { PerformanceMonitor } from './PerformanceMonitor';
 
 // Trail renderer component
 const TrailRenderer = () => {
@@ -823,15 +824,6 @@ const VolumetricFog = () => {
   );
 };
 
-// Performance monitor component that updates in the render loop
-const PerformanceMonitor = () => {
-  useFrame(() => {
-    performanceMonitor.update();
-  });
-  
-  return null;
-};
-
 const Scene = () => {
   const { geometric, globalEffects, backgroundConfig } = useVisualStore();
   const { blobs, waveInterference, metamorphosis, fireflies, layeredSineWaves } = geometric;
@@ -839,9 +831,6 @@ const Scene = () => {
 
   return (
     <>
-      {/* Performance Monitor */}
-      <PerformanceMonitor />
-      
       {/* Lighting */}
       <ambientLight intensity={0.4} />
       <directionalLight position={[10, 10, 5]} intensity={0.8} />
@@ -1595,6 +1584,8 @@ const EnhancedVisualCanvas = () => {
           <CameraControls />
           <Scene />
         </Canvas>
+        {/* Performance Monitor Overlay */}
+        <PerformanceMonitor />
       </div>
     </ClientOnly>
   );
