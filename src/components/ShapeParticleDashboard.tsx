@@ -562,6 +562,26 @@ export const ShapeParticleDashboard = React.memo(() => {
             })}
           />
           <SliderControl
+            label="Intensity"
+            value={globalEffects.metamorphosis.intensity || 1.0}
+            min={0.1}
+            max={3.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, intensity: value }
+            })}
+          />
+          <SliderControl
+            label="Layers"
+            value={globalEffects.metamorphosis.layers || 1}
+            min={1}
+            max={5}
+            step={1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              metamorphosis: { ...globalEffects.metamorphosis, layers: value }
+            })}
+          />
+          <SliderControl
             label="Morph Speed"
             value={globalEffects.metamorphosis.morphSpeed || 1}
             min={0.1}
@@ -798,6 +818,26 @@ export const ShapeParticleDashboard = React.memo(() => {
             value={globalEffects.layeredSineWaves?.enabled ?? false}
             onChange={(value: boolean) => updateGlobalEffects({ 
               layeredSineWaves: { ...globalEffects.layeredSineWaves, enabled: value }
+            })}
+          />
+          <SliderControl
+            label="Intensity"
+            value={globalEffects.layeredSineWaves?.intensity ?? 1.0}
+            min={0.1}
+            max={3.0}
+            step={0.1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, intensity: value }
+            })}
+          />
+          <SliderControl
+            label="Layer Count"
+            value={globalEffects.layeredSineWaves?.layerCount ?? 1}
+            min={1}
+            max={5}
+            step={1}
+            onChange={(value: number) => updateGlobalEffects({ 
+              layeredSineWaves: { ...globalEffects.layeredSineWaves, layerCount: value }
             })}
           />
           <SliderControl

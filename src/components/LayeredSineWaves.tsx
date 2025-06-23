@@ -38,6 +38,8 @@ export const LayeredSineWaves = () => {
     const size = layeredSineWaves.size || 1.0;
     const width = layeredSineWaves.width || 100;
     const height = layeredSineWaves.height || 100;
+    const intensity = layeredSineWaves.intensity || 1.0;
+    const layerCount = layeredSineWaves.layerCount || 1;
     const edgeFade = layeredSineWaves.edgeFade ?? { enabled: true, fadeStart: 0.3, fadeEnd: 0.5 };
     
     // Safety check: clamp global animation speed to prevent crashes
@@ -91,59 +93,72 @@ export const LayeredSineWaves = () => {
       const halfWidth = (width / 2) * size;
       const halfHeight = (height / 2) * size;
 
-      // Draw each layer
-      for (let layer = 0; layer < layers; layer++) {
-        const layerPosition = (layer / layers) * halfHeight * 0.8 + halfHeight * 0.1 - halfHeight / 2;
-        const layerFrequency = 0.5 + layer * 0.03;
-        const layerPhase = timeRef.current * 0.2 + layer * 0.05;
-        const layerAmplitude = waveAmplitude * size * (0.5 + 0.5 * Math.sin(layer * 0.1 + timeRef.current * 0.3));
+      // Create multiple layer instances with progressive opacity
+      for (let instanceIndex = 0; instanceIndex < layerCount; instanceIndex++) {
+        const instanceOpacity = intensity * (0.4 / (instanceIndex + 1)); // Decreasing opacity for each instance
+        const instanceOffset = instanceIndex * 2; // Slight Z offset for each instance
         
-        const baseLayerOpacity = 0.2 + 0.6 * Math.pow(Math.sin((layer / layers) * Math.PI), 2);
-        const timeEffect = 0.2 * Math.sin(timeRef.current * 0.4 + layer * 0.1);
-        const layerOpacity = Math.min(0.9, Math.max(0.1, baseLayerOpacity + timeEffect)) * baseOpacity;
-        
-        const geometry = new THREE.BufferGeometry();
-        const positions = [];
-        
-        for (let i = 0; i <= points; i++) {
-          const x = (i / points) * width * size - halfWidth;
+        // Draw each layer within this instance
+        for (let layer = 0; layer < layers; layer++) {
+          const layerPosition = (layer / layers) * halfHeight * 0.8 + halfHeight * 0.1 - halfHeight / 2;
+          const layerFrequency = 0.5 + layer * 0.03;
+          const layerPhase = timeRef.current * 0.2 + layer * 0.05;
+          const layerAmplitude = waveAmplitude * size * (0.5 + 0.5 * Math.sin(layer * 0.1 + timeRef.current * 0.3));
           
-          let y = layerPosition;
+          const baseLayerOpacity = 0.2 + 0.6 * Math.pow(Math.sin((layer / layers) * Math.PI), 2);
+          const timeEffect = 0.2 * Math.sin(timeRef.current * 0.4 + layer * 0.1);
+          const layerOpacity = Math.min(0.9, Math.max(0.1, baseLayerOpacity + timeEffect)) * baseOpacity * instanceOpacity;
           
-          // Primary wave
-          y += layerAmplitude * 0.1 * Math.sin(x * 0.1 * layerFrequency + layerPhase);
-          
-          // Secondary waves for complexity
-          y += layerAmplitude * 0.03 * Math.sin(x * 0.2 * layerFrequency + layerPhase * 1.5);
-          y += layerAmplitude * 0.02 * Math.sin(x * 0.4 * layerFrequency - layerPhase * 0.7);
-          
-          // Tertiary high-frequency detail
-          y += layerAmplitude * 0.01 * Math.sin(x * 0.8 * layerFrequency + layerPhase * 2.3);
-          
-          positions.push(x, y, 0);
-        }
-        
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        
-        const layerMaterial = materialRef.current?.clone();
-        if (layerMaterial) {
-          let finalOpacity = layerOpacity;
-          if (edgeFade.enabled) {
-            const maxDistance = Math.max(halfWidth, halfHeight);
-            const layerDistance = Math.abs(layerPosition) / maxDistance;
+          // Create blur effect by generating multiple overlapping lines (only when blur is enabled)
+          const blurLayers = 1; // Single layer when no blur effect
+          for (let blurIndex = 0; blurIndex < blurLayers; blurIndex++) {
+            const blurOffset = 0; // No offset when no blur
+            const blurOpacity = layerOpacity;
             
-            if (layerDistance > edgeFade.fadeStart) {
-              const fadeProgress = (layerDistance - edgeFade.fadeStart) / (edgeFade.fadeEnd - edgeFade.fadeStart);
-              const fadeFactor = Math.max(0, 1 - fadeProgress);
-              finalOpacity *= fadeFactor;
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            
+            for (let i = 0; i <= points; i++) {
+              const x = (i / points) * width * size - halfWidth;
+              
+              let y = layerPosition + blurOffset;
+              
+              // Primary wave
+              y += layerAmplitude * 0.1 * Math.sin(x * 0.1 * layerFrequency + layerPhase);
+              
+              // Secondary waves for complexity
+              y += layerAmplitude * 0.03 * Math.sin(x * 0.2 * layerFrequency + layerPhase * 1.5);
+              y += layerAmplitude * 0.02 * Math.sin(x * 0.4 * layerFrequency - layerPhase * 0.7);
+              
+              // Tertiary high-frequency detail
+              y += layerAmplitude * 0.01 * Math.sin(x * 0.8 * layerFrequency + layerPhase * 2.3);
+              
+              positions.push(x, y, instanceOffset);
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            const layerMaterial = materialRef.current?.clone();
+            if (layerMaterial) {
+              let finalOpacity = blurOpacity;
+              if (edgeFade.enabled) {
+                const maxDistance = Math.max(halfWidth, halfHeight);
+                const layerDistance = Math.abs(layerPosition) / maxDistance;
+                
+                if (layerDistance > edgeFade.fadeStart) {
+                  const fadeProgress = (layerDistance - edgeFade.fadeStart) / (edgeFade.fadeEnd - edgeFade.fadeStart);
+                  const fadeFactor = Math.max(0, 1 - fadeProgress);
+                  finalOpacity *= fadeFactor;
+                }
+              }
+              
+              layerMaterial.opacity = finalOpacity;
+              layerMaterial.linewidth = lineWidth;
+              
+              const line = new THREE.Line(geometry, layerMaterial);
+              groupRef.current.add(line);
             }
           }
-          
-          layerMaterial.opacity = finalOpacity;
-          layerMaterial.linewidth = lineWidth;
-          
-          const line = new THREE.Line(geometry, layerMaterial);
-          groupRef.current.add(line);
         }
       }
     }

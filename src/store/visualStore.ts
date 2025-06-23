@@ -313,6 +313,8 @@ export interface VisualState {
       wireframeOpacity: number;
       size: number;
       blur: number;
+      intensity: number;
+      layers: number;
     };
 
     // Fireflies System
@@ -336,6 +338,8 @@ export interface VisualState {
       size: number; // Overall size multiplier
       width: number; // Width of the wave field
       height: number; // Height of the wave field
+      intensity: number;
+      layerCount: number;
       edgeFade: {
         enabled: boolean;
         fadeStart: number; // Start fading at this distance from center (0-1)
@@ -898,6 +902,8 @@ const defaultState: VisualState = {
       wireframeOpacity: 0.8,
       size: 1.5,
       blur: 0.0,
+      intensity: 1.0,
+      layers: 1,
     },
     fireflies: {
       enabled: false,
@@ -917,6 +923,8 @@ const defaultState: VisualState = {
       size: 1.0,
       width: 100,
       height: 100,
+      intensity: 1.0,
+      layerCount: 1,
       edgeFade: {
         enabled: true,
         fadeStart: 0.3,
