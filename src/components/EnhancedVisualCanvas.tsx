@@ -1039,27 +1039,29 @@ const AutoPanIndicator = () => {
       position: 'absolute',
       top: '20px',
       right: '20px',
-      background: 'rgba(37, 99, 235, 0.9)',
-      color: 'white',
-      padding: '8px 16px',
-      borderRadius: '20px',
-      fontSize: '14px',
-      fontWeight: 'bold',
+      background: 'rgba(37, 99, 235, 0.3)',
+      color: 'rgba(255, 255, 255, 0.7)',
+      padding: '4px 8px',
+      borderRadius: '12px',
+      fontSize: '11px',
+      fontWeight: 'normal',
       zIndex: 10000,
-      border: '2px solid #2563eb',
-      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(37, 99, 235, 0.4)',
+      backdropFilter: 'blur(8px)',
       display: 'flex',
       alignItems: 'center',
-      gap: '8px'
+      gap: '4px',
+      opacity: 0.6,
+      transition: 'opacity 0.3s ease'
     }}>
       <div style={{
-        width: '8px',
-        height: '8px',
+        width: '4px',
+        height: '4px',
         borderRadius: '50%',
-        backgroundColor: '#ffffff',
-        animation: 'pulse 1.5s infinite'
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        animation: 'pulse 2s infinite'
       }} />
-      Auto Pan Active
+      Auto Pan
     </div>
   );
 };
