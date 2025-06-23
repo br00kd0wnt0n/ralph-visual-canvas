@@ -265,6 +265,19 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
+            {/* Global Weather Location Field */}
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Weather Location</label>
+              <input
+                type="text"
+                value={visualStore.location}
+                onChange={e => visualStore.setLocation(e.target.value)}
+                className="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter city, region, or coordinates"
+              />
+              <div className="text-xs text-gray-400 mt-1">Current: {visualStore.location}</div>
+            </div>
+
             {activeTab === 'camera' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">

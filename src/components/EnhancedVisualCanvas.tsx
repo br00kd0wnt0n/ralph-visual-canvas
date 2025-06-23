@@ -21,6 +21,7 @@ import { ArtisticPresets } from './artistic/ArtisticConfigSystem';
 // Import artistic canvas system
 import { ArtisticCanvas, PaintingObject, ArtisticCanvasOverlay } from './artistic/ArtisticCanvasSystem';
 import type { ArtisticCanvasConfig } from '../types/artistic';
+import { OptimizedGeometricSystem } from './OptimizedGeometricSystem';
 
 // Trail renderer component
 const TrailRenderer = () => {
@@ -850,12 +851,7 @@ const Scene = () => {
       {trails.enabled && <TrailRenderer />}
       
       {/* Geometric Objects */}
-      <Spheres />
-      <Cubes />
-      <Toruses />
-      
-      {/* Particles */}
-      <Particles />
+      <OptimizedGeometricSystem />
       
       {/* Volumetric Fog */}
       <VolumetricFog />

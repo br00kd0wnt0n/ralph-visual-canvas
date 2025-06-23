@@ -142,7 +142,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
         <ControlSection title="Sphere Trails">
           <ToggleControl
             label="Enable Sphere Trails"
-            value={safeTrails.sphereTrails.enabled}
+            value={safeTrails.sphereTrails?.enabled ?? false}
             onChange={(value) => updateGlobalEffects({ 
               trails: { 
                 ...safeTrails, 
@@ -152,7 +152,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
           />
           <SliderControl
             label="Trail Length"
-            value={safeTrails.sphereTrails.length}
+            value={safeTrails.sphereTrails?.length ?? 50}
             min={5}
             max={1000}
             step={1}
@@ -162,11 +162,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 sphereTrails: { ...safeTrails.sphereTrails, length: value } 
               } 
             })}
-            disabled={!safeTrails.sphereTrails.enabled}
+            disabled={!safeTrails.sphereTrails?.enabled}
           />
           <SliderControl
             label="Trail Opacity"
-            value={safeTrails.sphereTrails.opacity}
+            value={safeTrails.sphereTrails?.opacity ?? 0.6}
             min={0.1}
             max={1}
             step={0.1}
@@ -176,11 +176,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 sphereTrails: { ...safeTrails.sphereTrails, opacity: value } 
               } 
             })}
-            disabled={!safeTrails.sphereTrails.enabled}
+            disabled={!safeTrails.sphereTrails?.enabled}
           />
           <SliderControl
             label="Trail Width"
-            value={safeTrails.sphereTrails.width}
+            value={safeTrails.sphereTrails?.width ?? 0.8}
             min={0.1}
             max={1.0}
             step={0.05}
@@ -190,11 +190,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 sphereTrails: { ...safeTrails.sphereTrails, width: value } 
               } 
             })}
-            disabled={!safeTrails.sphereTrails.enabled}
+            disabled={!safeTrails.sphereTrails?.enabled}
           />
           <SliderControl
             label="Fade Rate"
-            value={safeTrails.sphereTrails.fadeRate}
+            value={safeTrails.sphereTrails?.fadeRate ?? 0.3}
             min={0.1}
             max={0.9}
             step={0.05}
@@ -204,7 +204,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 sphereTrails: { ...safeTrails.sphereTrails, fadeRate: value } 
               } 
             })}
-            disabled={!safeTrails.sphereTrails.enabled}
+            disabled={!safeTrails.sphereTrails?.enabled}
           />
         </ControlSection>
 
@@ -212,7 +212,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
         <ControlSection title="Cube Trails">
           <ToggleControl
             label="Enable Cube Trails"
-            value={safeTrails.cubeTrails.enabled}
+            value={safeTrails.cubeTrails?.enabled ?? false}
             onChange={(value) => updateGlobalEffects({ 
               trails: { 
                 ...safeTrails, 
@@ -222,7 +222,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
           />
           <SliderControl
             label="Trail Length"
-            value={safeTrails.cubeTrails.length}
+            value={safeTrails.cubeTrails?.length ?? 40}
             min={5}
             max={1000}
             step={1}
@@ -232,11 +232,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 cubeTrails: { ...safeTrails.cubeTrails, length: value } 
               } 
             })}
-            disabled={!safeTrails.cubeTrails.enabled}
+            disabled={!safeTrails.cubeTrails?.enabled}
           />
           <SliderControl
             label="Trail Opacity"
-            value={safeTrails.cubeTrails.opacity}
+            value={safeTrails.cubeTrails?.opacity ?? 0.5}
             min={0.1}
             max={1}
             step={0.1}
@@ -246,11 +246,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 cubeTrails: { ...safeTrails.cubeTrails, opacity: value } 
               } 
             })}
-            disabled={!safeTrails.cubeTrails.enabled}
+            disabled={!safeTrails.cubeTrails?.enabled}
           />
           <SliderControl
             label="Trail Width"
-            value={safeTrails.cubeTrails.width}
+            value={safeTrails.cubeTrails?.width ?? 0.7}
             min={0.1}
             max={1.0}
             step={0.05}
@@ -260,11 +260,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 cubeTrails: { ...safeTrails.cubeTrails, width: value } 
               } 
             })}
-            disabled={!safeTrails.cubeTrails.enabled}
+            disabled={!safeTrails.cubeTrails?.enabled}
           />
           <SliderControl
             label="Fade Rate"
-            value={safeTrails.cubeTrails.fadeRate}
+            value={safeTrails.cubeTrails?.fadeRate ?? 0.4}
             min={0.1}
             max={0.9}
             step={0.05}
@@ -274,7 +274,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 cubeTrails: { ...safeTrails.cubeTrails, fadeRate: value } 
               } 
             })}
-            disabled={!safeTrails.cubeTrails.enabled}
+            disabled={!safeTrails.cubeTrails?.enabled}
           />
         </ControlSection>
 
@@ -282,7 +282,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
         <ControlSection title="Blob Trails">
           <ToggleControl
             label="Enable Blob Trails"
-            value={safeTrails.blobTrails.enabled}
+            value={safeTrails.blobTrails?.enabled ?? false}
             onChange={(value) => updateGlobalEffects({ 
               trails: { 
                 ...safeTrails, 
@@ -292,7 +292,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
           />
           <SliderControl
             label="Trail Length"
-            value={safeTrails.blobTrails.length}
+            value={safeTrails.blobTrails?.length ?? 60}
             min={5}
             max={1000}
             step={1}
@@ -302,11 +302,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 blobTrails: { ...safeTrails.blobTrails, length: value } 
               } 
             })}
-            disabled={!safeTrails.blobTrails.enabled}
+            disabled={!safeTrails.blobTrails?.enabled}
           />
           <SliderControl
             label="Trail Opacity"
-            value={safeTrails.blobTrails.opacity}
+            value={safeTrails.blobTrails?.opacity ?? 0.7}
             min={0.1}
             max={1}
             step={0.1}
@@ -316,11 +316,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 blobTrails: { ...safeTrails.blobTrails, opacity: value } 
               } 
             })}
-            disabled={!safeTrails.blobTrails.enabled}
+            disabled={!safeTrails.blobTrails?.enabled}
           />
           <SliderControl
             label="Trail Width"
-            value={safeTrails.blobTrails.width}
+            value={safeTrails.blobTrails?.width ?? 0.9}
             min={0.1}
             max={1.0}
             step={0.05}
@@ -330,11 +330,11 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 blobTrails: { ...safeTrails.blobTrails, width: value } 
               } 
             })}
-            disabled={!safeTrails.blobTrails.enabled}
+            disabled={!safeTrails.blobTrails?.enabled}
           />
           <SliderControl
             label="Fade Rate"
-            value={safeTrails.blobTrails.fadeRate}
+            value={safeTrails.blobTrails?.fadeRate ?? 0.2}
             min={0.1}
             max={0.9}
             step={0.05}
@@ -344,7 +344,7 @@ export const TrailControlPanel: React.FC<TrailControlPanelProps> = ({ isOpen, on
                 blobTrails: { ...safeTrails.blobTrails, fadeRate: value } 
               } 
             })}
-            disabled={!safeTrails.blobTrails.enabled}
+            disabled={!safeTrails.blobTrails?.enabled}
           />
         </ControlSection>
 

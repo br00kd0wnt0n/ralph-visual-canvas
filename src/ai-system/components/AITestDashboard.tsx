@@ -20,6 +20,7 @@ import { TestHelpers } from '../utils/testHelpers';
 import { GeneratedParameters, WeatherData } from '../types/AITypes';
 import { useAIStore, initializeAIVisualIntegration, enableSpecialEffects } from '../../store/aiStore';
 import ParameterMappingTester from './ParameterMappingTester';
+import { useVisualStore } from '../../store/visualStore';
 
 type TestStep = 'setup' | 'analysis' | 'results' | 'advanced';
 
@@ -27,7 +28,7 @@ export const AITestDashboard = () => {
   // Core state
   const [currentStep, setCurrentStep] = useState<TestStep>('setup');
   const [theme, setTheme] = useState('');
-  const [location, setLocation] = useState('New York City');
+  const location = useVisualStore(state => state.location);
   const [period, setPeriod] = useState<'1hour' | '1day' | '1week'>('1day');
   const [analysis, setAnalysis] = useState<any>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -362,7 +363,7 @@ Return only valid JSON, no markdown formatting.`
     }
     
     try {
-      const weatherData = await weatherService.getWeatherData(openweatherKey);
+      const weatherData = await weatherService.getWeatherData(location);
       setWeather(weatherData);
       setWeatherData(weatherData);
       

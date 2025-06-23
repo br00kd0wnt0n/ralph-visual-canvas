@@ -371,6 +371,8 @@ export interface VisualState {
     mode: string; // Allow any string for blend mode
     opacity: number; // Allow any number for opacity
   },
+
+  location: string;
 }
 
 export interface VisualActions {
@@ -399,6 +401,7 @@ export interface VisualActions {
   forceApplyGlobalDefaults: () => void;
   getGlobalDefaults: () => typeof GLOBAL_DEFAULTS;
   clearCachedDefaults: () => void;
+  setLocation: (location: string) => void;
 }
 
 // Update the VisualPreset type to use VisualState
@@ -480,6 +483,7 @@ export const GLOBAL_DEFAULTS = {
     mode: 'normal',
     opacity: 0.5
   },
+  location: 'New York City',
 };
 
 // Safety function to clamp animation speed to prevent crashes
@@ -798,6 +802,7 @@ const defaultState: VisualState = {
     mode: 'normal',
     opacity: 0.5
   },
+  location: GLOBAL_DEFAULTS.location,
 };
 
 type Store = VisualState & VisualActions;
@@ -1091,4 +1096,6 @@ export const useVisualStore = create<Store>((set, get) => ({
     } catch (error) {
     }
   },
+
+  setLocation: (location: string) => set({ location }),
 })); 
