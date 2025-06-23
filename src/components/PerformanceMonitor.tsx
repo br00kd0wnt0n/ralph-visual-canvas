@@ -13,6 +13,8 @@ export const PerformanceMonitor: React.FC = () => {
   const toruses = useVisualStore(state => state.geometric.toruses.count);
   const particles = useVisualStore(state => state.particles.count);
 
+  const error = useVisualStore((s) => s.error);
+
   useEffect(() => {
     let running = true;
     const loop = () => {
@@ -53,6 +55,19 @@ export const PerformanceMonitor: React.FC = () => {
       <div>Spheres: {spheres}</div>
       <div>Toruses: {toruses}</div>
       <div>Particles: {particles}</div>
+      {error && (
+        <div style={{
+          background: 'rgba(255, 0, 0, 0.8)',
+          color: '#fff',
+          padding: '0.5rem 1rem',
+          borderRadius: 8,
+          marginTop: 8,
+          fontWeight: 600,
+          fontSize: 14,
+        }}>
+          <span>Canvas Error: {error.message}</span>
+        </div>
+      )}
     </div>
   );
 }; 

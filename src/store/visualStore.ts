@@ -385,6 +385,7 @@ export interface VisualState {
   },
 
   location: string;
+  error?: Error | null;
 }
 
 export interface VisualActions {
@@ -414,6 +415,8 @@ export interface VisualActions {
   getGlobalDefaults: () => typeof GLOBAL_DEFAULTS;
   clearCachedDefaults: () => void;
   setLocation: (location: string) => void;
+  setCanvasError: (error: Error | null) => void;
+  clearCanvasError: () => void;
 }
 
 // Update the VisualPreset type to use VisualState
@@ -904,6 +907,7 @@ const defaultState: VisualState = {
     opacity: 0.5
   },
   location: GLOBAL_DEFAULTS.location,
+  error: null,
 };
 
 type Store = VisualState & VisualActions;
@@ -1201,6 +1205,9 @@ export const useVisualStore = create<Store>((set, get) => ({
   },
 
   setLocation: (location: string) => set({ location }),
+
+  setCanvasError: (error) => set({ error }),
+  clearCanvasError: () => set({ error: null }),
 }));
 
 function isPlainObject(obj: any): obj is object {

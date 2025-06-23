@@ -47,7 +47,7 @@ export const Particles = () => {
     const safeDistance = isNaN(particles.distance) || particles.distance < 0 ? 1.5 : particles.distance;
 
     particleRefs.current.forEach((mesh, i) => {
-      if (mesh) {
+      if (mesh && particlePositions[i]) {
         // Set scale based on slider
         mesh.scale.set(scale, scale, scale);
         // Movement pattern logic

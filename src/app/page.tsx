@@ -7,7 +7,6 @@ import { ShapeParticleDashboard } from '../components/ShapeParticleDashboard';
 import { DashboardToggle } from '../components/DashboardToggle';
 import { GlobalDefaultsToggle } from '../components/GlobalDefaultsToggle';
 import { AIToggle } from '../components/AIToggle';
-import { PerformanceIndicator } from '../components/PerformanceIndicator';
 import { AITestDashboard } from '../ai-system/components/AITestDashboard';
 import GlobalDefaultsPanel from '../components/GlobalDefaultsManager';
 import { TrailControlPanel } from '../components/TrailControlPanel';
@@ -20,6 +19,7 @@ export default function Home() {
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
   const [showAITest, setShowAITest] = useState(false);
   const [showTrailControls, setShowTrailControls] = useState(false);
+  const [showPerformance, setShowPerformance] = useState(false);
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -33,7 +33,7 @@ export default function Home() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <PerformanceIndicator />
+          {/* Removed PerformanceIndicator */}
         </div>
       </div>
 
@@ -49,6 +49,8 @@ export default function Home() {
         onCameraModeToggle={toggleCameraPositioningMode}
         isTrailControlsOpen={showTrailControls}
         onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
+        isPerformanceOpen={showPerformance}
+        onPerformanceToggle={() => setShowPerformance((v) => !v)}
       />
 
       {/* Dashboards - Side Columns */}

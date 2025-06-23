@@ -23,6 +23,8 @@ import { ArtisticCanvas, PaintingObject, ArtisticCanvasOverlay } from './artisti
 import type { ArtisticCanvasConfig } from '../types/artistic';
 import { OptimizedGeometricSystem } from './OptimizedGeometricSystem';
 import { PerformanceMonitor } from './PerformanceMonitor';
+import { CanvasErrorBoundary } from './CanvasErrorBoundary';
+import { WebGLContextManager } from './WebGLContextManager';
 
 // Trail renderer component
 const TrailRenderer = () => {
@@ -1436,158 +1438,158 @@ const EnhancedVisualCanvas = () => {
   };
 
   return (
-    <ClientOnly>
-      <div className={styles.canvasContainer}>
-        {aberrationLayers}
-        {rainbowLayer}
-        {fogLayer}
-        {depthOfFieldLayer}
-        {atmosphericBlurLayers}
-        {postProcessingOverlay}
-        {bloomLayer}
-        {blendModeOverlay}
-        
-        {/* Camera Positioning Mode Indicator */}
-        {ui.cameraPositioningMode && (
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(0, 0, 0, 0.8)',
-            color: '#00ff00',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            zIndex: 10000,
-            border: '2px solid #00ff00',
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
+    <CanvasErrorBoundary>
+      <WebGLContextManager>
+        <div className={styles.canvasContainer}>
+          {aberrationLayers}
+          {rainbowLayer}
+          {fogLayer}
+          {depthOfFieldLayer}
+          {atmosphericBlurLayers}
+          {postProcessingOverlay}
+          {bloomLayer}
+          {blendModeOverlay}
+          
+          {/* Camera Positioning Mode Indicator */}
+          {ui.cameraPositioningMode && (
             <div style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: '#00ff00',
-              animation: 'pulse 1.5s infinite'
-            }} />
-            Camera Positioning Mode Active
-            <div style={{
-              fontSize: '12px',
-              opacity: 0.8,
-              marginLeft: '8px'
+              position: 'absolute',
+              top: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'rgba(0, 0, 0, 0.8)',
+              color: '#00ff00',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              zIndex: 10000,
+              border: '2px solid #00ff00',
+              backdropFilter: 'blur(10px)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}>
-              Click and drag to move • Scroll to zoom • ESC to exit
+              <div style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#00ff00',
+                animation: 'pulse 1.5s infinite'
+              }} />
+              Camera Positioning Mode Active
+              <div style={{
+                fontSize: '12px',
+                opacity: 0.8,
+                marginLeft: '8px'
+              }}>
+                Click and drag to move • Scroll to zoom • ESC to exit
+              </div>
             </div>
-          </div>
-        )}
-        
-        {/* Depth of Field Indicator */}
-        {camera.depthOfField.enabled && (
-          <div style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'rgba(0, 0, 0, 0.8)',
-            color: '#00ff00',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            zIndex: 10000,
-            border: '1px solid #00ff00'
-          }}>
-            DOF: {camera.depthOfField.blur.toFixed(1)} | {camera.depthOfField.bokehScale.toFixed(1)}
-          </div>
-        )}
-        
-        <Canvas
-          camera={{ 
-            position: [0, 0, 25], // Default position - CameraSync will override this
-            fov: 60, // Default FOV - CameraSync will override this
-            near: 0.1,
-            far: 2000 // Keep the increased far clipping for the extreme distance
-          }}
-          onCreated={({ gl }) => {
-            console.log('🎨 WebGL context created');
-            
-            // Set WebGL context attributes for better performance
-            gl.setClearColor(0x000000, 0);
-            gl.autoClear = false;
-            gl.autoClearColor = false;
-            gl.autoClearDepth = false;
-            gl.autoClearStencil = false;
-            
-            // Add a longer delay to ensure WebGL context is fully initialized
-            // React Three Fiber needs more time to properly set up the context
-            // Retry mechanism for WebGL optimization
-            let attempts = 0;
-            const maxAttempts = 3;
-            
-            const tryOptimizeWebGL = () => {
-              attempts++;
-              try {
-                const optimizationResult = performanceOptimizer.optimizeWebGLContext(gl);
-                if (optimizationResult) {
-                  console.log('✅ WebGL context optimized successfully');
-                  return; // Success, stop retrying
-                } else {
-                  console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
-                }
-              } catch (error) {
-                console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
-              }
+          )}
+          
+          {/* Depth of Field Indicator */}
+          {camera.depthOfField.enabled && (
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'rgba(0, 0, 0, 0.8)',
+              color: '#00ff00',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              zIndex: 10000,
+              border: '1px solid #00ff00'
+            }}>
+              DOF: {camera.depthOfField.blur.toFixed(1)} | {camera.depthOfField.bokehScale.toFixed(1)}
+            </div>
+          )}
+          
+          <Canvas
+            camera={{ 
+              position: [0, 0, 25], // Default position - CameraSync will override this
+              fov: 60, // Default FOV - CameraSync will override this
+              near: 0.1,
+              far: 2000 // Keep the increased far clipping for the extreme distance
+            }}
+            onCreated={({ gl }) => {
+              console.log('🎨 WebGL context created');
               
-              // Retry with exponential backoff if we haven't reached max attempts
-              if (attempts < maxAttempts) {
-                const delay = Math.pow(2, attempts) * 500; // 500ms, 1000ms, 2000ms
-                setTimeout(tryOptimizeWebGL, delay);
-              } else {
-                console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
-              }
-            };
-            
-            // Start the optimization process with initial delay
-            setTimeout(tryOptimizeWebGL, 500);
-            
-            const canvas = gl.domElement;
-            canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
-            canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
-            
-            // Add error handling for WebGL errors
-            const handleWebGLError = (event: Event) => {
-              console.warn('WebGL error detected:', event);
-            };
-            
-            canvas.addEventListener('webglcontextlost', handleWebGLError);
-          }}
-          onError={(error) => {
-            console.error('Canvas error:', error);
-            setCanvasReady(false);
-          }}
-          style={{
-            ...canvasStyleWithBackground,
-            ...(backgroundConfig.enabled && {
-              position: 'fixed' as const,
-              top: 0,
-              left: 0,
-              zIndex: -1,
-              filter: backgroundConfig.mode === 'modalFriendly' ? 'saturate(1.2) contrast(1.1)' : 'none',
-              pointerEvents: backgroundConfig.mode === 'modalFriendly' ? 'none' as const : 'auto' as const,
-              border: backgroundConfig.camera.fixed ? '4px solid rgba(255, 255, 0, 0.3)' : 'none'
-            })
-          }}
-        >
-          <CameraSync />
-          <CameraControls />
-          <Scene />
-        </Canvas>
-        {/* Performance Monitor Overlay */}
-        <PerformanceMonitor />
-      </div>
-    </ClientOnly>
+              // Set WebGL context attributes for better performance
+              gl.setClearColor(0x000000, 0);
+              gl.autoClear = false;
+              gl.autoClearColor = false;
+              gl.autoClearDepth = false;
+              gl.autoClearStencil = false;
+              
+              // Add a longer delay to ensure WebGL context is fully initialized
+              // React Three Fiber needs more time to properly set up the context
+              // Retry mechanism for WebGL optimization
+              let attempts = 0;
+              const maxAttempts = 3;
+              
+              const tryOptimizeWebGL = () => {
+                attempts++;
+                try {
+                  const optimizationResult = performanceOptimizer.optimizeWebGLContext(gl);
+                  if (optimizationResult) {
+                    console.log('✅ WebGL context optimized successfully');
+                    return; // Success, stop retrying
+                  } else {
+                    console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
+                  }
+                } catch (error) {
+                  console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
+                }
+                
+                // Retry with exponential backoff if we haven't reached max attempts
+                if (attempts < maxAttempts) {
+                  const delay = Math.pow(2, attempts) * 500; // 500ms, 1000ms, 2000ms
+                  setTimeout(tryOptimizeWebGL, delay);
+                } else {
+                  console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
+                }
+              };
+              
+              // Start the optimization process with initial delay
+              setTimeout(tryOptimizeWebGL, 500);
+              
+              const canvas = gl.domElement;
+              canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
+              canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
+              
+              // Add error handling for WebGL errors
+              const handleWebGLError = (event: Event) => {
+                console.warn('WebGL error detected:', event);
+              };
+              
+              canvas.addEventListener('webglcontextlost', handleWebGLError);
+            }}
+            onError={(error) => {
+              console.error('Canvas error:', error);
+              setCanvasReady(false);
+            }}
+            style={{
+              ...canvasStyleWithBackground,
+              ...(backgroundConfig.enabled && {
+                position: 'fixed' as const,
+                top: 0,
+                left: 0,
+                zIndex: -1,
+                filter: backgroundConfig.mode === 'modalFriendly' ? 'saturate(1.2) contrast(1.1)' : 'none',
+                pointerEvents: backgroundConfig.mode === 'modalFriendly' ? 'none' as const : 'auto' as const,
+                border: backgroundConfig.camera.fixed ? '4px solid rgba(255, 255, 0, 0.3)' : 'none'
+              })
+            }}
+          >
+            <CameraSync />
+            <CameraControls />
+            <Scene />
+          </Canvas>
+        </div>
+      </WebGLContextManager>
+    </CanvasErrorBoundary>
   );
 };
 
