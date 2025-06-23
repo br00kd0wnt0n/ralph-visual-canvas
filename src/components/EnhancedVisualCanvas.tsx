@@ -1028,6 +1028,42 @@ const AutoPanSystem = () => {
   return null;
 };
 
+// Auto-pan indicator component
+const AutoPanIndicator = () => {
+  const { camera } = useVisualStore();
+  
+  if (!camera.autoPan.enabled) return null;
+  
+  return (
+    <div style={{
+      position: 'absolute',
+      top: '20px',
+      right: '20px',
+      background: 'rgba(37, 99, 235, 0.9)',
+      color: 'white',
+      padding: '8px 16px',
+      borderRadius: '20px',
+      fontSize: '14px',
+      fontWeight: 'bold',
+      zIndex: 10000,
+      border: '2px solid #2563eb',
+      backdropFilter: 'blur(10px)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    }}>
+      <div style={{
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        backgroundColor: '#ffffff',
+        animation: 'pulse 1.5s infinite'
+      }} />
+      Auto Pan Active
+    </div>
+  );
+};
+
 const EnhancedVisualCanvas = () => {
   const visualStore = useVisualStore();
   const { globalEffects, effects, camera, backgroundConfig, ui, globalBlendMode } = visualStore;
@@ -1533,6 +1569,9 @@ const EnhancedVisualCanvas = () => {
               </div>
             </div>
           )}
+          
+          {/* Auto Pan Indicator */}
+          <AutoPanIndicator />
           
           <Canvas
             camera={{ 

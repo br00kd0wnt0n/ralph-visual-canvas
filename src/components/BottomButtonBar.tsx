@@ -12,8 +12,9 @@ interface BottomButtonBarProps {
   onGlobalDefaultsToggle: () => void;
   isAIOpen: boolean;
   onAIToggle: () => void;
+  isCameraPositioningMode: boolean;
   isAutoPanEnabled: boolean;
-  onAutoPanToggle: () => void;
+  onCameraModeToggle: () => void;
   isTrailControlsOpen: boolean;
   onTrailControlsToggle: () => void;
   isPerformanceOpen: boolean;
@@ -27,13 +28,45 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
   onGlobalDefaultsToggle,
   isAIOpen,
   onAIToggle,
+  isCameraPositioningMode,
   isAutoPanEnabled,
-  onAutoPanToggle,
+  onCameraModeToggle,
   isTrailControlsOpen,
   onTrailControlsToggle,
   isPerformanceOpen,
   onPerformanceToggle,
 }) => {
+  // Determine camera button state and styling
+  const getCameraButtonState = () => {
+    if (isAutoPanEnabled) {
+      return {
+        icon: '🎬',
+        background: 'rgba(37, 99, 235, 0.9)',
+        border: '2px solid #2563eb',
+        boxShadow: '0 4px 16px rgba(37,99,235,0.3)',
+        title: 'Disable Auto Pan Mode'
+      };
+    } else if (isCameraPositioningMode) {
+      return {
+        icon: '🎥',
+        background: 'rgba(220, 38, 127, 0.9)',
+        border: '2px solid #dc267f',
+        boxShadow: '0 4px 16px rgba(220,38,127,0.3)',
+        title: 'Disable Camera Positioning Mode'
+      };
+    } else {
+      return {
+        icon: '📷',
+        background: 'rgba(0, 0, 0, 0.8)',
+        border: '1px solid rgba(255,255,255,0.2)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        title: 'Enable Camera Controls'
+      };
+    }
+  };
+
+  const cameraState = getCameraButtonState();
+
   return (
     <>
       <div style={{
@@ -60,8 +93,8 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
             className="toggleButton"
             style={{
               zIndex: 2000,
-              background: isAutoPanEnabled ? 'rgba(37, 99, 235, 0.9)' : 'rgba(0, 0, 0, 0.8)',
-              border: isAutoPanEnabled ? '2px solid #2563eb' : '1px solid rgba(255,255,255,0.2)',
+              background: cameraState.background,
+              border: cameraState.border,
               borderRadius: '50%',
               width: 50,
               height: 50,
@@ -70,15 +103,15 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
               justifyContent: 'center',
               cursor: 'pointer',
               fontSize: 20,
-              color: isAutoPanEnabled ? 'white' : 'white',
-              boxShadow: isAutoPanEnabled ? '0 4px 16px rgba(37,99,235,0.3)' : '0 4px 12px rgba(0,0,0,0.3)',
+              color: 'white',
+              boxShadow: cameraState.boxShadow,
               transition: 'all 0.3s ease',
               pointerEvents: 'auto',
             }}
-            title={isAutoPanEnabled ? 'Disable Auto Pan Mode' : 'Enable Auto Pan Mode'}
-            onClick={onAutoPanToggle}
+            title={cameraState.title}
+            onClick={onCameraModeToggle}
           >
-            🎥
+            {cameraState.icon}
           </button>
         </div>
         <div style={{ pointerEvents: 'auto' }}>
