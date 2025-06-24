@@ -21,14 +21,14 @@ export default function Home() {
   const [showTrailControls, setShowTrailControls] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
 
-  // Load INIT preset by default on first app load
+  // Load LANDING - Basic preset by default on first app load
   useEffect(() => {
     const availablePresets = getAvailablePresets();
-    if (availablePresets.includes('INIT')) {
-      console.log('🚀 Loading INIT preset by default...');
-      loadPreset('INIT');
+    if (availablePresets.includes('LANDING - Basic')) {
+      console.log('🚀 Loading LANDING - Basic preset by default...');
+      loadPreset('LANDING - Basic');
     } else {
-      console.log('ℹ️ INIT preset not found, using default settings');
+      console.log('ℹ️ LANDING - Basic preset not found, using default settings');
     }
   }, [loadPreset, getAvailablePresets]);
 
