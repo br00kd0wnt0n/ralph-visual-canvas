@@ -450,6 +450,7 @@ export interface VisualActions {
   resetToDefaults: () => void;
   savePreset: (name: string) => void;
   loadPreset: (name: string) => void;
+  loadPresetData: (presetData: Partial<VisualPreset>) => void; // NEW: Load preset data directly
   getAvailablePresets: () => string[];
   deletePreset: (name: string) => void;
   updateBackgroundConfig: (updates: Partial<VisualState['backgroundConfig']>) => void;
@@ -1221,7 +1222,8 @@ export const useVisualStore = create<Store>((set, get) => ({
 
           return {
             ...state,
-            ui: { ...state.ui, ...(isPlainObject(preset.ui) ? preset.ui : {}) },
+            // Don't override UI state from preset data - keep panels closed by default
+            ui: { ...state.ui },
             background: { ...state.background, ...(isPlainObject(preset.background) ? preset.background : {}) },
             backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(preset.backgroundConfig) ? preset.backgroundConfig : {}) },
             logo: { ...state.logo, ...(isPlainObject(preset.logo) ? preset.logo : {}) },
@@ -1242,6 +1244,82 @@ export const useVisualStore = create<Store>((set, get) => ({
       }
     } catch (error) {
       console.error('Error loading preset:', error);
+    }
+  },
+
+  loadPresetData: (presetData) => {
+    try {
+      console.log(`📂 Loading preset data directly:`, presetData);
+      
+      set((state) => {
+        // Deep merge for globalEffects to ensure all nested properties are preserved
+        const mergedGlobalEffects = {
+          ...state.globalEffects,
+          ...(isPlainObject(presetData.globalEffects) ? presetData.globalEffects : {}),
+          // Ensure trails object is properly merged with all required properties
+          trails: {
+            ...state.globalEffects.trails,
+            ...(isPlainObject(presetData.globalEffects?.trails) ? presetData.globalEffects.trails : {}),
+            // Ensure all trail types have required properties
+            sphereTrails: {
+              ...state.globalEffects.trails.sphereTrails,
+              ...(isPlainObject(presetData.globalEffects?.trails?.sphereTrails) ? presetData.globalEffects.trails.sphereTrails : {})
+            },
+            cubeTrails: {
+              ...state.globalEffects.trails.cubeTrails,
+              ...(isPlainObject(presetData.globalEffects?.trails?.cubeTrails) ? presetData.globalEffects.trails.cubeTrails : {})
+            },
+            blobTrails: {
+              ...state.globalEffects.trails.blobTrails,
+              ...(isPlainObject(presetData.globalEffects?.trails?.blobTrails) ? presetData.globalEffects.trails.blobTrails : {})
+            },
+            torusTrails: {
+              ...state.globalEffects.trails.torusTrails,
+              ...(isPlainObject(presetData.globalEffects?.trails?.torusTrails) ? presetData.globalEffects.trails.torusTrails : {})
+            },
+            particleTrails: {
+              ...state.globalEffects.trails.particleTrails,
+              ...(isPlainObject(presetData.globalEffects?.trails?.particleTrails) ? presetData.globalEffects.trails.particleTrails : {})
+            }
+          }
+        };
+
+        const newGlobalAnimationSpeed = typeof presetData.globalAnimationSpeed === 'number' ? presetData.globalAnimationSpeed : state.globalAnimationSpeed;
+        console.log(`🔄 Setting globalAnimationSpeed from ${state.globalAnimationSpeed} to ${newGlobalAnimationSpeed}`);
+
+        // Deep merge camera settings including DoF
+        const mergedCamera = {
+          ...state.camera,
+          ...(isPlainObject(presetData.camera) ? presetData.camera : {}),
+          depthOfField: {
+            ...state.camera.depthOfField,
+            ...(isPlainObject(presetData.camera?.depthOfField) ? presetData.camera.depthOfField : {})
+          }
+        };
+        
+        console.log(`🔄 Setting DoF from:`, state.camera.depthOfField, `to:`, mergedCamera.depthOfField);
+
+        return {
+          ...state,
+          // Don't override UI state from preset data - keep panels closed by default
+          ui: { ...state.ui },
+          background: { ...state.background, ...(isPlainObject(presetData.background) ? presetData.background : {}) },
+          backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(presetData.backgroundConfig) ? presetData.backgroundConfig : {}) },
+          logo: { ...state.logo, ...(isPlainObject(presetData.logo) ? presetData.logo : {}) },
+          geometric: { ...state.geometric, ...(isPlainObject(presetData.geometric) ? presetData.geometric : {}) },
+          particles: { ...state.particles, ...(isPlainObject(presetData.particles) ? presetData.particles : {}) },
+          globalEffects: mergedGlobalEffects,
+          effects: { ...state.effects, ...(isPlainObject(presetData.effects) ? presetData.effects : {}) },
+          camera: mergedCamera,
+          globalAnimationSpeed: newGlobalAnimationSpeed,
+          globalBlendMode: isPlainObject(presetData.globalBlendMode) ? presetData.globalBlendMode : state.globalBlendMode,
+          location: typeof presetData.location === 'string' ? presetData.location : state.location,
+        };
+      });
+      
+      console.log(`✅ Preset data loaded successfully`);
+    } catch (error) {
+      console.error('Error loading preset data:', error);
     }
   },
 
