@@ -86,6 +86,26 @@ export interface VisualState {
   // NEW: Background configuration (starts disabled)
   backgroundConfig: BackgroundConfig;
   
+  // Logo configuration
+  logo: {
+    enabled: boolean;
+    size: number;
+    position: {
+      x: 'left' | 'center' | 'right';
+      y: 'top' | 'center' | 'bottom';
+    };
+    offset: {
+      x: number;
+      y: number;
+    };
+    opacity: number;
+    animation: {
+      enabled: boolean;
+      type: 'pulse' | 'float' | 'rotate' | 'none';
+      speed: number;
+    };
+  };
+  
   // Geometric Shapes Layer
   geometric: {
     spheres: {
@@ -531,6 +551,27 @@ export const GLOBAL_DEFAULTS = {
     chromaticAberration: 0,
     motionBlur: false,
   },
+  
+  // Logo defaults
+  logo: {
+    enabled: true,
+    size: 800,
+    position: {
+      x: 'center' as const, // 'left', 'center', 'right'
+      y: 'center' as const     // 'top', 'center', 'bottom'
+    },
+    offset: {
+      x: 0,
+      y: 0
+    },
+    opacity: 1.0,
+    animation: {
+      enabled: false,
+      type: 'none' as const, // 'pulse', 'float', 'rotate', 'none'
+      speed: 1.0
+    }
+  },
+  
   globalBlendMode: {
     mode: 'normal',
     opacity: 0.5
@@ -709,6 +750,14 @@ const defaultState: VisualState = {
         }
       }
     }
+  },
+  logo: {
+    enabled: GLOBAL_DEFAULTS.logo.enabled,
+    size: GLOBAL_DEFAULTS.logo.size,
+    position: GLOBAL_DEFAULTS.logo.position,
+    offset: GLOBAL_DEFAULTS.logo.offset,
+    opacity: GLOBAL_DEFAULTS.logo.opacity,
+    animation: GLOBAL_DEFAULTS.logo.animation,
   },
   geometric: {
     spheres: {
@@ -1079,6 +1128,7 @@ export const useVisualStore = create<Store>((set, get) => ({
       ui: state.ui,
       background: state.background,
       backgroundConfig: state.backgroundConfig,
+      logo: state.logo,
       geometric: state.geometric,
       particles: state.particles,
       globalEffects: state.globalEffects,
@@ -1174,6 +1224,7 @@ export const useVisualStore = create<Store>((set, get) => ({
             ui: { ...state.ui, ...(isPlainObject(preset.ui) ? preset.ui : {}) },
             background: { ...state.background, ...(isPlainObject(preset.background) ? preset.background : {}) },
             backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(preset.backgroundConfig) ? preset.backgroundConfig : {}) },
+            logo: { ...state.logo, ...(isPlainObject(preset.logo) ? preset.logo : {}) },
             geometric: { ...state.geometric, ...(isPlainObject(preset.geometric) ? preset.geometric : {}) },
             particles: { ...state.particles, ...(isPlainObject(preset.particles) ? preset.particles : {}) },
             globalEffects: mergedGlobalEffects,
@@ -1265,6 +1316,13 @@ export const useVisualStore = create<Store>((set, get) => ({
     if (category === 'globalBlendMode') {
       set((state) => ({
         globalBlendMode: { ...state.globalBlendMode, ...updates }
+      }));
+    }
+    
+    // If updating logo defaults, also update current logo
+    if (category === 'logo') {
+      set((state) => ({
+        logo: { ...state.logo, ...updates }
       }));
     }
   },

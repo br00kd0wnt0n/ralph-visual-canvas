@@ -128,6 +128,26 @@ export const GlobalDefaultsManager = {
       chromaticAberration: 0.0,
       motionBlur: false
     });
+    
+    // Reset logo defaults
+    Object.assign(GLOBAL_DEFAULTS.logo, {
+      enabled: false,
+      size: 120,
+      position: {
+        x: 'center' as const,
+        y: 'top' as const
+      },
+      offset: {
+        x: 0,
+        y: 20
+      },
+      opacity: 0.8,
+      animation: {
+        enabled: true,
+        type: 'pulse' as const,
+        speed: 1.0
+      }
+    });
   },
   
   // Save defaults to localStorage

@@ -40,60 +40,60 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
 }) => {
   return (
     <>
-      <div style={{
-        position: 'fixed',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        bottom: 16,
-        display: 'flex',
-        gap: 24,
-        zIndex: 2000,
-        pointerEvents: 'none',
-      }}>
-        <div style={{ pointerEvents: 'auto' }}>
-          <DashboardToggle />
-        </div>
-        <div style={{ pointerEvents: 'auto' }}>
-          <GlobalDefaultsToggle isOpen={isGlobalDefaultsOpen} onToggle={onGlobalDefaultsToggle} />
-        </div>
-        <div style={{ pointerEvents: 'auto' }}>
-          <TrailToggle isOpen={isTrailControlsOpen} onToggle={onTrailControlsToggle} />
-        </div>
+    <div style={{
+      position: 'fixed',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      bottom: 16,
+      display: 'flex',
+      gap: 24,
+      zIndex: 2000,
+      pointerEvents: 'none',
+    }}>
+      <div style={{ pointerEvents: 'auto' }}>
+        <DashboardToggle />
+      </div>
+      <div style={{ pointerEvents: 'auto' }}>
+        <GlobalDefaultsToggle isOpen={isGlobalDefaultsOpen} onToggle={onGlobalDefaultsToggle} />
+      </div>
+      <div style={{ pointerEvents: 'auto' }}>
+        <TrailToggle isOpen={isTrailControlsOpen} onToggle={onTrailControlsToggle} />
+      </div>
         
         {/* Camera Positioning Mode Button */}
-        <div style={{ pointerEvents: 'auto' }}>
-          <button
-            className="toggleButton"
-            style={{
-              zIndex: 2000,
+      <div style={{ pointerEvents: 'auto' }}>
+        <button
+          className="toggleButton"
+          style={{
+            zIndex: 2000,
               background: isCameraPositioningMode 
                 ? 'rgba(128, 128, 128, 0.9)' 
                 : 'rgba(0, 0, 0, 0.8)',
               border: isCameraPositioningMode 
                 ? '2px solid #808080' 
                 : '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              width: 50,
-              height: 50,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: 20,
+            borderRadius: '50%',
+            width: 50,
+            height: 50,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            fontSize: 20,
               color: 'white',
               boxShadow: isCameraPositioningMode 
                 ? '0 4px 16px rgba(128,128,128,0.3)' 
                 : '0 4px 12px rgba(0,0,0,0.3)',
-              transition: 'all 0.3s ease',
-              pointerEvents: 'auto',
+            transition: 'all 0.3s ease',
+            pointerEvents: 'auto',
               filter: 'grayscale(100%)',
-            }}
+          }}
             title={isCameraPositioningMode ? 'Disable Camera Positioning Mode' : 'Enable Camera Positioning Mode'}
             onClick={onCameraPositioningToggle}
-          >
-            🎥
-          </button>
-        </div>
+        >
+          🎥
+        </button>
+      </div>
         
         {/* Auto Pan Button */}
         <div style={{ pointerEvents: 'auto' }}>
@@ -156,10 +156,10 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
             📊
           </button>
         </div>
-        <div style={{ pointerEvents: 'auto' }}>
-          <AIToggle isOpen={isAIOpen} onToggle={onAIToggle} />
-        </div>
+      <div style={{ pointerEvents: 'auto' }}>
+        <AIToggle isOpen={isAIOpen} onToggle={onAIToggle} />
       </div>
+    </div>
       {isPerformanceOpen && (
         <div style={{ position: 'fixed', top: 80, right: 32, zIndex: 3000 }}>
           <PerformanceMonitor />

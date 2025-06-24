@@ -135,18 +135,18 @@ export const WaveInterference = () => {
     } else {
       // Classic grid pattern
       const gridSize = safePreset.gridSize || Math.sqrt(safePreset.sources);
-      for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-          sources.push({
-            position: new THREE.Vector2(
-              (i + 0.5) / gridSize * size - size/2,
-              (j + 0.5) / gridSize * size - size/2
-            ),
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        sources.push({
+          position: new THREE.Vector2(
+            (i + 0.5) / gridSize * size - size/2,
+            (j + 0.5) / gridSize * size - size/2
+          ),
             wavelength: safePreset.wavelengthRange[0] + Math.random() * (safePreset.wavelengthRange[1] - safePreset.wavelengthRange[0]),
-            phase: Math.random() * Math.PI * 2
-          });
-        }
+          phase: Math.random() * Math.PI * 2
+        });
       }
+    }
     }
     
     // Safety check: ensure we always have at least one source
@@ -254,14 +254,14 @@ export const WaveInterference = () => {
             }
           } else {
             // Classic interference
-            for(int i = 0; i < 16; i++) {
+          for(int i = 0; i < 16; i++) {
               if (i >= uSourceCount) break;
-              vec2 sourcePos = uSources[i].xy;
-              float wavelength = uSources[i].z;
-              float phase = uSources[i].w;
-              
-              float dist = distance(pos.xy, sourcePos);
-              amplitude += sin((dist / wavelength - uTime) * 6.28318 + phase);
+            vec2 sourcePos = uSources[i].xy;
+            float wavelength = uSources[i].z;
+            float phase = uSources[i].w;
+            
+            float dist = distance(pos.xy, sourcePos);
+            amplitude += sin((dist / wavelength - uTime) * 6.28318 + phase);
             }
           }
           

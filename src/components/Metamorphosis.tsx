@@ -271,70 +271,70 @@ export const Metamorphosis = () => {
           const blurOffset = blur > 0 ? (blurIndex - (blurLayers - 1) / 2) * blur * 0.1 : 0; // Position offset for blur
           const blurOpacity = blur > 0 ? baseLayerOpacity * (1 - Math.abs(blurIndex - (blurLayers - 1) / 2) / blurLayers) : baseLayerOpacity;
           const layerOffset = baseLayerOffset + blurOffset;
-          
-          // Horizontal contour lines
-          for (let i = 0; i < numLines; i++) {
-            const v = i / (numLines - 1);
-            const points: THREE.Vector3[] = [];
-            
-            for (let j = 0; j <= lineSegments; j++) {
-              const u = j / lineSegments;
-              const point = getCurrentForm(u, v, timeRef.current);
-              // Apply size scaling and layer offset
-              point.multiplyScalar(size);
-              point.z += layerOffset;
-              points.push(point);
-            }
-            
-            const geometry = geometryPoolRef.current[lineIndex];
-            geometry.setFromPoints(points);
-            geometry.attributes.position.needsUpdate = true;
-            
-            const line = linePoolRef.current[lineIndex];
-            line.geometry = geometry;
-            
-            // Create layer-specific material with adjusted opacity
-            if (materialRef.current) {
-              const layerMaterial = materialRef.current.clone();
-              layerMaterial.opacity = blurOpacity;
-              line.material = layerMaterial;
-            }
-            
-            groupRef.current.add(line);
-            lineIndex++;
-          }
 
-          // Vertical contour lines (fewer)
-          const verticalLines = Math.floor(numLines * 0.3);
-          for (let i = 0; i < verticalLines; i++) {
-            const u = i / (verticalLines - 1);
-            const points: THREE.Vector3[] = [];
-            
-            for (let j = 0; j <= Math.floor(lineSegments * 0.5); j++) {
-              const v = j / Math.floor(lineSegments * 0.5);
-              const point = getCurrentForm(u, v, timeRef.current);
+      // Horizontal contour lines
+      for (let i = 0; i < numLines; i++) {
+        const v = i / (numLines - 1);
+        const points: THREE.Vector3[] = [];
+        
+        for (let j = 0; j <= lineSegments; j++) {
+          const u = j / lineSegments;
+          const point = getCurrentForm(u, v, timeRef.current);
               // Apply size scaling and layer offset
-              point.multiplyScalar(size);
+          point.multiplyScalar(size);
               point.z += layerOffset;
-              points.push(point);
-            }
-            
-            const geometry = geometryPoolRef.current[lineIndex];
-            geometry.setFromPoints(points);
-            geometry.attributes.position.needsUpdate = true;
-            
-            const line = linePoolRef.current[lineIndex];
-            line.geometry = geometry;
-            
+          points.push(point);
+        }
+        
+        const geometry = geometryPoolRef.current[lineIndex];
+        geometry.setFromPoints(points);
+        geometry.attributes.position.needsUpdate = true;
+        
+        const line = linePoolRef.current[lineIndex];
+        line.geometry = geometry;
+        
             // Create layer-specific material with adjusted opacity
-            if (materialRef.current) {
+        if (materialRef.current) {
               const layerMaterial = materialRef.current.clone();
               layerMaterial.opacity = blurOpacity;
               line.material = layerMaterial;
-            }
-            
-            groupRef.current.add(line);
-            lineIndex++;
+        }
+        
+        groupRef.current.add(line);
+        lineIndex++;
+      }
+
+      // Vertical contour lines (fewer)
+      const verticalLines = Math.floor(numLines * 0.3);
+      for (let i = 0; i < verticalLines; i++) {
+        const u = i / (verticalLines - 1);
+        const points: THREE.Vector3[] = [];
+        
+        for (let j = 0; j <= Math.floor(lineSegments * 0.5); j++) {
+          const v = j / Math.floor(lineSegments * 0.5);
+          const point = getCurrentForm(u, v, timeRef.current);
+              // Apply size scaling and layer offset
+          point.multiplyScalar(size);
+              point.z += layerOffset;
+          points.push(point);
+        }
+        
+        const geometry = geometryPoolRef.current[lineIndex];
+        geometry.setFromPoints(points);
+        geometry.attributes.position.needsUpdate = true;
+        
+        const line = linePoolRef.current[lineIndex];
+        line.geometry = geometry;
+        
+            // Create layer-specific material with adjusted opacity
+        if (materialRef.current) {
+              const layerMaterial = materialRef.current.clone();
+              layerMaterial.opacity = blurOpacity;
+              line.material = layerMaterial;
+        }
+        
+        groupRef.current.add(line);
+        lineIndex++;
           }
         }
       }

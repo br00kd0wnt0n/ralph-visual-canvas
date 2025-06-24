@@ -32,11 +32,11 @@ export const Particles = () => {
   const particleMaterials = useMemo(() => {
     return Array.from({ length: particles.count }, () => {
       return new THREE.MeshStandardMaterial({
-        color: particles.color,
-        transparent: true,
-        opacity: particles.opacity,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
+      color: particles.color,
+      transparent: true,
+      opacity: particles.opacity,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
         emissive: new THREE.Color(particles.color),
         emissiveIntensity: 0,
       });

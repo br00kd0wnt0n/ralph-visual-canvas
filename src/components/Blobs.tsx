@@ -82,19 +82,19 @@ export const Blobs: React.FC = () => {
   // Individual materials for each blob
   const blobMaterials = useMemo(() => {
     return Array.from({ length: safeCount }, () => {
-      return new THREE.MeshStandardMaterial({
-        color: blobs.color,
-        emissive: new THREE.Color(glowColor),
-        emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
-        transparent: true,
-        opacity: blobs.opacity, // Use actual blobs opacity instead of layerOpacity
-        side: THREE.DoubleSide,
-        // Add additive blending for more vibrant glow
-        blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
-        // Increase metalness and roughness for better glow visibility
-        metalness: glowIntensity > 0 ? 0.8 : 0.1,
-        roughness: glowIntensity > 0 ? 0.2 : 0.8
-      });
+    return new THREE.MeshStandardMaterial({
+      color: blobs.color,
+      emissive: new THREE.Color(glowColor),
+      emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
+      transparent: true,
+      opacity: blobs.opacity, // Use actual blobs opacity instead of layerOpacity
+      side: THREE.DoubleSide,
+      // Add additive blending for more vibrant glow
+      blending: glowIntensity > 0 ? THREE.AdditiveBlending : THREE.NormalBlending,
+      // Increase metalness and roughness for better glow visibility
+      metalness: glowIntensity > 0 ? 0.8 : 0.1,
+      roughness: glowIntensity > 0 ? 0.2 : 0.8
+    });
     });
   }, [safeCount, blobs.color, blobs.opacity, glowColor, glowIntensity]);
 
@@ -119,9 +119,9 @@ export const Blobs: React.FC = () => {
   useFrame((state) => {
     if (!groupRef.current) return;
     
-    const time = state.clock.elapsedTime;
+      const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
-    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+      const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
     const scaledTime = time * timeScale * safeAnimationSpeed;
     const finalSpeed = blobs.speed * safeAnimationSpeed;
     const movementPattern = blobs.movementPattern || 'orbit';
@@ -149,13 +149,13 @@ export const Blobs: React.FC = () => {
       pulseTimeRef.current += state.clock.getDelta() * safeAnimationSpeed;
     }
     
-    groupRef.current.children.forEach((child, i) => {
-      const trailObjectGroup = child as THREE.Group;
-      const mesh = trailObjectGroup.children[0] as THREE.Mesh;
+      groupRef.current.children.forEach((child, i) => {
+        const trailObjectGroup = child as THREE.Group;
+        const mesh = trailObjectGroup.children[0] as THREE.Mesh;
       const material = blobMaterials[i]; // Use individual material
-      const pos = positionsRef.current[i];
-      if (!pos) return;
-      
+        const pos = positionsRef.current[i];
+        if (!pos) return;
+        
       // Individual blob speed and rotation
       const individualSpeed = safeSpeed * safeAnimationSpeed;
       
@@ -179,7 +179,7 @@ export const Blobs: React.FC = () => {
         x = pos.x + (Math.random() - 0.5) * 0.5 * individualSpeed * safeDistance;
         y = pos.y + (Math.random() - 0.5) * 0.5 * individualSpeed * safeDistance;
         z = pos.z + (Math.random() - 0.5) * 0.5 * individualSpeed * safeDistance;
-      }
+        }
       // 'static' does nothing
       
       trailObjectGroup.position.set(x, y, z);
@@ -214,7 +214,7 @@ export const Blobs: React.FC = () => {
             const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
             glowMaterial.opacity = glowIntensity * 0.3 * pulseIntensity * pulseSize;
           }
-        }
+    }
       }
     });
   });

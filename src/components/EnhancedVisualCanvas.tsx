@@ -25,6 +25,7 @@ import { OptimizedGeometricSystem } from './OptimizedGeometricSystem';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { WebGLContextManager } from './WebGLContextManager';
+import CompanyLogo from './CompanyLogo';
 
 // Trail renderer component
 const TrailRenderer = () => {
@@ -1550,6 +1551,9 @@ const EnhancedVisualCanvas = () => {
           {postProcessingOverlay}
           {bloomLayer}
           {blendModeOverlay}
+          
+          {/* Company Logo Overlay */}
+          <CompanyLogo />
           
           {/* Camera Positioning Mode Indicator */}
           {ui.cameraPositioningMode && !camera.autoPan.enabled && (

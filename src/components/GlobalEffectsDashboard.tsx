@@ -60,8 +60,8 @@ export const GlobalEffectsDashboard = () => {
       {/* Enhanced Preset Controls */}
       <CollapsibleSection title="Preset Controls" defaultExpanded={false}>
         <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
-          <PresetControls />
-        </div>
+        <PresetControls />
+      </div>
       </CollapsibleSection>
 
       {/* Global Animation Speed */}

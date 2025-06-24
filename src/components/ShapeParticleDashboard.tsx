@@ -124,7 +124,7 @@ const SelectControl: React.FC<SelectControlProps> = React.memo(({
         </option>
       ))}
     </select>
-  </div>
+      </div>
 ));
 
 export const ShapeParticleDashboard = React.memo(() => {
@@ -531,13 +531,13 @@ export const ShapeParticleDashboard = React.memo(() => {
             onChange={(value) => updateGeometric('blobs', { pulseEnabled: value })}
           />
           {geometric.blobs.pulseEnabled && (
-            <SliderControl
+          <SliderControl
               label="Pulse Size"
               value={geometric.blobs.pulseSize}
-              min={0.1}
+            min={0.1}
               max={3}
               onChange={(value) => updateGeometric('blobs', { pulseSize: value })}
-            />
+          />
           )}
           <SelectControl
             label="Movement Pattern"

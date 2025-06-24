@@ -8,7 +8,7 @@ interface GlobalDefaultsPanelProps {
 }
 
 export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'camera' | 'visual' | 'performance' | 'quality' | 'animation'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'visual' | 'performance' | 'quality' | 'animation' | 'logo'>('camera');
   const [showPresets, setShowPresets] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0); // Force re-renders when defaults change
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
@@ -67,6 +67,14 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
         visualStore.forceApplyGlobalDefaults();
         setUpdateTrigger(prev => prev + 1);
         console.log('[GlobalDefaultsPanel] Animation reset completed');
+        break;
+      case 'logo':
+        // Reset logo defaults to initial values
+        GlobalDefaultsManager.resetAllDefaults();
+        // Force apply the reset defaults
+        visualStore.forceApplyGlobalDefaults();
+        setUpdateTrigger(prev => prev + 1);
+        console.log('[GlobalDefaultsPanel] Logo reset completed');
         break;
       default:
         // For other categories, we need to manually reset
@@ -146,7 +154,8 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                 { id: 'visual', label: 'Visual Effects', icon: '🎨' },
                 { id: 'performance', label: 'Performance', icon: '⚡' },
                 { id: 'quality', label: 'Quality', icon: '✨' },
-                { id: 'animation', label: 'Animation', icon: '🎬' }
+                { id: 'animation', label: 'Animation', icon: '🎬' },
+                { id: 'logo', label: 'Logo', icon: '🏷' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -895,6 +904,244 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                         Lower values create slower, more cinematic animations, while higher values create faster, more energetic movements.
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'logo' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white">Logo Defaults</h3>
+                  <button
+                    onClick={() => handleResetCategory('logo')}
+                    className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-600/30">
+                  <h3 className="text-lg font-semibold text-blue-400 mb-4">Logo Configuration</h3>
+                  
+                  {/* Logo Enable/Disable */}
+                  <div className="mb-4 p-3 bg-blue-900/20 rounded-lg border border-blue-500/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-medium text-blue-300">Show Company Logo</label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={currentDefaults.logo.enabled}
+                          onChange={(e) => handleUpdateDefaults('logo', { enabled: e.target.checked })}
+                          className="rounded"
+                        />
+                        <span className="text-xs text-gray-300">Enabled</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      Enable to display the company logo overlay on the canvas.
+                    </p>
+                  </div>
+
+                  {/* Logo Size */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Logo Size: {currentDefaults.logo.size}px
+                    </label>
+                    <input
+                      type="range"
+                      min="50"
+                      max="800"
+                      step="10"
+                      value={currentDefaults.logo.size}
+                      onChange={(e) => handleUpdateDefaults('logo', { size: parseInt(e.target.value) })}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                    <div className="flex justify-between text-xs text-gray-400 mt-1">
+                      <span>50px</span>
+                      <span>425px</span>
+                      <span>800px</span>
+                    </div>
+                  </div>
+
+                  {/* Logo Position */}
+                  <div className="mb-4 p-3 bg-purple-900/20 rounded-lg border border-purple-500/30">
+                    <h4 className="text-sm font-semibold text-purple-300 mb-3">Logo Position</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Horizontal Position */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-300 mb-2">Horizontal</label>
+                        <select
+                          value={currentDefaults.logo.position.x}
+                          onChange={(e) => handleUpdateDefaults('logo', { 
+                            position: { 
+                              ...currentDefaults.logo.position, 
+                              x: e.target.value as 'left' | 'center' | 'right' 
+                            } 
+                          })}
+                          className="w-full bg-gray-800 text-white rounded px-2 py-1 border border-gray-700 focus:outline-none text-xs"
+                        >
+                          <option value="left">Left</option>
+                          <option value="center">Center</option>
+                          <option value="right">Right</option>
+                        </select>
+                      </div>
+
+                      {/* Vertical Position */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-300 mb-2">Vertical</label>
+                        <select
+                          value={currentDefaults.logo.position.y}
+                          onChange={(e) => handleUpdateDefaults('logo', { 
+                            position: { 
+                              ...currentDefaults.logo.position, 
+                              y: e.target.value as 'top' | 'center' | 'bottom' 
+                            } 
+                          })}
+                          className="w-full bg-gray-800 text-white rounded px-2 py-1 border border-gray-700 focus:outline-none text-xs"
+                        >
+                          <option value="top">Top</option>
+                          <option value="center">Center</option>
+                          <option value="bottom">Bottom</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Offset Controls */}
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-300 mb-1">
+                          X Offset: {currentDefaults.logo.offset.x}px
+                        </label>
+                        <input
+                          type="range"
+                          min="-100"
+                          max="100"
+                          step="5"
+                          value={currentDefaults.logo.offset.x}
+                          onChange={(e) => handleUpdateDefaults('logo', { 
+                            offset: { 
+                              ...currentDefaults.logo.offset, 
+                              x: parseInt(e.target.value) 
+                            } 
+                          })}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-300 mb-1">
+                          Y Offset: {currentDefaults.logo.offset.y}px
+                        </label>
+                        <input
+                          type="range"
+                          min="-100"
+                          max="100"
+                          step="5"
+                          value={currentDefaults.logo.offset.y}
+                          onChange={(e) => handleUpdateDefaults('logo', { 
+                            offset: { 
+                              ...currentDefaults.logo.offset, 
+                              y: parseInt(e.target.value) 
+                            } 
+                          })}
+                          className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logo Opacity */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Logo Opacity: {Math.round(currentDefaults.logo.opacity * 100)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1"
+                      step="0.1"
+                      value={currentDefaults.logo.opacity}
+                      onChange={(e) => handleUpdateDefaults('logo', { opacity: Number(e.target.value) })}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                    <div className="flex justify-between text-xs text-gray-400 mt-1">
+                      <span>10%</span>
+                      <span>55%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+
+                  {/* Logo Animation */}
+                  <div className="mb-4 p-3 bg-green-900/20 rounded-lg border border-green-500/30">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-green-300">Logo Animation</h4>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={currentDefaults.logo.animation.enabled}
+                          onChange={(e) => handleUpdateDefaults('logo', { 
+                            animation: { 
+                              ...currentDefaults.logo.animation, 
+                              enabled: e.target.checked 
+                            } 
+                          })}
+                          className="rounded"
+                        />
+                        <span className="text-xs text-gray-300">Enabled</span>
+                      </div>
+                    </div>
+                    
+                    {currentDefaults.logo.animation.enabled && (
+                      <div className="space-y-3">
+                        {/* Animation Type */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-300 mb-2">Animation Type</label>
+                          <select
+                            value={currentDefaults.logo.animation.type}
+                            onChange={(e) => handleUpdateDefaults('logo', { 
+                              animation: { 
+                                ...currentDefaults.logo.animation, 
+                                type: e.target.value as 'pulse' | 'float' | 'rotate' | 'none' 
+                              } 
+                            })}
+                            className="w-full bg-gray-800 text-white rounded px-2 py-1 border border-gray-700 focus:outline-none text-xs"
+                          >
+                            <option value="none">None</option>
+                            <option value="pulse">Pulse</option>
+                            <option value="float">Float</option>
+                            <option value="rotate">Rotate</option>
+                          </select>
+                        </div>
+
+                        {/* Animation Speed */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-300 mb-1">
+                            Animation Speed: {currentDefaults.logo.animation.speed}x
+                          </label>
+                          <input
+                            type="range"
+                            min="0.1"
+                            max="3"
+                            step="0.1"
+                            value={currentDefaults.logo.animation.speed}
+                            onChange={(e) => handleUpdateDefaults('logo', { 
+                              animation: { 
+                                ...currentDefaults.logo.animation, 
+                                speed: Number(e.target.value) 
+                              } 
+                            })}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                          />
+                          <div className="flex justify-between text-xs text-gray-400 mt-1">
+                            <span>0.1x</span>
+                            <span>1.5x</span>
+                            <span>3x</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

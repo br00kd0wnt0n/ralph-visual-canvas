@@ -18,13 +18,13 @@ export const GlobalDefaultsToggle: React.FC<GlobalDefaultsToggleProps> = ({ isOp
       onMouseEnter={() => setShowDoFTooltip(true)}
       onMouseLeave={() => setShowDoFTooltip(false)}
     >
-      <button 
-        className={styles.toggleButton}
-        onClick={onToggle}
-        title={`${isOpen ? 'Hide' : 'Show'} Global Defaults Manager`}
-      >
-        ⚙️
-      </button>
+    <button 
+      className={styles.toggleButton}
+      onClick={onToggle}
+      title={`${isOpen ? 'Hide' : 'Show'} Global Defaults Manager`}
+    >
+      ⚙️
+    </button>
       <DoFTooltip isVisible={showDoFTooltip} />
     </div>
   );
