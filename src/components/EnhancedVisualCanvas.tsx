@@ -1046,11 +1046,32 @@ const AutoPanSystem = () => {
   return null;
 };
 
-// Auto-pan indicator component
+// Auto-pan indicator component with speed selector
 const AutoPanIndicator = () => {
-  const { camera } = useVisualStore();
+  const { camera, updateCamera } = useVisualStore();
   
   if (!camera.autoPan.enabled) return null;
+
+  const speedOptions = [
+    { label: '1x', value: 0.15 },
+    { label: '2x', value: 0.30 },
+    { label: '4x', value: 0.60 }
+  ];
+
+  const currentSpeed = camera.autoPan.speed;
+  const currentSpeedLabel = speedOptions.find(option => 
+    Math.abs(option.value - currentSpeed) < 0.01
+  )?.label || '1x';
+
+  const handleSpeedChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSpeed = parseFloat(event.target.value);
+    updateCamera({
+      autoPan: {
+        ...camera.autoPan,
+        speed: newSpeed
+      }
+    });
+  };
   
   return (
     <div style={{
@@ -1068,7 +1089,7 @@ const AutoPanIndicator = () => {
       backdropFilter: 'blur(8px)',
       display: 'flex',
       alignItems: 'center',
-      gap: '4px',
+      gap: '6px',
       opacity: 0.6,
       transition: 'opacity 0.3s ease'
     }}>
@@ -1079,7 +1100,34 @@ const AutoPanIndicator = () => {
         backgroundColor: 'rgba(255, 255, 255, 0.6)',
         animation: 'pulse 2s infinite'
       }} />
-      Auto Pan
+      <span>Auto Pan</span>
+      <select
+        value={currentSpeed}
+        onChange={handleSpeedChange}
+        style={{
+          background: 'rgba(0, 0, 0, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: '4px',
+          color: 'rgba(255, 255, 255, 0.8)',
+          fontSize: '10px',
+          padding: '2px 4px',
+          cursor: 'pointer',
+          outline: 'none',
+          minWidth: '35px'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.parentElement!.style.opacity = '0.9';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.parentElement!.style.opacity = '0.6';
+        }}
+      >
+        {speedOptions.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };
