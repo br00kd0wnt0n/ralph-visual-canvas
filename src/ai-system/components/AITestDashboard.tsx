@@ -80,14 +80,26 @@ export const AITestDashboard = () => {
 
   // Load API keys on mount
   useEffect(() => {
-    const savedKey = localStorage.getItem('openai-key');
-    if (savedKey) {
-      setOpenaiKey(savedKey);
+    // Try to load OpenAI key from environment variables first (for production)
+    if (typeof process !== 'undefined' && process.env.OPENAI_API_KEY) {
+      setOpenaiKey(process.env.OPENAI_API_KEY);
+    } else {
+      // Fallback to localStorage for development
+      const savedKey = localStorage.getItem('openai-key');
+      if (savedKey) {
+        setOpenaiKey(savedKey);
+      }
     }
     
-    const savedWeatherKey = localStorage.getItem('openweather-api-key');
-    if (savedWeatherKey) {
-      setOpenweatherKey(savedWeatherKey);
+    // Try to load OpenWeather key from environment variables first (for production)
+    if (typeof process !== 'undefined' && process.env.OPENWEATHER_API_KEY) {
+      setOpenweatherKey(process.env.OPENWEATHER_API_KEY);
+    } else {
+      // Fallback to localStorage for development
+      const savedWeatherKey = localStorage.getItem('openweather-api-key');
+      if (savedWeatherKey) {
+        setOpenweatherKey(savedWeatherKey);
+      }
     }
   }, []);
 
@@ -169,7 +181,15 @@ export const AITestDashboard = () => {
     
     try {
       const base64Image = await convertImageToBase64(referenceImage);
-      const apiKey = localStorage.getItem('openai-key') || openaiKey;
+      
+      // Try to get API key from environment variables first (for production)
+      let apiKey = '';
+      if (typeof process !== 'undefined' && process.env.OPENAI_API_KEY) {
+        apiKey = process.env.OPENAI_API_KEY;
+      } else {
+        // Fallback to localStorage for development
+        apiKey = localStorage.getItem('openai-key') || openaiKey;
+      }
       
       if (!apiKey) {
         alert('Please setup your OpenAI API key first');

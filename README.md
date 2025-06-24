@@ -41,6 +41,38 @@ An interactive 3D visual canvas built with Next.js, React Three Fiber, and Zusta
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Environment Variables
+
+This project uses environment variables for API keys and database configuration. Create a `.env.local` file in the root directory with the following variables:
+
+### Required Variables
+
+- `MONGODB_URI` - MongoDB connection string for preset storage
+- `OPENAI_API_KEY` - OpenAI API key for AI analysis features (starts with `sk-`)
+- `OPENWEATHER_API_KEY` - OpenWeather API key for weather-based visual effects
+
+### Development vs Production
+
+- **Development**: API keys can be stored in localStorage for convenience
+- **Production**: API keys must be set as environment variables in Railway
+
+### Example `.env.local`
+
+```bash
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENWEATHER_API_KEY=your-openweather-api-key-here
+```
+
+### Railway Deployment
+
+For production deployment on Railway, add these environment variables in your Railway project settings:
+
+1. Go to your Railway project dashboard
+2. Navigate to the "Variables" tab
+3. Add each environment variable with its corresponding value
+4. Redeploy your application
+
 ## Development
 
 - `npm run dev` - Start development server

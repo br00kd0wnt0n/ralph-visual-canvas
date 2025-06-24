@@ -5,8 +5,11 @@ export class WeatherService {
   private apiKey: string | null = null;
 
   private constructor() {
-    // Try to load API key from localStorage
-    if (typeof window !== 'undefined') {
+    // Try to load API key from environment variables first (for production)
+    if (typeof process !== 'undefined' && process.env.OPENWEATHER_API_KEY) {
+      this.apiKey = process.env.OPENWEATHER_API_KEY;
+    } else if (typeof window !== 'undefined') {
+      // Fallback to localStorage for development
       this.apiKey = localStorage.getItem('openweather-api-key');
     }
   }
