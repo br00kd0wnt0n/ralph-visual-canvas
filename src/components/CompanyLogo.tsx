@@ -97,10 +97,11 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({ className }) => {
           ...animationStyles,
         }}
       >
-        {/* Company Logo GIF */}
+        {/* Company Logo GIF with slow playback effect */}
         <img 
           src="/ralph-logo.gif"
           alt="Company Logo"
+          className="logo-gif-slow"
           style={{
             width: '100%',
             height: '100%',
@@ -135,6 +136,47 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({ className }) => {
           }
           100% { 
             transform: ${logo.position.x === 'center' ? 'translateX(-50%)' : 'none'} rotate(360deg);
+          }
+        }
+        
+        /* Slow GIF playback effect using CSS animation timing */
+        .logo-gif-slow {
+          animation: slow-gif-playback 10s steps(1) infinite;
+        }
+        
+        @keyframes slow-gif-playback {
+          0% { 
+            animation-delay: 0s;
+          }
+          10% { 
+            animation-delay: 1s;
+          }
+          20% { 
+            animation-delay: 2s;
+          }
+          30% { 
+            animation-delay: 3s;
+          }
+          40% { 
+            animation-delay: 4s;
+          }
+          50% { 
+            animation-delay: 5s;
+          }
+          60% { 
+            animation-delay: 6s;
+          }
+          70% { 
+            animation-delay: 7s;
+          }
+          80% { 
+            animation-delay: 8s;
+          }
+          90% { 
+            animation-delay: 9s;
+          }
+          100% { 
+            animation-delay: 10s;
           }
         }
         

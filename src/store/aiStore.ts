@@ -575,14 +575,6 @@ export const applyAIAnalysisToVisualStore = (analysis: ThemeAnalysis, weatherDat
     fov: cameraFOV
   });
   
-  console.log('✅ AI analysis successfully applied to visual store');
-  console.log('🎭 Special effects enabled:', {
-    waveInterference: shouldEnableWaveInterference,
-    metamorphosis: shouldEnableMetamorphosis,
-    fireflies: shouldEnableFireflies,
-    layeredSineWaves: shouldEnableLayeredSineWaves
-  });
-  
   // Update artistic layout for proper layering
   updateArtisticLayoutForSpecialEffects({
     waveInterference: shouldEnableWaveInterference,
@@ -808,12 +800,9 @@ export const applyWeatherEffectsToVisualStore = (weatherData: WeatherData, baseC
 
 // NEW: Real-time integration system
 export const initializeAIVisualIntegration = () => {
-  console.log('🚀 Initializing AI-Visual integration system...');
-  
   // Subscribe to AI results and automatically apply them
   const unsubscribeAIResults = subscribeToAIResults((results) => {
     if (results) {
-      console.log('🎯 New AI results received, applying to visual store...');
       applyAIAnalysisToVisualStore(results);
     }
   });
@@ -823,7 +812,6 @@ export const initializeAIVisualIntegration = () => {
     if (weatherData) {
       const aiState = getAIState();
       if (aiState.aiResults) {
-        console.log('🌤️ Weather data updated, applying weather effects...');
         applyWeatherEffectsToVisualStore(weatherData, aiState.aiResults.visualCharacteristics);
       }
     }
@@ -832,7 +820,6 @@ export const initializeAIVisualIntegration = () => {
   // Subscribe to parameter updates for manual overrides
   const unsubscribeParameters = subscribeToParameterUpdates((updates) => {
     if (updates.length > 0) {
-      console.log('⚙️ Parameter updates received, applying to visual store...');
       applyParameterUpdatesToVisualStore(updates);
     }
   });
@@ -842,7 +829,6 @@ export const initializeAIVisualIntegration = () => {
     unsubscribeAIResults();
     unsubscribeWeather();
     unsubscribeParameters();
-    console.log('🛑 AI-Visual integration system cleaned up');
   };
 };
 
@@ -854,8 +840,6 @@ export const enableSpecialEffects = (effects: {
   layeredSineWaves?: boolean;
 }) => {
   const visualStore = useVisualStore.getState();
-  
-  console.log('🎭 Manually enabling special effects:', effects);
   
   if (effects.waveInterference !== undefined) {
     visualStore.updateGlobalEffects({
@@ -922,8 +906,6 @@ export const enableSpecialEffects = (effects: {
   
   // Update artistic layout to ensure proper layering
   updateArtisticLayoutForSpecialEffects(effects);
-  
-  console.log('✅ Special effects manually updated');
 };
 
 // NEW: Function to update artistic layout for special effects
@@ -974,8 +956,6 @@ export const updateArtisticLayoutForSpecialEffects = (effects: {
       layers: newLayers
     }
   });
-  
-  console.log('🎨 Artistic layout updated for special effects');
 };
 
 // NEW: AI-to-Visual mapping function that respects global defaults
@@ -1208,15 +1188,6 @@ export const applyAIAnalysisToVisualStoreWithDefaults = (analysis: ThemeAnalysis
     distance: cameraDistance,
     fov: cameraFOV
   });
-  
-  console.log('✅ AI analysis successfully applied to visual store (with global defaults protection)');
-  console.log('🎭 Special effects enabled:', {
-    waveInterference: shouldEnableWaveInterference,
-    metamorphosis: shouldEnableMetamorphosis,
-    fireflies: shouldEnableFireflies,
-    layeredSineWaves: shouldEnableLayeredSineWaves
-  });
-  console.log('🛡️ Global defaults protected for camera and visual effects');
   
   // Update artistic layout for proper layering
   updateArtisticLayoutForSpecialEffects({

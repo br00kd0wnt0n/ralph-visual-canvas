@@ -14,7 +14,6 @@ import { useVisualStore } from '../store/visualStore';
 import { PresetClient } from '../lib/presetClient';
 import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
-import { PresetTransitionTester } from '../components/PresetTransitionTester';
 
 export default function Home() {
   const { ui, toggleDashboards, toggleCameraPositioningMode, toggleAutoPan, loadPreset, loadPresetData, getAvailablePresets, camera } = useVisualStore();
@@ -26,65 +25,46 @@ export default function Home() {
 
   // Load LANDING - Basic preset from cloud by default on first app load
   useEffect(() => {
-    console.log('🔄 Starting cloud preset loading process...');
-    
     const loadLandingPresetFromCloud = async () => {
       try {
-        console.log('☁️ Fetching presets from cloud...');
         const response = await PresetClient.getPresets({ limit: 100 });
         const presets = response.presets;
-        
-        console.log('📋 Available cloud presets:', presets.map(p => p.name));
         
         // Find LANDING - Basic preset
         const landingPreset = presets.find(p => p.name === 'LANDING');
         
         if (landingPreset) {
-          console.log('🚀 Loading LANDING preset from cloud...');
-          
           // Use the new loadPresetData method to properly apply the preset
           loadPresetData(landingPreset.data);
-          
-          console.log('✅ LANDING preset loaded successfully from cloud');
         } else {
-          console.log('❌ LANDING preset not found in cloud, checking localStorage...');
-          
           // Fallback to localStorage
           const availablePresets = getAvailablePresets();
           if (availablePresets.includes('LANDING')) {
-            console.log('🚀 Loading LANDING preset from localStorage...');
             loadPreset('LANDING');
           } else if (availablePresets.includes('INIT')) {
-            console.log('🚀 LANDING not found, loading INIT preset from localStorage...');
             loadPreset('INIT');
           } else {
-            console.log('ℹ️ No default presets found, using default settings');
-            console.log('📋 All available presets:', availablePresets);
+            // No default presets found, using default settings
           }
         }
       } catch (error) {
-        console.error('❌ Error loading cloud preset:', error);
-        console.log('🔄 Falling back to localStorage...');
+        console.error('Error loading cloud preset:', error);
         
         // Fallback to localStorage on error
         const availablePresets = getAvailablePresets();
         if (availablePresets.includes('LANDING')) {
-          console.log('🚀 Loading LANDING preset from localStorage...');
           loadPreset('LANDING');
         } else if (availablePresets.includes('INIT')) {
-          console.log('🚀 LANDING not found, loading INIT preset from localStorage...');
           loadPreset('INIT');
         } else {
-          console.log('ℹ️ No default presets found, using default settings');
-          console.log('📋 All available presets:', availablePresets);
+          // No default presets found, using default settings
         }
       } finally {
         // Mark preset loading as complete regardless of success/failure
         setIsPresetLoaded(true);
-        console.log('🎯 Preset loading process completed');
       }
     };
-    
+
     loadLandingPresetFromCloud();
   }, [loadPreset, loadPresetData, getAvailablePresets]);
 
@@ -166,9 +146,6 @@ export default function Home() {
         isOpen={showGlobalDefaults} 
         onClose={() => setShowGlobalDefaults(false)} 
       />
-
-      {/* Preset Transition Tester - Temporary for testing */}
-      <PresetTransitionTester />
     </main>
   );
 }

@@ -990,6 +990,7 @@ const AutoPanSystem = () => {
   const isInitializedRef = useRef(false);
   const startPositionRef = useRef<THREE.Vector3 | null>(null);
   const startTargetRef = useRef<THREE.Vector3 | null>(null);
+  const lastUpdateRef = useRef(0);
   
   useFrame((state) => {
     if (!camera.autoPan.enabled || !three.camera) {
@@ -1003,8 +1004,10 @@ const AutoPanSystem = () => {
     const time = state.clock.elapsedTime;
     const { speed, radius, height, easing, currentAngle } = camera.autoPan;
     
-    // Safety check: clamp global animation speed to prevent crashes
-    const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
+    // Throttle updates to every 2 frames to reduce performance impact
+    if (Math.floor(time * 60) % 2 !== 0) {
+      return;
+    }
     
     // Initialize auto-pan from current camera position on first frame
     if (!isInitializedRef.current) {
@@ -1022,7 +1025,7 @@ const AutoPanSystem = () => {
     }
     
     // Calculate new angle with slower speed for more cinematic movement
-    const newAngle = currentAngle + (speed * safeAnimationSpeed * 0.005); // Reduced from 0.01 to 0.005 for slower movement
+    const newAngle = currentAngle + (speed * 0.005); // Removed safeAnimationSpeed dependency
     
     // Calculate new camera position using circular motion around the center
     const newX = Math.cos(newAngle) * radius;
@@ -1151,8 +1154,6 @@ const EnhancedVisualCanvas = () => {
   }, []);
 
   const handleWebGLContextRestored = useCallback(() => {
-    console.log('✅ WebGL context restored');
-    
     // Re-enable performance monitoring
     performanceMonitor.enable();
     
@@ -1185,18 +1186,14 @@ const EnhancedVisualCanvas = () => {
   // Create depth of field layer - MOVED INSIDE COMPONENT
   const depthOfFieldLayer = useMemo(() => {
     if (!camera.depthOfField.enabled) {
-      console.log('Depth of field disabled');
       return null;
     }
-    
+
     const { focusDistance, focalLength, bokehScale, blur } = camera.depthOfField;
-    console.log('Depth of field settings:', { focusDistance, focalLength, bokehScale, blur });
     
     // Calculate blur intensity based on depth of field settings
     const blurIntensity = blur * bokehScale * 10; // Much stronger for visibility
     const focusRange = focalLength * 0.3; // Larger focus range
-    
-    console.log('Calculated blur intensity:', blurIntensity, 'focus range:', focusRange);
     
     // Create multiple layers for more dramatic effect
     return (
@@ -1491,13 +1488,9 @@ const EnhancedVisualCanvas = () => {
 
   // Global blend mode overlay - FIXED IMPLEMENTATION
   const blendModeOverlay = useMemo(() => {
-    console.log('Global blend mode check:', globalBlendMode);
     if (!globalBlendMode || globalBlendMode.mode === 'normal' || globalBlendMode.opacity <= 0) {
-      console.log('Global blend mode disabled or normal');
       return null;
     }
-    
-    console.log('Creating global blend mode overlay:', globalBlendMode);
     
     // Create a colored overlay for blend modes
     let overlayColor = 'white';
@@ -1594,7 +1587,6 @@ const EnhancedVisualCanvas = () => {
           {aberrationLayers}
           {rainbowLayer}
           {fogLayer}
-          {depthOfFieldLayer}
           {atmosphericBlurLayers}
           {postProcessingOverlay}
           {bloomLayer}
@@ -1652,8 +1644,6 @@ const EnhancedVisualCanvas = () => {
               far: 2000 // Keep the increased far clipping for the extreme distance
             }}
             onCreated={({ gl }) => {
-              console.log('🎨 WebGL context created');
-              
               // Set WebGL context attributes for better performance
               gl.setClearColor(0x000000, 0);
               gl.autoClear = false;
@@ -1672,7 +1662,6 @@ const EnhancedVisualCanvas = () => {
                 try {
                   const optimizationResult = performanceOptimizer.optimizeWebGLContext(gl);
                   if (optimizationResult) {
-                    console.log('✅ WebGL context optimized successfully');
                     return; // Success, stop retrying
                   } else {
                     console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);

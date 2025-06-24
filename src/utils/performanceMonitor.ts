@@ -10,6 +10,7 @@ class PerformanceMonitor {
   private isEnabled = false;
   private lastLogTime = 0;
   private logInterval = 5000; // Log every 5 seconds instead of every second
+  private startTime = 0;
 
   private constructor() {}
 
@@ -21,13 +22,16 @@ class PerformanceMonitor {
   }
 
   enable() {
+    if (this.isEnabled) return;
     this.isEnabled = true;
-    console.log('🔧 Performance monitoring enabled');
+    this.startTime = performance.now();
+    this.frameCount = 0;
+    this.fpsHistory = [];
   }
 
   disable() {
+    if (!this.isEnabled) return;
     this.isEnabled = false;
-    console.log('🔧 Performance monitoring disabled');
   }
 
   update() {

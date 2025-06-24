@@ -62,7 +62,14 @@ const WAVE_PRESETS: Record<number, WavePreset> = {
   }
 };
 
-export const WaveInterference = () => {
+// Custom comparison function for React.memo to prevent re-renders on camera changes
+const arePropsEqual = (prevProps: {}, nextProps: {}) => {
+  // Always return true since this component doesn't take props
+  // This prevents any re-renders from parent components
+  return true;
+};
+
+const WaveInterferenceComponent = () => {
   const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { waveInterference } = globalEffects;
   const meshRef = useRef<THREE.Mesh>(null);
@@ -73,7 +80,7 @@ export const WaveInterference = () => {
   const preset = WAVE_PRESETS[currentPreset as keyof typeof WAVE_PRESETS] || WAVE_PRESETS[1];
   
   // Safety check: ensure preset has all required properties
-  const safePreset = {
+  const safePreset = useMemo(() => ({
     name: preset.name || "Classic Interference",
     description: preset.description || "Traditional wave interference with grid sources",
     sources: Math.max(1, preset.sources || 16),
@@ -84,7 +91,20 @@ export const WaveInterference = () => {
     spiral: preset.spiral || false,
     random: preset.random || false,
     harmonic: preset.harmonic || false
-  };
+  }), [
+    // FIXED: Only depend on preset and currentPreset, not camera state
+    preset.name,
+    preset.description,
+    preset.sources,
+    preset.wavelengthRange,
+    preset.amplitude,
+    preset.contourLevels,
+    preset.gridSize,
+    preset.spiral,
+    preset.random,
+    preset.harmonic,
+    currentPreset
+  ]);
 
   // Create wave sources based on preset
   const waveSources = useMemo((): WaveSource[] => {
@@ -159,7 +179,15 @@ export const WaveInterference = () => {
     }
     
     return sources;
-  }, [safePreset]);
+  }, [
+    // FIXED: Only depend on preset settings, not camera state
+    safePreset.sources,
+    safePreset.spiral,
+    safePreset.random,
+    safePreset.harmonic,
+    safePreset.gridSize,
+    safePreset.wavelengthRange
+  ]);
 
   // Create geometry for the wave surface
   const geometry = useMemo(() => {
@@ -296,17 +324,17 @@ export const WaveInterference = () => {
           // Add some wave intensity variation based on preset
           float waveIntensity = 0.5;
           if (uPreset == 2) {
-            // Spiral - rotating intensity
-            waveIntensity = sin(vHeight * 4.0 + uTime * 3.0) * 0.5 + 0.5;
+            // Spiral - rotating intensity (REMOVED time dependency)
+            waveIntensity = sin(vHeight * 4.0) * 0.5 + 0.5;
           } else if (uPreset == 3) {
-            // Chaotic - erratic intensity
-            waveIntensity = sin(vHeight * 8.0 + uTime * 5.0) * cos(vHeight * 6.0 + uTime * 2.0) * 0.5 + 0.5;
+            // Chaotic - erratic intensity (REMOVED time dependency)
+            waveIntensity = sin(vHeight * 8.0) * cos(vHeight * 6.0) * 0.5 + 0.5;
           } else if (uPreset == 4) {
-            // Harmonic - smooth intensity
-            waveIntensity = sin(vHeight * 2.0 + uTime * 1.5) * 0.5 + 0.5;
+            // Harmonic - smooth intensity (REMOVED time dependency)
+            waveIntensity = sin(vHeight * 2.0) * 0.5 + 0.5;
           } else {
-            // Classic
-            waveIntensity = sin(vHeight * 4.0 + uTime * 2.0) * 0.5 + 0.5;
+            // Classic (REMOVED time dependency)
+            waveIntensity = sin(vHeight * 4.0) * 0.5 + 0.5;
           }
           
           // Edge fade effect - create a radial fade from center to edges
@@ -324,27 +352,35 @@ export const WaveInterference = () => {
       transparent: true,
       side: THREE.DoubleSide,
     });
-  }, [waveSources, geometric.waveInterference?.color, safePreset, currentPreset, waveInterference?.edgeFade]);
+  }, [
+    // FIXED: Only depend on wave interference settings, not camera state
+    waveSources, 
+    geometric.waveInterference?.color, 
+    safePreset, 
+    currentPreset, 
+    waveInterference?.edgeFade
+  ]);
 
   useFrame((state, delta) => {
     if (!waveInterference?.enabled || !meshRef.current) return;
 
     const speed = waveInterference.speed || 0.5;
-    const amplitude = safePreset.amplitude; // Use preset amplitude
-    const edgeFade = waveInterference.edgeFade || { enabled: true, fadeStart: 0.3, fadeEnd: 0.5 };
-    // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
-    // Calculate final speed: individual wave interference speed * global animation speed
     const finalSpeed = speed * safeAnimationSpeed;
     
-    timeRef.current += delta * finalSpeed; // Use individual speed * global animation speed
+    // Frame-rate independent time calculation
+    const fixedTimeStep = 1/60; // 60 FPS baseline
+    const timeDelta = Math.min(delta, fixedTimeStep * 2); // Cap delta to prevent large jumps
+    timeRef.current += timeDelta * finalSpeed;
+    
+    // Use accumulated time for wave animation (completely frame-rate independent)
     material.uniforms.uTime.value = timeRef.current;
-    material.uniforms.uOpacity.value = amplitude; // Use preset amplitude
+    material.uniforms.uOpacity.value = safePreset.amplitude; // Use preset amplitude
     
     // Update edge fade settings
-    material.uniforms.uEdgeFadeEnabled.value = edgeFade.enabled ? 1.0 : 0.0;
-    material.uniforms.uFadeStart.value = edgeFade.fadeStart;
-    material.uniforms.uFadeEnd.value = edgeFade.fadeEnd;
+    material.uniforms.uEdgeFadeEnabled.value = waveInterference.edgeFade?.enabled ? 1.0 : 0.0;
+    material.uniforms.uFadeStart.value = waveInterference.edgeFade?.fadeStart || 0.3;
+    material.uniforms.uFadeEnd.value = waveInterference.edgeFade?.fadeEnd || 0.5;
     
     // Update color if changed
     if (geometric.waveInterference?.color) {
@@ -363,4 +399,6 @@ export const WaveInterference = () => {
       position={[0, -15, 0]} // Position below other objects
     />
   );
-}; 
+};
+
+export const WaveInterference = React.memo(WaveInterferenceComponent, arePropsEqual); 

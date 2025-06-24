@@ -121,16 +121,6 @@ export class PerformanceOptimizer {
         return null;
       }
       
-      // Log WebGL capabilities in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🎨 WebGL capabilities:', {
-          maxTextureSize,
-          maxViewportDims,
-          vendor,
-          renderer: actualGL.getParameter(actualGL.RENDERER)
-        });
-      }
-
       // Set conservative texture size limit
       const safeTextureSize = Math.min(maxTextureSize, 2048);
       

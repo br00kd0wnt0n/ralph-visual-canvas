@@ -39,9 +39,6 @@ const SelectControl = React.memo(({
 export const GlobalEffectsDashboard = () => {
   const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera, geometric, updateGeometric, globalAnimationSpeed, updateGlobalAnimationSpeed } = useVisualStore();
 
-  // Debug logging for global animation speed
-  console.log(`🎯 GlobalEffectsDashboard render - globalAnimationSpeed:`, globalAnimationSpeed);
-
   const blendModeOptions = useMemo(() => [
     { value: 'screen', label: 'Screen' },
     { value: 'multiply', label: 'Multiply' },
