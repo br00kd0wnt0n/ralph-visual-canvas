@@ -451,6 +451,7 @@ export interface VisualActions {
   savePreset: (name: string) => void;
   loadPreset: (name: string) => void;
   loadPresetData: (presetData: Partial<VisualPreset>) => void; // NEW: Load preset data directly
+  transitionPreset: (name: string, duration?: number) => Promise<void>; // NEW: Smooth transition to preset
   getAvailablePresets: () => string[];
   deletePreset: (name: string) => void;
   updateBackgroundConfig: (updates: Partial<VisualState['backgroundConfig']>) => void;
@@ -1482,6 +1483,245 @@ export const useVisualStore = create<Store>((set, get) => ({
         }
       }
     }));
+  },
+
+  transitionPreset: async (name, duration = 2500) => {
+    try {
+      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+      if (!presets[name]) {
+        console.warn(`Preset "${name}" not found`);
+        return;
+      }
+
+      const targetPreset = presets[name];
+      console.log(`🎬 Starting transition to preset "${name}" over ${duration}ms`);
+      
+      // Get current state
+      const currentState = get();
+      
+      // Create a promise that resolves when transition is complete
+      return new Promise<void>((resolve) => {
+        const startTime = Date.now();
+        
+        // Animation function
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // Easing function for smooth animation
+          const easeInOutCubic = (t: number) => 
+            t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          
+          const easedProgress = easeInOutCubic(progress);
+          
+          set((state) => {
+            // Helper function to interpolate between two values
+            const interpolate = (start: number, end: number, t: number) => 
+              start + (end - start) * t;
+            
+            // Helper function to interpolate colors
+            const interpolateColor = (start: string, end: string, t: number) => {
+              // Simple color interpolation - could be enhanced with proper color space conversion
+              return t > 0.5 ? end : start;
+            };
+            
+            // Interpolate each parameter group
+            const interpolatedBackground = {
+              opacity: interpolate(currentState.background.opacity, targetPreset.background?.opacity || currentState.background.opacity, easedProgress),
+              blur: interpolate(currentState.background.blur, targetPreset.background?.blur || currentState.background.blur, easedProgress),
+              color: interpolateColor(currentState.background.color, targetPreset.background?.color || currentState.background.color, easedProgress),
+              gradient: targetPreset.background?.gradient !== undefined ? targetPreset.background.gradient : currentState.background.gradient
+            };
+            
+            const interpolatedGeometric = {
+              spheres: {
+                count: Math.round(interpolate(currentState.geometric.spheres.count, targetPreset.geometric?.spheres?.count || currentState.geometric.spheres.count, easedProgress)),
+                size: interpolate(currentState.geometric.spheres.size, targetPreset.geometric?.spheres?.size || currentState.geometric.spheres.size, easedProgress),
+                color: interpolateColor(currentState.geometric.spheres.color, targetPreset.geometric?.spheres?.color || currentState.geometric.spheres.color, easedProgress),
+                speed: interpolate(currentState.geometric.spheres.speed, targetPreset.geometric?.spheres?.speed || currentState.geometric.spheres.speed, easedProgress),
+                rotation: interpolate(currentState.geometric.spheres.rotation, targetPreset.geometric?.spheres?.rotation || currentState.geometric.spheres.rotation, easedProgress),
+                opacity: interpolate(currentState.geometric.spheres.opacity, targetPreset.geometric?.spheres?.opacity || currentState.geometric.spheres.opacity, easedProgress),
+                organicness: interpolate(currentState.geometric.spheres.organicness, targetPreset.geometric?.spheres?.organicness || currentState.geometric.spheres.organicness, easedProgress),
+                movementPattern: targetPreset.geometric?.spheres?.movementPattern || currentState.geometric.spheres.movementPattern,
+                distance: interpolate(currentState.geometric.spheres.distance, targetPreset.geometric?.spheres?.distance || currentState.geometric.spheres.distance, easedProgress),
+                pulseEnabled: targetPreset.geometric?.spheres?.pulseEnabled !== undefined ? targetPreset.geometric.spheres.pulseEnabled : currentState.geometric.spheres.pulseEnabled,
+                pulseSize: interpolate(currentState.geometric.spheres.pulseSize, targetPreset.geometric?.spheres?.pulseSize || currentState.geometric.spheres.pulseSize, easedProgress)
+              },
+              cubes: {
+                count: Math.round(interpolate(currentState.geometric.cubes.count, targetPreset.geometric?.cubes?.count || currentState.geometric.cubes.count, easedProgress)),
+                size: interpolate(currentState.geometric.cubes.size, targetPreset.geometric?.cubes?.size || currentState.geometric.cubes.size, easedProgress),
+                color: interpolateColor(currentState.geometric.cubes.color, targetPreset.geometric?.cubes?.color || currentState.geometric.cubes.color, easedProgress),
+                rotation: interpolate(currentState.geometric.cubes.rotation, targetPreset.geometric?.cubes?.rotation || currentState.geometric.cubes.rotation, easedProgress),
+                speed: interpolate(currentState.geometric.cubes.speed, targetPreset.geometric?.cubes?.speed || currentState.geometric.cubes.speed, easedProgress),
+                opacity: interpolate(currentState.geometric.cubes.opacity, targetPreset.geometric?.cubes?.opacity || currentState.geometric.cubes.opacity, easedProgress),
+                organicness: interpolate(currentState.geometric.cubes.organicness, targetPreset.geometric?.cubes?.organicness || currentState.geometric.cubes.organicness, easedProgress),
+                movementPattern: targetPreset.geometric?.cubes?.movementPattern || currentState.geometric.cubes.movementPattern,
+                distance: interpolate(currentState.geometric.cubes.distance, targetPreset.geometric?.cubes?.distance || currentState.geometric.cubes.distance, easedProgress),
+                pulseEnabled: targetPreset.geometric?.cubes?.pulseEnabled !== undefined ? targetPreset.geometric.cubes.pulseEnabled : currentState.geometric.cubes.pulseEnabled,
+                pulseSize: interpolate(currentState.geometric.cubes.pulseSize, targetPreset.geometric?.cubes?.pulseSize || currentState.geometric.cubes.pulseSize, easedProgress)
+              },
+              toruses: {
+                count: Math.round(interpolate(currentState.geometric.toruses.count, targetPreset.geometric?.toruses?.count || currentState.geometric.toruses.count, easedProgress)),
+                size: interpolate(currentState.geometric.toruses.size, targetPreset.geometric?.toruses?.size || currentState.geometric.toruses.size, easedProgress),
+                color: interpolateColor(currentState.geometric.toruses.color, targetPreset.geometric?.toruses?.color || currentState.geometric.toruses.color, easedProgress),
+                speed: interpolate(currentState.geometric.toruses.speed, targetPreset.geometric?.toruses?.speed || currentState.geometric.toruses.speed, easedProgress),
+                rotation: interpolate(currentState.geometric.toruses.rotation, targetPreset.geometric?.toruses?.rotation || currentState.geometric.toruses.rotation, easedProgress),
+                opacity: interpolate(currentState.geometric.toruses.opacity, targetPreset.geometric?.toruses?.opacity || currentState.geometric.toruses.opacity, easedProgress),
+                organicness: interpolate(currentState.geometric.toruses.organicness, targetPreset.geometric?.toruses?.organicness || currentState.geometric.toruses.organicness, easedProgress),
+                movementPattern: targetPreset.geometric?.toruses?.movementPattern || currentState.geometric.toruses.movementPattern,
+                distance: interpolate(currentState.geometric.toruses.distance, targetPreset.geometric?.toruses?.distance || currentState.geometric.toruses.distance, easedProgress),
+                pulseEnabled: targetPreset.geometric?.toruses?.pulseEnabled !== undefined ? targetPreset.geometric.toruses.pulseEnabled : currentState.geometric.toruses.pulseEnabled,
+                pulseSize: interpolate(currentState.geometric.toruses.pulseSize, targetPreset.geometric?.toruses?.pulseSize || currentState.geometric.toruses.pulseSize, easedProgress)
+              },
+              blobs: {
+                count: Math.round(interpolate(currentState.geometric.blobs.count, targetPreset.geometric?.blobs?.count || currentState.geometric.blobs.count, easedProgress)),
+                size: interpolate(currentState.geometric.blobs.size, targetPreset.geometric?.blobs?.size || currentState.geometric.blobs.size, easedProgress),
+                color: interpolateColor(currentState.geometric.blobs.color, targetPreset.geometric?.blobs?.color || currentState.geometric.blobs.color, easedProgress),
+                speed: interpolate(currentState.geometric.blobs.speed, targetPreset.geometric?.blobs?.speed || currentState.geometric.blobs.speed, easedProgress),
+                opacity: interpolate(currentState.geometric.blobs.opacity, targetPreset.geometric?.blobs?.opacity || currentState.geometric.blobs.opacity, easedProgress),
+                organicness: interpolate(currentState.geometric.blobs.organicness, targetPreset.geometric?.blobs?.organicness || currentState.geometric.blobs.organicness, easedProgress),
+                movementPattern: targetPreset.geometric?.blobs?.movementPattern || currentState.geometric.blobs.movementPattern,
+                distance: interpolate(currentState.geometric.blobs.distance, targetPreset.geometric?.blobs?.distance || currentState.geometric.blobs.distance, easedProgress),
+                pulseEnabled: targetPreset.geometric?.blobs?.pulseEnabled !== undefined ? targetPreset.geometric.blobs.pulseEnabled : currentState.geometric.blobs.pulseEnabled,
+                pulseSize: interpolate(currentState.geometric.blobs.pulseSize, targetPreset.geometric?.blobs?.pulseSize || currentState.geometric.blobs.pulseSize, easedProgress)
+              },
+              crystals: {
+                count: Math.round(interpolate(currentState.geometric.crystals.count, targetPreset.geometric?.crystals?.count || currentState.geometric.crystals.count, easedProgress)),
+                size: interpolate(currentState.geometric.crystals.size, targetPreset.geometric?.crystals?.size || currentState.geometric.crystals.size, easedProgress),
+                color: interpolateColor(currentState.geometric.crystals.color, targetPreset.geometric?.crystals?.color || currentState.geometric.crystals.color, easedProgress),
+                rotation: interpolate(currentState.geometric.crystals.rotation, targetPreset.geometric?.crystals?.rotation || currentState.geometric.crystals.rotation, easedProgress),
+                opacity: interpolate(currentState.geometric.crystals.opacity, targetPreset.geometric?.crystals?.opacity || currentState.geometric.crystals.opacity, easedProgress),
+                complexity: interpolate(currentState.geometric.crystals.complexity, targetPreset.geometric?.crystals?.complexity || currentState.geometric.crystals.complexity, easedProgress),
+                organicness: interpolate(currentState.geometric.crystals.organicness, targetPreset.geometric?.crystals?.organicness || currentState.geometric.crystals.organicness, easedProgress)
+              },
+              waveInterference: {
+                color: interpolateColor(currentState.geometric.waveInterference.color, targetPreset.geometric?.waveInterference?.color || currentState.geometric.waveInterference.color, easedProgress)
+              },
+              metamorphosis: {
+                color: interpolateColor(currentState.geometric.metamorphosis.color, targetPreset.geometric?.metamorphosis?.color || currentState.geometric.metamorphosis.color, easedProgress)
+              },
+              fireflies: {
+                color: interpolateColor(currentState.geometric.fireflies.color, targetPreset.geometric?.fireflies?.color || currentState.geometric.fireflies.color, easedProgress)
+              },
+              layeredSineWaves: {
+                color: interpolateColor(currentState.geometric.layeredSineWaves.color, targetPreset.geometric?.layeredSineWaves?.color || currentState.geometric.layeredSineWaves.color, easedProgress)
+              }
+            };
+            
+            const interpolatedParticles = {
+              count: Math.round(interpolate(currentState.particles.count, targetPreset.particles?.count || currentState.particles.count, easedProgress)),
+              size: interpolate(currentState.particles.size, targetPreset.particles?.size || currentState.particles.size, easedProgress),
+              color: interpolateColor(currentState.particles.color, targetPreset.particles?.color || currentState.particles.color, easedProgress),
+              speed: interpolate(currentState.particles.speed, targetPreset.particles?.speed || currentState.particles.speed, easedProgress),
+              opacity: interpolate(currentState.particles.opacity, targetPreset.particles?.opacity || currentState.particles.opacity, easedProgress),
+              spread: interpolate(currentState.particles.spread, targetPreset.particles?.spread || currentState.particles.spread, easedProgress),
+              movementPattern: targetPreset.particles?.movementPattern || currentState.particles.movementPattern,
+              distance: interpolate(currentState.particles.distance, targetPreset.particles?.distance || currentState.particles.distance, easedProgress),
+              pulseEnabled: targetPreset.particles?.pulseEnabled !== undefined ? targetPreset.particles.pulseEnabled : currentState.particles.pulseEnabled,
+              pulseSize: interpolate(currentState.particles.pulseSize, targetPreset.particles?.pulseSize || currentState.particles.pulseSize, easedProgress)
+            };
+            
+            const interpolatedEffects = {
+              glow: interpolate(currentState.effects.glow, targetPreset.effects?.glow || currentState.effects.glow, easedProgress),
+              contrast: interpolate(currentState.effects.contrast, targetPreset.effects?.contrast || currentState.effects.contrast, easedProgress),
+              saturation: interpolate(currentState.effects.saturation, targetPreset.effects?.saturation || currentState.effects.saturation, easedProgress),
+              hue: interpolate(currentState.effects.hue, targetPreset.effects?.hue || currentState.effects.hue, easedProgress),
+              brightness: interpolate(currentState.effects.brightness, targetPreset.effects?.brightness || currentState.effects.brightness, easedProgress),
+              vignette: interpolate(currentState.effects.vignette, targetPreset.effects?.vignette || currentState.effects.vignette, easedProgress)
+            };
+            
+            const interpolatedGlobalAnimationSpeed = interpolate(
+              currentState.globalAnimationSpeed, 
+              targetPreset.globalAnimationSpeed || currentState.globalAnimationSpeed, 
+              easedProgress
+            );
+            
+            return {
+              ...state,
+              background: interpolatedBackground,
+              geometric: interpolatedGeometric,
+              particles: interpolatedParticles,
+              effects: interpolatedEffects,
+              globalAnimationSpeed: interpolatedGlobalAnimationSpeed,
+              // Keep UI state unchanged
+              ui: { ...state.ui }
+            };
+          });
+          
+          // Continue animation or complete
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            // Animation complete - set final state exactly
+            set((state) => {
+              const mergedGlobalEffects = {
+                ...state.globalEffects,
+                ...(isPlainObject(targetPreset.globalEffects) ? targetPreset.globalEffects : {}),
+                trails: {
+                  ...state.globalEffects.trails,
+                  ...(isPlainObject(targetPreset.globalEffects?.trails) ? targetPreset.globalEffects.trails : {}),
+                  sphereTrails: {
+                    ...state.globalEffects.trails.sphereTrails,
+                    ...(isPlainObject(targetPreset.globalEffects?.trails?.sphereTrails) ? targetPreset.globalEffects.trails.sphereTrails : {})
+                  },
+                  cubeTrails: {
+                    ...state.globalEffects.trails.cubeTrails,
+                    ...(isPlainObject(targetPreset.globalEffects?.trails?.cubeTrails) ? targetPreset.globalEffects.trails.cubeTrails : {})
+                  },
+                  blobTrails: {
+                    ...state.globalEffects.trails.blobTrails,
+                    ...(isPlainObject(targetPreset.globalEffects?.trails?.blobTrails) ? targetPreset.globalEffects.trails.blobTrails : {})
+                  },
+                  torusTrails: {
+                    ...state.globalEffects.trails.torusTrails,
+                    ...(isPlainObject(targetPreset.globalEffects?.trails?.torusTrails) ? targetPreset.globalEffects.trails.torusTrails : {})
+                  },
+                  particleTrails: {
+                    ...state.globalEffects.trails.particleTrails,
+                    ...(isPlainObject(targetPreset.globalEffects?.trails?.particleTrails) ? targetPreset.globalEffects.trails.particleTrails : {})
+                  }
+                }
+              };
+
+              const mergedCamera = {
+                ...state.camera,
+                ...(isPlainObject(targetPreset.camera) ? targetPreset.camera : {}),
+                depthOfField: {
+                  ...state.camera.depthOfField,
+                  ...(isPlainObject(targetPreset.camera?.depthOfField) ? targetPreset.camera.depthOfField : {})
+                }
+              };
+              
+              return {
+                ...state,
+                ui: { ...state.ui },
+                background: { ...state.background, ...(isPlainObject(targetPreset.background) ? targetPreset.background : {}) },
+                backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(targetPreset.backgroundConfig) ? targetPreset.backgroundConfig : {}) },
+                logo: { ...state.logo, ...(isPlainObject(targetPreset.logo) ? targetPreset.logo : {}) },
+                geometric: { ...state.geometric, ...(isPlainObject(targetPreset.geometric) ? targetPreset.geometric : {}) },
+                particles: { ...state.particles, ...(isPlainObject(targetPreset.particles) ? targetPreset.particles : {}) },
+                globalEffects: mergedGlobalEffects,
+                effects: { ...state.effects, ...(isPlainObject(targetPreset.effects) ? targetPreset.effects : {}) },
+                camera: mergedCamera,
+                globalAnimationSpeed: typeof targetPreset.globalAnimationSpeed === 'number' ? targetPreset.globalAnimationSpeed : state.globalAnimationSpeed,
+                globalBlendMode: isPlainObject(targetPreset.globalBlendMode) ? targetPreset.globalBlendMode : state.globalBlendMode,
+                location: typeof targetPreset.location === 'string' ? targetPreset.location : state.location,
+              };
+            });
+            
+            console.log(`✅ Transition to preset "${name}" completed`);
+            resolve();
+          }
+        };
+        
+        // Start animation
+        requestAnimationFrame(animate);
+      });
+      
+    } catch (error) {
+      console.error('Error during preset transition:', error);
+      throw error;
+    }
   },
 }));
 

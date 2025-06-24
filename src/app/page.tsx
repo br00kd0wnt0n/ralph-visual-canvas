@@ -14,6 +14,7 @@ import { useVisualStore } from '../store/visualStore';
 import { PresetClient } from '../lib/presetClient';
 import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
+import { PresetTransitionTester } from '../components/PresetTransitionTester';
 
 export default function Home() {
   const { ui, toggleDashboards, toggleCameraPositioningMode, toggleAutoPan, loadPreset, loadPresetData, getAvailablePresets, camera } = useVisualStore();
@@ -165,6 +166,9 @@ export default function Home() {
         isOpen={showGlobalDefaults} 
         onClose={() => setShowGlobalDefaults(false)} 
       />
+
+      {/* Preset Transition Tester - Temporary for testing */}
+      <PresetTransitionTester />
     </main>
   );
 }
