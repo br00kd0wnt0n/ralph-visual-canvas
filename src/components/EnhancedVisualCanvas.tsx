@@ -926,9 +926,9 @@ const VolumetricFog = () => {
 const Scene = () => {
   const { effects, globalEffects, background, globalAnimationSpeed } = useVisualStore();
   
-  // Performance monitoring - only in development mode
-  useFrame(() => {
-    if (process.env.NODE_ENV === 'development') {
+  // Performance monitoring - only in development mode, throttled to every 30 frames
+  useFrame((state) => {
+    if (process.env.NODE_ENV === 'development' && Math.floor(state.clock.elapsedTime * 60) % 30 === 0) {
       performanceMonitor.update();
     }
   });
