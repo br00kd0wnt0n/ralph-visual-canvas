@@ -27,14 +27,6 @@ export default function Home() {
   
   // Enable default preset loading for production
   const skipDefaultPreset = false; // Set to true to disable default preset loading for testing
-  
-  // DEBUG: Manual store refresh function
-  const debugRefreshStore = () => {
-    console.log('🔄 Manual store refresh triggered');
-    // Force a re-render by updating a small value
-    const currentStore = useVisualStore.getState();
-    console.log('🎨 Current store state:', currentStore);
-  };
 
   // Load LANDING - Basic preset from cloud by default on first app load
   useEffect(() => {
@@ -119,14 +111,7 @@ export default function Home() {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* DEBUG: Manual store refresh button */}
-          <button
-            onClick={debugRefreshStore}
-            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
-          >
-            🔄 Debug Store
-          </button>
-          {/* Removed PerformanceIndicator */}
+          {/* Removed debug button and PerformanceIndicator for production */}
         </div>
       </div>
 
