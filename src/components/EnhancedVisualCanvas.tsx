@@ -1127,8 +1127,8 @@ const AutoPanSystem = () => {
     const time = state.clock.elapsedTime;
     const { speed, radius, height, easing, currentAngle } = camera.autoPan;
     
-    // Throttle updates to every 2 frames to reduce performance impact
-    if (Math.floor(time * 60) % 2 !== 0) {
+    // PERFORMANCE OPTIMIZATION: Increase throttle to every 4 frames to reduce performance impact
+    if (Math.floor(time * 60) % 4 !== 0) {
       return;
     }
     
@@ -1165,8 +1165,10 @@ const AutoPanSystem = () => {
     // Always look at the center (0, 0, 0)
     three.camera.lookAt(0, 0, 0);
     
-    // Update only the auto-pan angle using the new dedicated function
-    updateAutoPanAngle(newAngle);
+    // PERFORMANCE OPTIMIZATION: Only update store every 8 frames to reduce store update frequency
+    if (Math.floor(time * 60) % 8 === 0) {
+      updateAutoPanAngle(newAngle);
+    }
   });
   
   return null;
