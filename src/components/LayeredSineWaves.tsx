@@ -193,10 +193,10 @@ export const LayeredSineWaves = () => {
     const currentTime = performance.now();
     if (currentTime - lastLogTimeRef.current > 10000) { // Log every 10 seconds
       lastLogTimeRef.current = currentTime;
-      // Only log in development mode
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🎨 LayeredSineWaves running smoothly');
-      }
+              // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎨 LayeredSineWaves running smoothly');
+        }
     }
   });
 

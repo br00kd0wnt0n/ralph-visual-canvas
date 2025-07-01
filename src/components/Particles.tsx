@@ -129,25 +129,27 @@ export const Particles = () => {
       }
     });
 
-    console.log('🎨 Particles component - Current store values:', {
-      count: particles.count,
-      size: particles.size,
-      color: particles.color,
-      speed: particles.speed,
-      opacity: particles.opacity,
-      spread: particles.spread,
-      movementPattern: particles.movementPattern,
-      distance: particles.distance,
-      pulseEnabled: particles.pulseEnabled,
-      pulseSize: particles.pulseSize,
-      globalAnimationSpeed: globalAnimationSpeed,
-      shapeGlow: {
-        enabled: shapeGlow?.enabled,
-        intensity: shapeGlow?.intensity,
-        useObjectColor: shapeGlow?.useObjectColor,
-        customColor: shapeGlow?.customColor
-      }
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎨 Particles component - Current store values:', {
+        count: particles.count,
+        size: particles.size,
+        color: particles.color,
+        speed: particles.speed,
+        opacity: particles.opacity,
+        spread: particles.spread,
+        movementPattern: particles.movementPattern,
+        distance: particles.distance,
+        pulseEnabled: particles.pulseEnabled,
+        pulseSize: particles.pulseSize,
+        globalAnimationSpeed: globalAnimationSpeed,
+        shapeGlow: {
+          enabled: shapeGlow?.enabled,
+          intensity: shapeGlow?.intensity,
+          useObjectColor: shapeGlow?.useObjectColor,
+          customColor: shapeGlow?.customColor
+        }
+      });
+    }
   });
 
   return (

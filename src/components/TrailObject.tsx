@@ -259,13 +259,15 @@ export const TrailObject = ({
     const configHash = `${trailConfig?.length ?? 0}-${trailConfig?.opacity ?? 0}-${trailConfig?.width ?? 0}-${trailConfig?.fadeRate ?? 0}`;
     
     if (id === 'sphere-0' && configHash !== lastConfigHash.current) {
-      console.log(`🎨 Trail config changed for ${trailType}:`, {
-        enabled: trailConfig?.enabled,
-        length: trailConfig?.length,
-        opacity: trailConfig?.opacity,
-        width: trailConfig?.width,
-        fadeRate: trailConfig?.fadeRate
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🎨 Trail config changed for ${trailType}:`, {
+          enabled: trailConfig?.enabled,
+          length: trailConfig?.length,
+          opacity: trailConfig?.opacity,
+          width: trailConfig?.width,
+          fadeRate: trailConfig?.fadeRate
+        });
+      }
       lastConfigHash.current = configHash;
       trailManager.clearTrailsForType('sphere');
     }
@@ -342,20 +344,22 @@ export const TrailObject = ({
         );
         
         if (id === 'sphere-0' && Math.random() < 0.1) {
-          console.log(`🎨 Trail created for ${id}:`, {
-            position: currentPosition.toArray(),
-            velocity: velocity.toArray(),
-            speed: speed.toFixed(3),
-            scale: currentScale.toArray(),
-            color: color.getHexString(),
-            config: {
-              length: trailConfig?.length ?? 50,
-              opacity: trailConfig?.opacity ?? 0.5,
-              width: trailConfig?.width ?? 1.0,
-              fadeRate: trailConfig?.fadeRate ?? 0,
-              fadeTime: fadeTime
-            }
-          });
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`🎨 Trail created for ${id}:`, {
+              position: currentPosition.toArray(),
+              velocity: velocity.toArray(),
+              speed: speed.toFixed(3),
+              scale: currentScale.toArray(),
+              color: color.getHexString(),
+              config: {
+                length: trailConfig?.length ?? 50,
+                opacity: trailConfig?.opacity ?? 0.5,
+                width: trailConfig?.width ?? 1.0,
+                fadeRate: trailConfig?.fadeRate ?? 0,
+                fadeTime: fadeTime
+              }
+            });
+          }
         }
         
         lastTrailTime.current = currentTime;

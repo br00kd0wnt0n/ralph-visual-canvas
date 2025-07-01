@@ -236,19 +236,23 @@ const Spheres = () => {
   });
 
   // DEBUG: Log current sphere values
-  console.log('🎨 Spheres component - Current store values:', {
-    count: spheresCount,
-    size: spheresSize,
-    color: spheresColor,
-    speed: spheres.speed,
-    rotation: spheres.rotation,
-    opacity: spheres.opacity,
-    organicness: spheres.organicness
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎨 Spheres component - Current store values:', {
+      count: spheresCount,
+      size: spheresSize,
+      color: spheresColor,
+      speed: spheres.speed,
+      rotation: spheres.rotation,
+      opacity: spheres.opacity,
+      organicness: spheres.organicness
+    });
+  }
 
   // TEMPORARY: Test with hardcoded values to see if component can render different counts
   const testCount = 35; // Hardcoded test value
-  console.log('🎨 Testing with hardcoded count:', testCount);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎨 Testing with hardcoded count:', testCount);
+  }
 
   // Force re-render when store changes
   const [, forceUpdate] = useReducer(x => x + 1, 0);
@@ -458,15 +462,17 @@ const Cubes = () => {
   });
 
   // DEBUG: Log current cube values
-  console.log('🎨 Cubes component - Current store values:', {
-    count: cubesCount,
-    size: cubesSize,
-    color: cubesColor,
-    speed: cubes.speed,
-    rotation: cubes.rotation,
-    opacity: cubes.opacity,
-    organicness: cubes.organicness
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎨 Cubes component - Current store values:', {
+      count: cubesCount,
+      size: cubesSize,
+      color: cubesColor,
+      speed: cubes.speed,
+      rotation: cubes.rotation,
+      opacity: cubes.opacity,
+      organicness: cubes.organicness
+    });
+  }
 
   // Force re-render when store changes
   const [, forceUpdate] = useReducer(x => x + 1, 0);
@@ -915,16 +921,18 @@ const Scene = () => {
   const { effects, globalEffects, background, globalAnimationSpeed } = useVisualStore();
   
   // DEBUG: Log current effects values
-  console.log('🎨 Scene component - Current store values:', {
-    effects: effects,
-    globalEffects: {
-      atmosphericBlur: globalEffects?.atmosphericBlur,
-      volumetric: globalEffects?.volumetric,
-      distortion: globalEffects?.distortion
-    },
-    background: background,
-    globalAnimationSpeed: globalAnimationSpeed
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎨 Scene component - Current store values:', {
+      effects: effects,
+      globalEffects: {
+        atmosphericBlur: globalEffects?.atmosphericBlur,
+        volumetric: globalEffects?.volumetric,
+        distortion: globalEffects?.distortion
+      },
+      background: background,
+      globalAnimationSpeed: globalAnimationSpeed
+    });
+  }
   
   return (
     <>
