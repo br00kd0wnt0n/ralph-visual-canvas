@@ -24,9 +24,23 @@ export default function Home() {
   const [showTrailControls, setShowTrailControls] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
   const [isPresetLoaded, setIsPresetLoaded] = useState(false);
+  const [showUI, setShowUI] = useState(false); // UI visibility state - hidden by default
   
   // Enable default preset loading for production
   const skipDefaultPreset = false; // Set to true to disable default preset loading for testing
+
+  // Keyboard event handler to toggle UI visibility with "1" key
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === '1') {
+        setShowUI(prev => !prev);
+        console.log(`🎛️ UI ${!showUI ? 'shown' : 'hidden'}`);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [showUI]);
 
   // Load LANDING - Basic preset from cloud by default on first app load
   useEffect(() => {
@@ -102,7 +116,7 @@ export default function Home() {
       )}
 
       {/* Enhanced Visual Canvas - Only show after preset is loaded */}
-      {isPresetLoaded && <EnhancedVisualCanvas />}
+      {isPresetLoaded && <EnhancedVisualCanvas showUI={showUI} />}
 
       {/* Top Controls Bar */}
       <div className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between">
@@ -115,25 +129,27 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Bottom Center Button Bar */}
-      <BottomButtonBar
-        isDashboardOpen={ui.showDashboards}
-        onDashboardToggle={toggleDashboards}
-        isGlobalDefaultsOpen={showGlobalDefaults}
-        onGlobalDefaultsToggle={() => setShowGlobalDefaults(!showGlobalDefaults)}
-        isAIOpen={showAITest}
-        onAIToggle={() => setShowAITest(!showAITest)}
-        isAINewOpen={showAINew}
-        onAINewToggle={() => setShowAINew(!showAINew)}
-        isCameraPositioningMode={ui.cameraPositioningMode}
-        isAutoPanEnabled={camera.autoPan.enabled}
-        onCameraPositioningToggle={toggleCameraPositioningMode}
-        onAutoPanToggle={toggleAutoPan}
-        isTrailControlsOpen={showTrailControls}
-        onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
-        isPerformanceOpen={showPerformance}
-        onPerformanceToggle={() => setShowPerformance((v) => !v)}
-      />
+      {/* Bottom Center Button Bar - Only show when UI is enabled */}
+      {showUI && (
+        <BottomButtonBar
+          isDashboardOpen={ui.showDashboards}
+          onDashboardToggle={toggleDashboards}
+          isGlobalDefaultsOpen={showGlobalDefaults}
+          onGlobalDefaultsToggle={() => setShowGlobalDefaults(!showGlobalDefaults)}
+          isAIOpen={showAITest}
+          onAIToggle={() => setShowAITest(!showAITest)}
+          isAINewOpen={showAINew}
+          onAINewToggle={() => setShowAINew(!showAINew)}
+          isCameraPositioningMode={ui.cameraPositioningMode}
+          isAutoPanEnabled={camera.autoPan.enabled}
+          onCameraPositioningToggle={toggleCameraPositioningMode}
+          onAutoPanToggle={toggleAutoPan}
+          isTrailControlsOpen={showTrailControls}
+          onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
+          isPerformanceOpen={showPerformance}
+          onPerformanceToggle={() => setShowPerformance((v) => !v)}
+        />
+      )}
 
       {/* Dashboards - Side Columns */}
       {ui.showDashboards && (

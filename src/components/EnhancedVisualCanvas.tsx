@@ -1152,12 +1152,12 @@ const AutoPanSystem = () => {
 };
 
 // Auto-pan indicator component with speed selector
-const AutoPanIndicator = () => {
+const AutoPanIndicator = ({ showUI }: { showUI: boolean }) => {
   // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { camera, updateCamera } = useVisualStore();
 
   // NOW we can have conditional returns after all hooks are called
-  if (!camera.autoPan.enabled) return null;
+  if (!camera.autoPan.enabled || !showUI) return null;
 
   const speedOptions = [
     { label: '1x', value: 0.15 },
@@ -1239,7 +1239,7 @@ const AutoPanIndicator = () => {
   );
 };
 
-const EnhancedVisualCanvas = () => {
+const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
   const visualStore = useVisualStore();
   
   // Add safety check for store initialization
@@ -1818,7 +1818,7 @@ const EnhancedVisualCanvas = () => {
             )}
             
             {/* Auto Pan Indicator */}
-            <AutoPanIndicator />
+            <AutoPanIndicator showUI={showUI} />
             
             <Canvas
               camera={{ 
