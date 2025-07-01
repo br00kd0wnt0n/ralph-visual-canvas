@@ -103,16 +103,23 @@ export const AITestDashboard = () => {
     }
   }, []);
 
-  // Initialize AI-Visual integration
+  // Initialize AI-Visual integration - only when component is actively being used
   useEffect(() => {
-    console.log('🤖 Initializing AI-Visual integration in AITestDashboard...');
-    const cleanupIntegration = initializeAIVisualIntegration();
-    
-    return () => {
-      console.log('🛑 Cleaning up AI-Visual integration in AITestDashboard...');
-      cleanupIntegration();
-    };
-  }, []);
+    // Only initialize if we're actively using AI features
+    if (currentStep === 'analysis' || currentStep === 'results' || currentStep === 'advanced') {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🤖 Initializing AI-Visual integration in AITestDashboard...');
+      }
+      const cleanupIntegration = initializeAIVisualIntegration();
+      
+      return () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🛑 Cleaning up AI-Visual integration in AITestDashboard...');
+        }
+        cleanupIntegration();
+      };
+    }
+  }, [currentStep]);
 
   // Ensure proper scroll behavior
   useEffect(() => {
