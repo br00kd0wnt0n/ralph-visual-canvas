@@ -16,10 +16,21 @@ function mulberry32(seed: number) {
 }
 
 export const Blobs: React.FC = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const { blobs } = geometric;
   const { shapeGlow } = globalEffects;
+
+  // Store stable random seeds for each blob
+  const seedsRef = useRef<number[]>([]);
+  
+  // Frame counter for performance optimization
+  const frameCountRef = useRef(0);
+  const pulseTimeRef = useRef(0);
+
+  // Stable positions for each blob
+  const positionsRef = useRef<THREE.Vector3[]>([]);
 
   // Get layer configuration for background mode - with proper fallbacks
   const layerConfig = backgroundConfig.enabled ? 
@@ -35,13 +46,7 @@ export const Blobs: React.FC = () => {
   const safeOpacity = isNaN(blobs.opacity) || blobs.opacity < 0 ? 1.0 : blobs.opacity;
   const safeSpeed = isNaN(blobs.speed) || blobs.speed < 0 ? 1.0 : blobs.speed;
 
-  // Early return if no blobs
-  if (!blobs || safeCount === 0) {
-    return null;
-  }
-
-  // Store stable random seeds for each blob
-  const seedsRef = useRef<number[]>([]);
+  // Update seeds if count changes
   if (seedsRef.current.length !== safeCount) {
     // Regenerate seeds if count changes
     seedsRef.current = Array.from({ length: safeCount }, (_, i) => Math.floor(Math.random() * 1000000) + i * 1000);
@@ -75,9 +80,9 @@ export const Blobs: React.FC = () => {
     return geometry;
   }, [safeSize, safeOrganicness]);
 
-  // Enhanced glow effect for blobs
-  const glowColor = shapeGlow.useObjectColor ? blobs.color : (shapeGlow.customColor || blobs.color);
-  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+  // Enhanced glow effect for blobs with safety checks
+  const glowColor = shapeGlow?.useObjectColor ? blobs.color : (shapeGlow?.customColor || blobs.color);
+  const glowIntensity = shapeGlow?.enabled ? (shapeGlow?.intensity ?? 0) : 0;
 
   // Individual materials for each blob
   const blobMaterials = useMemo(() => {
@@ -98,8 +103,7 @@ export const Blobs: React.FC = () => {
     });
   }, [safeCount, blobs.color, blobs.opacity, glowColor, glowIntensity]);
 
-  // Stable positions for each blob
-  const positionsRef = useRef<THREE.Vector3[]>([]);
+  // Update positions if count changes
   if (positionsRef.current.length !== safeCount) {
     // Regenerate positions if count changes
     positionsRef.current = seedsRef.current.map((seed) => {
@@ -112,12 +116,10 @@ export const Blobs: React.FC = () => {
     });
   }
 
-  // Frame counter for performance optimization
-  const frameCountRef = useRef(0);
-  const pulseTimeRef = useRef(0);
-
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state) => {
-    if (!groupRef.current) return;
+    // Early return if conditions aren't met
+    if (!groupRef.current || !blobs || safeCount === 0) return;
     
       const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
@@ -136,10 +138,10 @@ export const Blobs: React.FC = () => {
         pulseSize,
         glowIntensity,
         shapeGlow: {
-          enabled: shapeGlow.enabled,
-          intensity: shapeGlow.intensity,
-          useObjectColor: shapeGlow.useObjectColor,
-          customColor: shapeGlow.customColor
+          enabled: shapeGlow?.enabled,
+          intensity: shapeGlow?.intensity,
+          useObjectColor: shapeGlow?.useObjectColor,
+          customColor: shapeGlow?.customColor
         }
       });
     }
@@ -219,6 +221,11 @@ export const Blobs: React.FC = () => {
     });
   });
 
+  // NOW we can have conditional returns after all hooks are called
+  if (!blobs || safeCount === 0) {
+    return null;
+  }
+
   return (
     <group ref={groupRef} key={`blobs-${backgroundConfig.enabled}-${safeCount}`}>
       {positionsRef.current.map((position, i) => (
@@ -239,7 +246,7 @@ export const Blobs: React.FC = () => {
             />
             
             {/* Add pulsing glow effect when enabled */}
-            {shapeGlow.enabled && shapeGlow.pulsing && (
+            {shapeGlow?.enabled && shapeGlow?.pulsing && (
               <mesh geometry={sharedGeometry} position={[0, 0, 0]}>
                 <meshBasicMaterial
                   color={glowColor}

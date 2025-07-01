@@ -4,6 +4,7 @@ import { useVisualStore } from '../store/visualStore';
 import * as THREE from 'three';
 
 export const LayeredSineWaves = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { layeredSineWaves } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
@@ -24,7 +25,32 @@ export const LayeredSineWaves = () => {
     return material;
   }, [geometric.layeredSineWaves?.color, layeredSineWaves?.lineWidth]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (groupRef.current) {
+        while (groupRef.current.children.length > 0) {
+          const child = groupRef.current.children[0];
+          if (child instanceof THREE.Line) {
+            if (child.geometry) {
+              child.geometry.dispose();
+            }
+            if (child.material) {
+              child.material.dispose();
+            }
+          }
+          groupRef.current.remove(child);
+        }
+      }
+      if (materialRef.current) {
+        materialRef.current.dispose();
+      }
+    };
+  }, []);
+
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state, delta) => {
+    // Early return if conditions aren't met
     if (!layeredSineWaves?.enabled || !groupRef.current) {
       return;
     }
@@ -174,29 +200,7 @@ export const LayeredSineWaves = () => {
     }
   });
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (groupRef.current) {
-        while (groupRef.current.children.length > 0) {
-          const child = groupRef.current.children[0];
-          if (child instanceof THREE.Line) {
-            if (child.geometry) {
-              child.geometry.dispose();
-            }
-            if (child.material) {
-              child.material.dispose();
-            }
-          }
-          groupRef.current.remove(child);
-        }
-      }
-      if (materialRef.current) {
-        materialRef.current.dispose();
-      }
-    };
-  }, []);
-
+  // NOW we can have conditional returns after all hooks are called
   if (!layeredSineWaves?.enabled) {
     return null;
   }

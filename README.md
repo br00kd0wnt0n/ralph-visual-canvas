@@ -53,8 +53,27 @@ This project uses environment variables for API keys and database configuration.
 
 ### Development vs Production
 
-- **Development**: API keys can be stored in localStorage for convenience
+- **Development**: API keys can be managed through the Global Defaults Panel or stored in localStorage for convenience
 - **Production**: API keys must be set as environment variables in Railway
+
+### API Key Management
+
+#### Development Mode
+1. Open the **Global Defaults Manager** (gear icon in bottom button bar)
+2. Navigate to the **"API Keys"** tab
+3. Enter your API keys and test them
+4. Save the keys to localStorage for future use
+
+#### Production Mode
+For production deployment on Railway, add these environment variables in your Railway project settings:
+
+1. Go to your Railway project dashboard
+2. Navigate to the "Variables" tab
+3. Add each environment variable with its corresponding value:
+   - `OPENAI_API_KEY=sk-your-openai-api-key-here`
+   - `OPENWEATHER_API_KEY=your-openweather-api-key-here`
+   - `MONGODB_URI=your-mongodb-connection-string`
+4. Redeploy your application
 
 ### Example `.env.local`
 
@@ -63,15 +82,6 @@ MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWr
 OPENAI_API_KEY=sk-your-openai-api-key-here
 OPENWEATHER_API_KEY=your-openweather-api-key-here
 ```
-
-### Railway Deployment
-
-For production deployment on Railway, add these environment variables in your Railway project settings:
-
-1. Go to your Railway project dashboard
-2. Navigate to the "Variables" tab
-3. Add each environment variable with its corresponding value
-4. Redeploy your application
 
 ## Development
 

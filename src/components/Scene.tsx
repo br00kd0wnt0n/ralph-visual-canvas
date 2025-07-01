@@ -192,11 +192,12 @@ export const Scene = () => {
 
   // Pure CSS blur layers for bokeh effect
   const blurLayers = useMemo(() => {
-    if (!globalEffects.atmosphericBlur.enabled) return null;
+    const atmosphericBlur = globalEffects?.atmosphericBlur;
+    if (!atmosphericBlur?.enabled) return null;
     
     const layers = [];
-    const baseIntensity = globalEffects.atmosphericBlur.intensity;
-    const layerCount = globalEffects.atmosphericBlur.layers;
+    const baseIntensity = atmosphericBlur.intensity ?? 0;
+    const layerCount = atmosphericBlur.layers ?? 1;
     
     for (let i = 0; i < layerCount; i++) {
       // Progressive blur intensity for bokeh effect
@@ -251,7 +252,7 @@ export const Scene = () => {
     }
     
     return layers;
-  }, [globalEffects.atmosphericBlur]);
+  }, [globalEffects?.atmosphericBlur]);
 
   // Canvas container with no transforms
   const canvasContainerStyle: CSSProperties = {

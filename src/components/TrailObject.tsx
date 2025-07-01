@@ -251,20 +251,20 @@ export const TrailObject = ({
   const debugFrame = useRef(0);
 
   useFrame(() => {
-    if (!trails.enabled || !groupRef.current) return;
+    if (!trails?.enabled || !groupRef.current) return;
     
     const trailConfig = trails[trailType];
     if (!trailConfig?.enabled) return;
     
-    const configHash = `${trailConfig.length}-${trailConfig.opacity}-${trailConfig.width}-${trailConfig.fadeRate}`;
+    const configHash = `${trailConfig?.length ?? 0}-${trailConfig?.opacity ?? 0}-${trailConfig?.width ?? 0}-${trailConfig?.fadeRate ?? 0}`;
     
     if (id === 'sphere-0' && configHash !== lastConfigHash.current) {
       console.log(`🎨 Trail config changed for ${trailType}:`, {
-        enabled: trailConfig.enabled,
-        length: trailConfig.length,
-        opacity: trailConfig.opacity,
-        width: trailConfig.width,
-        fadeRate: trailConfig.fadeRate
+        enabled: trailConfig?.enabled,
+        length: trailConfig?.length,
+        opacity: trailConfig?.opacity,
+        width: trailConfig?.width,
+        fadeRate: trailConfig?.fadeRate
       });
       lastConfigHash.current = configHash;
       trailManager.clearTrailsForType('sphere');
@@ -316,12 +316,12 @@ export const TrailObject = ({
           }
           // Apply trail opacity
           if ('opacity' in trailMaterial) {
-            trailMaterial.opacity = trailConfig.opacity;
+            trailMaterial.opacity = trailConfig?.opacity ?? 0.5;
             trailMaterial.transparent = true;
           }
         }
         
-        const fadeTime = 0.5 + (trailConfig.fadeRate * 2.5);
+        const fadeTime = 0.5 + ((trailConfig?.fadeRate ?? 0) * 2.5);
         
         trailManager.addTrail(
           id, 
@@ -334,10 +334,10 @@ export const TrailObject = ({
           currentScale,
           currentRotation,
           {
-            maxPoints: trailConfig.length,
+            maxPoints: trailConfig?.length ?? 50,
             fadeTime: fadeTime,
-            opacity: trailConfig.opacity,
-            width: trailConfig.width
+            opacity: trailConfig?.opacity ?? 0.5,
+            width: trailConfig?.width ?? 1.0
           }
         );
         
@@ -349,10 +349,10 @@ export const TrailObject = ({
             scale: currentScale.toArray(),
             color: color.getHexString(),
             config: {
-              length: trailConfig.length,
-              opacity: trailConfig.opacity,
-              width: trailConfig.width,
-              fadeRate: trailConfig.fadeRate,
+              length: trailConfig?.length ?? 50,
+              opacity: trailConfig?.opacity ?? 0.5,
+              width: trailConfig?.width ?? 1.0,
+              fadeRate: trailConfig?.fadeRate ?? 0,
               fadeTime: fadeTime
             }
           });

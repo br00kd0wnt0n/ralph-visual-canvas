@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useVisualStore } from '../store/visualStore';
 import { GlobalDefaultsManager, CameraPresets, GLOBAL_DEFAULTS } from '../utils/globalDefaults';
+import { AIService } from '../ai-system/services/AIService';
+import { WeatherService } from '../ai-system/services/WeatherService';
 
 interface GlobalDefaultsPanelProps {
   isOpen: boolean;
@@ -8,11 +10,19 @@ interface GlobalDefaultsPanelProps {
 }
 
 export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'camera' | 'visual' | 'performance' | 'quality' | 'animation' | 'logo'>('camera');
+  const [activeTab, setActiveTab] = useState<'camera' | 'visual' | 'performance' | 'quality' | 'animation' | 'logo' | 'apikeys'>('camera');
   const [showPresets, setShowPresets] = useState(false);
   const [updateTrigger, setUpdateTrigger] = useState(0); // Force re-renders when defaults change
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
   const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success');
+  
+  // API Key Management
+  const [openaiApiKey, setOpenaiApiKey] = useState('');
+  const [weatherApiKey, setWeatherApiKey] = useState('');
+  const [testingOpenAI, setTestingOpenAI] = useState(false);
+  const [testingWeather, setTestingWeather] = useState(false);
+  const [openAIStatus, setOpenAIStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [weatherStatus, setWeatherStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   
   const visualStore = useVisualStore();
   // Use the store's getGlobalDefaults function to get reactive defaults
@@ -107,6 +117,100 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
     setTimeout(() => setFeedbackMessage(''), 3000);
   };
 
+  // API Key Management Functions
+  const aiService = AIService.getInstance();
+  const weatherService = WeatherService.getInstance();
+
+  // Load API keys on mount
+  useEffect(() => {
+    // Check if we're in production (environment variables should be used)
+    const isProduction = typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
+    
+    if (!isProduction) {
+      // Development: Load from localStorage
+      const storedOpenAI = localStorage.getItem('openai-api-key') || '';
+      const storedWeather = localStorage.getItem('openweather-api-key') || '';
+      setOpenaiApiKey(storedOpenAI);
+      setWeatherApiKey(storedWeather);
+    }
+  }, []);
+
+  const testOpenAIKey = async () => {
+    if (!openaiApiKey.trim()) {
+      showFeedback('Please enter an OpenAI API key first', 'error');
+      return;
+    }
+
+    setTestingOpenAI(true);
+    setOpenAIStatus('testing');
+
+    try {
+      aiService.setApiKey(openaiApiKey.trim());
+      const isValid = await aiService.testApiKey();
+      
+      if (isValid) {
+        setOpenAIStatus('success');
+        showFeedback('✅ OpenAI API key is valid and working');
+      } else {
+        setOpenAIStatus('error');
+        showFeedback('❌ OpenAI API key test failed', 'error');
+      }
+    } catch (err) {
+      setOpenAIStatus('error');
+      showFeedback(`OpenAI API key test failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+    } finally {
+      setTestingOpenAI(false);
+    }
+  };
+
+  const testWeatherKey = async () => {
+    if (!weatherApiKey.trim()) {
+      showFeedback('Please enter a Weather API key first', 'error');
+      return;
+    }
+
+    setTestingWeather(true);
+    setWeatherStatus('testing');
+
+    try {
+      weatherService.setApiKey(weatherApiKey.trim());
+      const isValid = await weatherService.testApiKey();
+      
+      if (isValid) {
+        setWeatherStatus('success');
+        showFeedback('✅ Weather API key is valid and working');
+      } else {
+        setWeatherStatus('error');
+        showFeedback('❌ Weather API key test failed', 'error');
+      }
+    } catch (err) {
+      setWeatherStatus('error');
+      showFeedback(`Weather API key test failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+    } finally {
+      setTestingWeather(false);
+    }
+  };
+
+  const saveApiKeys = () => {
+    if (openaiApiKey.trim()) {
+      aiService.setApiKey(openaiApiKey.trim());
+      localStorage.setItem('openai-api-key', openaiApiKey.trim());
+    }
+    if (weatherApiKey.trim()) {
+      weatherService.setApiKey(weatherApiKey.trim());
+      localStorage.setItem('openweather-api-key', weatherApiKey.trim());
+    }
+    showFeedback('✅ API keys saved successfully');
+  };
+
+  const clearApiKeys = () => {
+    setOpenaiApiKey('');
+    setWeatherApiKey('');
+    localStorage.removeItem('openai-api-key');
+    localStorage.removeItem('openweather-api-key');
+    showFeedback('✅ API keys cleared');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -155,7 +259,8 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                 { id: 'performance', label: 'Performance', icon: '⚡' },
                 { id: 'quality', label: 'Quality', icon: '✨' },
                 { id: 'animation', label: 'Animation', icon: '🎬' },
-                { id: 'logo', label: 'Logo', icon: '🏷' }
+                { id: 'logo', label: 'Logo', icon: '🏷' },
+                { id: 'apikeys', label: 'API Keys', icon: '🔑' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -1144,6 +1249,196 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'apikeys' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white">API Key Management</h3>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-400">
+                      {typeof process !== 'undefined' && process.env.NODE_ENV === 'production' 
+                        ? '🔒 Production Mode (Use Railway Environment Variables)' 
+                        : '🛠️ Development Mode (localStorage)'
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                {/* Production Warning */}
+                {typeof process !== 'undefined' && process.env.NODE_ENV === 'production' && (
+                  <div className="p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-yellow-400">⚠️</span>
+                      <span className="text-yellow-300 font-medium">Production Environment</span>
+                    </div>
+                    <p className="text-sm text-yellow-200">
+                      In production, API keys should be configured via Railway environment variables, not through this interface.
+                      Contact your administrator to set up the required environment variables.
+                    </p>
+                  </div>
+                )}
+
+                {/* Development API Key Management */}
+                {(!process || process.env.NODE_ENV !== 'production') && (
+                  <div className="space-y-6">
+                    {/* OpenAI API Key */}
+                    <div className="bg-gray-800/60 backdrop-blur-sm rounded-lg border border-gray-700/50 p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-blue-400 text-xl">🤖</span>
+                          <div>
+                            <h4 className="text-lg font-semibold text-white">OpenAI API Key</h4>
+                            <p className="text-sm text-gray-400">For AI analysis and theme generation</p>
+                          </div>
+                        </div>
+                        <span className={`text-sm px-3 py-1 rounded-full ${
+                          openAIStatus === 'success' 
+                            ? 'bg-green-900/60 text-green-400' 
+                            : openAIStatus === 'error'
+                            ? 'bg-red-900/60 text-red-400'
+                            : openAIStatus === 'testing'
+                            ? 'bg-yellow-900/60 text-yellow-400'
+                            : 'bg-gray-700/60 text-gray-400'
+                        }`}>
+                          {openAIStatus === 'success' ? '✅ Valid' : 
+                           openAIStatus === 'error' ? '❌ Invalid' : 
+                           openAIStatus === 'testing' ? '🔄 Testing' : '⚪ Not Tested'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <input
+                          type="password"
+                          value={openaiApiKey}
+                          onChange={(e) => setOpenaiApiKey(e.target.value)}
+                          placeholder="sk-..."
+                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        />
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={testOpenAIKey}
+                            disabled={testingOpenAI || !openaiApiKey.trim()}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                          >
+                            {testingOpenAI ? (
+                              <>
+                                <span className="animate-spin">🔄</span>
+                                <span>Testing...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>🧪</span>
+                                <span>Test Key</span>
+                              </>
+                            )}
+                          </button>
+                          <a 
+                            href="https://platform.openai.com/api-keys" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 text-sm underline"
+                          >
+                            Get API Key →
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Weather API Key */}
+                    <div className="bg-gray-800/60 backdrop-blur-sm rounded-lg border border-gray-700/50 p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-green-400 text-xl">🌤️</span>
+                          <div>
+                            <h4 className="text-lg font-semibold text-white">OpenWeather API Key</h4>
+                            <p className="text-sm text-gray-400">For weather-based visual effects</p>
+                          </div>
+                        </div>
+                        <span className={`text-sm px-3 py-1 rounded-full ${
+                          weatherStatus === 'success' 
+                            ? 'bg-green-900/60 text-green-400' 
+                            : weatherStatus === 'error'
+                            ? 'bg-red-900/60 text-red-400'
+                            : weatherStatus === 'testing'
+                            ? 'bg-yellow-900/60 text-yellow-400'
+                            : 'bg-gray-700/60 text-gray-400'
+                        }`}>
+                          {weatherStatus === 'success' ? '✅ Valid' : 
+                           weatherStatus === 'error' ? '❌ Invalid' : 
+                           weatherStatus === 'testing' ? '🔄 Testing' : '⚪ Not Tested'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <input
+                          type="password"
+                          value={weatherApiKey}
+                          onChange={(e) => setWeatherApiKey(e.target.value)}
+                          placeholder="your-openweather-api-key"
+                          className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                        />
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={testWeatherKey}
+                            disabled={testingWeather || !weatherApiKey.trim()}
+                            className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                          >
+                            {testingWeather ? (
+                              <>
+                                <span className="animate-spin">🔄</span>
+                                <span>Testing...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>🧪</span>
+                                <span>Test Key</span>
+                              </>
+                            )}
+                          </button>
+                          <a 
+                            href="https://openweathermap.org/api" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-green-400 hover:text-green-300 text-sm underline"
+                          >
+                            Get API Key →
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center space-x-4">
+                      <button
+                        onClick={saveApiKeys}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                      >
+                        <span>💾</span>
+                        <span>Save All Keys</span>
+                      </button>
+                      <button
+                        onClick={clearApiKeys}
+                        className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2"
+                      >
+                        <span>🗑️</span>
+                        <span>Clear All Keys</span>
+                      </button>
+                    </div>
+
+                    {/* Help Information */}
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-blue-300 mb-3">💡 API Key Help</h4>
+                      <div className="space-y-2 text-sm text-blue-200">
+                        <p><strong>OpenAI API Key:</strong> Starts with "sk-", used for AI image analysis and theme generation</p>
+                        <p><strong>OpenWeather API Key:</strong> Different format, used for weather-based visual effects</p>
+                        <p><strong>Security:</strong> Keys are stored in localStorage for development only. Production uses environment variables.</p>
+                        <p><strong>Testing:</strong> Use the test buttons to verify your API keys work correctly before saving.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

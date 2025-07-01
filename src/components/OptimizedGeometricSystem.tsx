@@ -122,10 +122,19 @@ function useStableSeeds(count: number) {
 }
 
 const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const groupRef = useRef<THREE.Group>(null);
   const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const shape = geometric[type];
   const { shapeGlow } = globalEffects;
+
+  // Frame counter for constraint optimization
+  const frameCountRef = useRef(0);
+  const pulseTimeRef = useRef(0);
+
+  // Stable seeds and positions
+  const seeds = useStableSeeds(safeCount);
+  const positionsRef = useRef<[number, number, number][]>([]);
 
   // Layer config
   const layerConfig = backgroundConfig.enabled ? backgroundConfig.artisticLayout?.layers?.nearBackground : null;
@@ -143,13 +152,8 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
   const safeDistance = isNaN(shape.distance) || shape.distance < 0 ? 2.0 : shape.distance;
   const pulseEnabled = shape.pulseEnabled || false;
   const pulseSize = isNaN(shape.pulseSize) || shape.pulseSize < 0 ? 1.0 : shape.pulseSize;
-  const pulseTimeRef = useRef(0);
 
-  if (!shape || safeCount === 0) return null;
-
-  // Stable seeds and positions
-  const seeds = useStableSeeds(safeCount);
-  const positionsRef = useRef<[number, number, number][]>([]);
+  // Update positions if count changes
   if (positionsRef.current.length !== safeCount) {
     positionsRef.current = seeds.map((seed) => {
       const rand = mulberry32(seed + 9999);
@@ -189,10 +193,10 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
 
   // Individual materials for each object
   const materials = useMemo(() => {
+    const glowColor = shapeGlow?.useObjectColor ? shape.color : (shapeGlow?.customColor || shape.color);
+    const glowIntensity = shapeGlow?.enabled ? (shapeGlow?.intensity ?? 0) : 0;
+    
     return Array.from({ length: safeCount }, () => {
-      const glowColor = shapeGlow.useObjectColor ? shape.color : (shapeGlow.customColor || shape.color);
-      const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
-      
       return new THREE.MeshStandardMaterial({
         color: shape.color,
         emissive: new THREE.Color(glowColor),
@@ -207,14 +211,14 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
   }, [safeCount, shape.color, shape.opacity, shapeGlow]);
 
   // Get glow intensity for animation
-  const glowColor = shapeGlow.useObjectColor ? shape.color : (shapeGlow.customColor || shape.color);
-  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+  const glowColor = shapeGlow?.useObjectColor ? shape.color : (shapeGlow?.customColor || shape.color);
+  const glowIntensity = shapeGlow?.enabled ? (shapeGlow?.intensity ?? 0) : 0;
 
-  // Frame counter for constraint optimization
-  const frameCountRef = useRef(0);
-
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state) => {
-    if (!groupRef.current) return;
+    // Early return if conditions aren't met
+    if (!groupRef.current || !shape || safeCount === 0) return;
+    
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale || 1;
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
@@ -297,6 +301,9 @@ const OrganicShapeList = ({ type }: { type: 'cubes' | 'spheres' | 'toruses' }) =
     });
   });
 
+  // NOW we can have conditional returns after all hooks are called
+  if (!shape || safeCount === 0) return null;
+
   return (
     <group ref={groupRef} key={`${type}-${safeCount}`}> 
       {positionsRef.current.map((position, i) => (
@@ -343,8 +350,8 @@ const OptimizedParticles: React.FC = () => {
   const geometry = useMemo(() => new THREE.SphereGeometry(0.1, 8, 6), []);
   
   const material = useMemo(() => {
-    const glowColor = globalEffects.shapeGlow.useObjectColor ? particles.color : (globalEffects.shapeGlow.customColor || particles.color);
-    const glowIntensity = globalEffects.shapeGlow.enabled ? globalEffects.shapeGlow.intensity : 0;
+    const glowColor = globalEffects?.shapeGlow?.useObjectColor ? particles.color : (globalEffects?.shapeGlow?.customColor || particles.color);
+    const glowIntensity = globalEffects?.shapeGlow?.enabled ? (globalEffects?.shapeGlow?.intensity ?? 0) : 0;
     
     return new THREE.MeshStandardMaterial({
       color: particles.color,
@@ -356,7 +363,7 @@ const OptimizedParticles: React.FC = () => {
       metalness: glowIntensity > 0 ? 0.6 : 0.1,
       roughness: glowIntensity > 0 ? 0.3 : 0.8
     });
-  }, [particles.color, safeOpacity, globalEffects.shapeGlow]);
+  }, [particles.color, safeOpacity, globalEffects?.shapeGlow]);
 
   // Generate particle positions
   const instanceData = useMemo(() => {

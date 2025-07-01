@@ -8,6 +8,7 @@ import { DashboardToggle } from '../components/DashboardToggle';
 import { GlobalDefaultsToggle } from '../components/GlobalDefaultsToggle';
 import { AIToggle } from '../components/AIToggle';
 import { AITestDashboard } from '../ai-system/components/AITestDashboard';
+import { AIIntegrationDashboard } from '../components/AIIntegrationDashboard';
 import GlobalDefaultsPanel from '../components/GlobalDefaultsManager';
 import { TrailControlPanel } from '../components/TrailControlPanel';
 import { useVisualStore } from '../store/visualStore';
@@ -19,14 +20,27 @@ export default function Home() {
   const { ui, toggleDashboards, toggleCameraPositioningMode, toggleAutoPan, loadPreset, loadPresetData, getAvailablePresets, camera } = useVisualStore();
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
   const [showAITest, setShowAITest] = useState(false);
+  const [showAINew, setShowAINew] = useState(false);
   const [showTrailControls, setShowTrailControls] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
   const [isPresetLoaded, setIsPresetLoaded] = useState(false);
+  
+  // Enable default preset loading for production
+  const skipDefaultPreset = false; // Set to true to disable default preset loading for testing
+  
+  // DEBUG: Manual store refresh function
+  const debugRefreshStore = () => {
+    console.log('🔄 Manual store refresh triggered');
+    // Force a re-render by updating a small value
+    const currentStore = useVisualStore.getState();
+    console.log('🎨 Current store state:', currentStore);
+  };
 
   // Load LANDING - Basic preset from cloud by default on first app load
   useEffect(() => {
     const loadLandingPresetFromCloud = async () => {
       try {
+        console.log('🔄 Loading default preset from cloud...');
         const response = await PresetClient.getPresets({ limit: 100 });
         const presets = response.presets;
         
@@ -34,39 +48,53 @@ export default function Home() {
         const landingPreset = presets.find(p => p.name === 'LANDING');
         
         if (landingPreset) {
+          console.log('✅ Found LANDING preset, applying...');
           // Use the new loadPresetData method to properly apply the preset
           loadPresetData(landingPreset.data);
         } else {
+          console.log('⚠️ LANDING preset not found, trying localStorage...');
           // Fallback to localStorage
           const availablePresets = getAvailablePresets();
           if (availablePresets.includes('LANDING')) {
+            console.log('✅ Found LANDING preset in localStorage, loading...');
             loadPreset('LANDING');
           } else if (availablePresets.includes('INIT')) {
+            console.log('✅ Found INIT preset in localStorage, loading...');
             loadPreset('INIT');
           } else {
+            console.log('⚠️ No default presets found, using default settings');
             // No default presets found, using default settings
           }
         }
       } catch (error) {
-        console.error('Error loading cloud preset:', error);
+        console.error('❌ Error loading cloud preset:', error);
         
         // Fallback to localStorage on error
         const availablePresets = getAvailablePresets();
         if (availablePresets.includes('LANDING')) {
+          console.log('✅ Found LANDING preset in localStorage (fallback), loading...');
           loadPreset('LANDING');
         } else if (availablePresets.includes('INIT')) {
+          console.log('✅ Found INIT preset in localStorage (fallback), loading...');
           loadPreset('INIT');
         } else {
+          console.log('⚠️ No default presets found (fallback), using default settings');
           // No default presets found, using default settings
         }
       } finally {
         // Mark preset loading as complete regardless of success/failure
+        console.log('✅ Preset loading complete');
         setIsPresetLoaded(true);
       }
     };
 
-    loadLandingPresetFromCloud();
-  }, [loadPreset, loadPresetData, getAvailablePresets]);
+    if (skipDefaultPreset) {
+      console.log('⏭️ Skipping default preset loading for testing');
+      setIsPresetLoaded(true);
+    } else {
+      loadLandingPresetFromCloud();
+    }
+  }, [loadPreset, loadPresetData, getAvailablePresets, skipDefaultPreset]);
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
@@ -91,6 +119,13 @@ export default function Home() {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* DEBUG: Manual store refresh button */}
+          <button
+            onClick={debugRefreshStore}
+            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+          >
+            🔄 Debug Store
+          </button>
           {/* Removed PerformanceIndicator */}
         </div>
       </div>
@@ -103,6 +138,8 @@ export default function Home() {
         onGlobalDefaultsToggle={() => setShowGlobalDefaults(!showGlobalDefaults)}
         isAIOpen={showAITest}
         onAIToggle={() => setShowAITest(!showAITest)}
+        isAINewOpen={showAINew}
+        onAINewToggle={() => setShowAINew(!showAINew)}
         isCameraPositioningMode={ui.cameraPositioningMode}
         isAutoPanEnabled={camera.autoPan.enabled}
         onCameraPositioningToggle={toggleCameraPositioningMode}
@@ -134,6 +171,12 @@ export default function Home() {
           <AITestDashboard />
         </div>
       )}
+
+      {/* NEW: AI Integration Dashboard - Floating Panel */}
+      <AIIntegrationDashboard 
+        isVisible={showAINew}
+        onClose={() => setShowAINew(false)}
+      />
 
       {/* Trail Control Panel */}
       <TrailControlPanel 

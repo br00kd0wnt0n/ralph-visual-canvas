@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useMemo, useEffect, useState, useCallback, useReducer } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { Html } from '@react-three/drei';
@@ -94,12 +94,17 @@ const Spheres = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
-  const { spheres } = geometric;
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
+  const { globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
+  const spheres = useVisualStore(state => state.geometric.spheres);
+  const spheresCount = useVisualStore(state => state.geometric.spheres.count);
+  const spheresColor = useVisualStore(state => state.geometric.spheres.color);
+  const spheresSize = useVisualStore(state => state.geometric.spheres.size);
   const { shapeGlow } = globalEffects;
+  
   const groupRef = useRef<THREE.Group>(null);
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
-  const renderKey = useMemo(() => `spheres-${spheres.count}-${Date.now()}`, [spheres.count]);
+  const renderKey = useMemo(() => `spheres-${spheresCount}-${Date.now()}`, [spheresCount]);
   const pulseTimeRef = useRef(0);
 
   // Get layer configuration for background mode
@@ -111,7 +116,7 @@ const Spheres = () => {
   // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
-    const safeCount = isNaN(spheres.count) || spheres.count < 0 ? 0 : spheres.count;
+    const safeCount = isNaN(spheresCount) || spheresCount < 0 ? 0 : spheresCount;
     for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 50,
@@ -120,20 +125,20 @@ const Spheres = () => {
       ));
     }
     return newPositions;
-  }, [spheres.count, spheres.size]);
+  }, [spheresCount, spheresSize]);
 
   // FIX: Memoize all geometries at once, BEFORE any conditional returns
   const geometries = useMemo(
     () => {
-      const safeCount = isNaN(spheres.count) || spheres.count < 0 ? 0 : spheres.count;
-      const safeSize = isNaN(spheres.size) || spheres.size <= 0 ? 1.0 : spheres.size;
+      const safeCount = isNaN(spheresCount) || spheresCount < 0 ? 0 : spheresCount;
+      const safeSize = isNaN(spheresSize) || spheresSize <= 0 ? 1.0 : spheresSize;
       const safeOrganicness = isNaN(spheres.organicness) || spheres.organicness < 0 ? 0 : spheres.organicness;
       
       return Array.from({ length: safeCount }, () => 
         createOrganicSphereGeometry(safeSize, safeOrganicness)
       );
     },
-    [spheres.count, spheres.size, spheres.organicness]
+    [spheresCount, spheresSize, spheres.organicness]
   );
 
   // Update positions state when generated positions change
@@ -141,26 +146,29 @@ const Spheres = () => {
     setPositions(generatedPositions);
   }, [generatedPositions]);
 
-  if (!spheres || spheres.count === 0) {
-    return null;
-  }
-
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state) => {
-    if (!groupRef.current) return;
+    // Early return if conditions aren't met
+    if (!groupRef.current || !spheres || spheresCount === 0) return;
     
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
     // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
     const scaledTime = time * timeScale * safeAnimationSpeed;
-    const waveIntensity = globalEffects.distortion.wave * 2;
-    const rippleIntensity = globalEffects.distortion.ripple * 3;
+    
+    // Add safety checks for globalEffects properties
+    const distortion = globalEffects?.distortion;
+    const waveIntensity = (distortion?.wave ?? 0) * 2;
+    const rippleIntensity = (distortion?.ripple ?? 0) * 3;
+    const distortionFrequency = distortion?.frequency ?? 1;
+    
     // Calculate final speed: individual sphere speed * global animation speed
     const finalSpeed = spheres.speed * safeAnimationSpeed;
     
     // Update pulse time for glow animation
-    if (shapeGlow.enabled && shapeGlow.pulsing) {
-      pulseTimeRef.current += state.clock.getDelta() * (shapeGlow.pulseSpeed || 1.0) * safeAnimationSpeed;
+    if (shapeGlow?.enabled && shapeGlow?.pulsing) {
+      pulseTimeRef.current += state.clock.getDelta() * (shapeGlow?.pulseSpeed ?? 1.0) * safeAnimationSpeed;
     }
     
     // Rotate the entire group with individual speed * global animation speed
@@ -176,8 +184,8 @@ const Spheres = () => {
       
       // Add wave distortion
       if (waveIntensity > 0) {
-        child.position.x = pos.x + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
-        child.position.z = pos.z + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+        child.position.x = pos.x + Math.sin(scaledTime * distortionFrequency + i) * waveIntensity;
+        child.position.z = pos.z + Math.cos(scaledTime * distortionFrequency + i * 0.5) * waveIntensity;
       } else {
         child.position.x = pos.x;
         child.position.z = pos.z;
@@ -201,25 +209,57 @@ const Spheres = () => {
       }
       
       // Animate glow pulsing for individual spheres
-      if (shapeGlow.enabled && shapeGlow.pulsing) {
+      if (shapeGlow?.enabled && shapeGlow?.pulsing) {
         const trailObjectGroup = child as THREE.Group;
         const mesh = trailObjectGroup.children[0] as THREE.Mesh;
-        const material = mesh.material as THREE.MeshStandardMaterial;
         
-        // Create pulsing effect with individual phase offset
-        const pulsePhase = pulseTimeRef.current + i * 0.5;
-        const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
-        material.emissiveIntensity = shapeGlow.intensity * 2.0 * pulseIntensity;
-        
-        // Also animate the pulsing glow mesh if it exists
-        if (trailObjectGroup.children.length > 1) {
-          const glowMesh = trailObjectGroup.children[1] as THREE.Mesh;
-          const glowMaterial = glowMesh.material as THREE.MeshBasicMaterial;
-          glowMaterial.opacity = shapeGlow.intensity * 0.3 * pulseIntensity;
+        // Safety check: ensure mesh and material exist and are of correct type
+        if (mesh && mesh.material && mesh.material instanceof THREE.MeshStandardMaterial) {
+          const material = mesh.material as THREE.MeshStandardMaterial;
+          
+          // Create pulsing effect with individual phase offset
+          const pulsePhase = pulseTimeRef.current + i * 0.5;
+          const pulseIntensity = 0.5 + 0.5 * Math.sin(pulsePhase);
+          material.emissiveIntensity = (shapeGlow?.intensity || 0) * 2.0 * pulseIntensity;
+          
+          // Also animate the pulsing glow mesh if it exists
+          if (trailObjectGroup.children.length > 1) {
+            const glowMesh = trailObjectGroup.children[1] as THREE.Mesh;
+            if (glowMesh && glowMesh.material && glowMesh.material instanceof THREE.MeshBasicMaterial) {
+              const glowMaterial = glowMesh.material as THREE.MeshBasicMaterial;
+              glowMaterial.opacity = (shapeGlow?.intensity || 0) * 0.3 * pulseIntensity;
+            }
+          }
         }
       }
     });
   });
+
+  // DEBUG: Log current sphere values
+  console.log('🎨 Spheres component - Current store values:', {
+    count: spheresCount,
+    size: spheresSize,
+    color: spheresColor,
+    speed: spheres.speed,
+    rotation: spheres.rotation,
+    opacity: spheres.opacity,
+    organicness: spheres.organicness
+  });
+
+  // TEMPORARY: Test with hardcoded values to see if component can render different counts
+  const testCount = 35; // Hardcoded test value
+  console.log('🎨 Testing with hardcoded count:', testCount);
+
+  // Force re-render when store changes
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  useEffect(() => {
+    forceUpdate();
+  }, [spheresCount, spheresColor, spheresSize]);
+
+  // NOW we can have conditional returns after all hooks are called
+  if (!spheres || spheresCount === 0) {
+    return null;
+  }
 
   // Don't render until positions are available
   if (positions.length === 0) {
@@ -234,12 +274,12 @@ const Spheres = () => {
         if (!geometry) return null;
         
         // Enhanced glow effect with better visibility
-        const glowColor = shapeGlow.useObjectColor ? spheres.color : (shapeGlow.customColor || spheres.color);
-        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        const glowColor = shapeGlow?.useObjectColor ? spheresColor : (shapeGlow?.customColor || spheresColor);
+        const glowIntensity = shapeGlow?.enabled ? shapeGlow?.intensity : 0;
         
         // Create material for this sphere with enhanced glow
         const material = new THREE.MeshStandardMaterial({
-          color: spheres.color,
+          color: spheresColor,
           emissive: new THREE.Color(glowColor),
           emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
           transparent: true,
@@ -253,10 +293,10 @@ const Spheres = () => {
         
         return (
           <TrailObject 
-            key={`sphere-${i}-${spheres.count}`} 
+            key={`sphere-${i}-${spheresCount}`} 
             id={`sphere-${i}`}
-            color={new THREE.Color(spheres.color)}
-            size={spheres.size}
+            color={new THREE.Color(spheresColor)}
+            size={spheresSize}
             velocityThreshold={0.05}
             geometry={geometry}
             material={material}
@@ -266,7 +306,7 @@ const Spheres = () => {
               <mesh geometry={geometry} material={material} />
               
               {/* Add pulsing glow effect when enabled */}
-              {shapeGlow.enabled && shapeGlow.pulsing && (
+              {shapeGlow?.enabled && shapeGlow?.pulsing && (
                 <mesh geometry={geometry} position={[0, 0, 0]}>
                   <meshBasicMaterial
                     color={glowColor}
@@ -286,7 +326,7 @@ const Spheres = () => {
 };
 
 const Cubes = () => {
-  // Helper to create unique organic geometry for each cube - MUST BE FIRST
+  // Helper to create unique organic geometry for each cube
   const createOrganicCubeGeometry = (size: number, organicness: number) => {
     // Safety checks to prevent NaN values
     const safeSize = isNaN(size) || size <= 0 ? 1.0 : size;
@@ -305,12 +345,18 @@ const Cubes = () => {
     return geometry;
   };
 
-  const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
-  const { cubes } = geometric;
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
+  const { globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
+  const cubes = useVisualStore(state => state.geometric.cubes);
+  const cubesCount = useVisualStore(state => state.geometric.cubes.count);
+  const cubesColor = useVisualStore(state => state.geometric.cubes.color);
+  const cubesSize = useVisualStore(state => state.geometric.cubes.size);
   const { shapeGlow } = globalEffects;
+  
   const groupRef = useRef<THREE.Group>(null);
   const [positions, setPositions] = useState<THREE.Vector3[]>([]);
-  const renderKey = useMemo(() => `cubes-${cubes.count}-${Date.now()}`, [cubes.count]);
+  const renderKey = useMemo(() => `cubes-${cubesCount}-${Date.now()}`, [cubesCount]);
+  const pulseTimeRef = useRef(0);
 
   // Get layer configuration for background mode
   const layerConfig = backgroundConfig.enabled ? 
@@ -321,7 +367,7 @@ const Cubes = () => {
   // Generate positions using useMemo to ensure they're available before render
   const generatedPositions = useMemo(() => {
     const newPositions: THREE.Vector3[] = [];
-    const safeCount = isNaN(cubes.count) || cubes.count < 0 ? 0 : cubes.count;
+    const safeCount = isNaN(cubesCount) || cubesCount < 0 ? 0 : cubesCount;
     for (let i = 0; i < safeCount; i++) {
       newPositions.push(new THREE.Vector3(
         (Math.random() - 0.5) * 50,
@@ -330,20 +376,20 @@ const Cubes = () => {
       ));
     }
     return newPositions;
-  }, [cubes.count, cubes.size]);
+  }, [cubesCount, cubesSize]);
 
   // FIX: Memoize all geometries at once, BEFORE any conditional returns
   const geometries = useMemo(
     () => {
-      const safeCount = isNaN(cubes.count) || cubes.count < 0 ? 0 : cubes.count;
-      const safeSize = isNaN(cubes.size) || cubes.size <= 0 ? 1.0 : cubes.size;
+      const safeCount = isNaN(cubesCount) || cubesCount < 0 ? 0 : cubesCount;
+      const safeSize = isNaN(cubesSize) || cubesSize <= 0 ? 1.0 : cubesSize;
       const safeOrganicness = isNaN(cubes.organicness) || cubes.organicness < 0 ? 0 : cubes.organicness;
       
       return Array.from({ length: safeCount }, () => 
         createOrganicCubeGeometry(safeSize, safeOrganicness)
       );
     },
-    [cubes.count, cubes.size, cubes.organicness]
+    [cubesCount, cubesSize, cubes.organicness]
   );
 
   // Update positions state when generated positions change
@@ -351,20 +397,23 @@ const Cubes = () => {
     setPositions(generatedPositions);
   }, [generatedPositions]);
 
-  if (!cubes || cubes.count === 0) {
-    return null;
-  }
-
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state) => {
-    if (!groupRef.current) return;
+    // Early return if conditions aren't met
+    if (!groupRef.current || !cubes || cubesCount === 0) return;
     
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
     // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
     const scaledTime = time * timeScale * safeAnimationSpeed;
-    const waveIntensity = globalEffects.distortion.wave * 2;
-    const rippleIntensity = globalEffects.distortion.ripple * 3;
+    
+    // Add safety checks for globalEffects properties
+    const distortion = globalEffects?.distortion;
+    const waveIntensity = (distortion?.wave ?? 0) * 2;
+    const rippleIntensity = (distortion?.ripple ?? 0) * 3;
+    const distortionFrequency = distortion?.frequency ?? 1;
+    
     // Calculate final speeds: individual cube speeds * global animation speed
     const finalRotationSpeed = cubes.rotation * safeAnimationSpeed;
     const finalMovementSpeed = cubes.speed * safeAnimationSpeed;
@@ -385,8 +434,8 @@ const Cubes = () => {
       
       // Add wave distortion on top of base movement
       if (waveIntensity > 0) {
-        child.position.x += Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
-        child.position.z += Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+        child.position.x += Math.sin(scaledTime * distortionFrequency + i) * waveIntensity;
+        child.position.z += Math.cos(scaledTime * distortionFrequency + i * 0.5) * waveIntensity;
       }
       
       // Add ripple effect
@@ -408,6 +457,28 @@ const Cubes = () => {
     });
   });
 
+  // DEBUG: Log current cube values
+  console.log('🎨 Cubes component - Current store values:', {
+    count: cubesCount,
+    size: cubesSize,
+    color: cubesColor,
+    speed: cubes.speed,
+    rotation: cubes.rotation,
+    opacity: cubes.opacity,
+    organicness: cubes.organicness
+  });
+
+  // Force re-render when store changes
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
+  useEffect(() => {
+    forceUpdate();
+  }, [cubesCount, cubesColor, cubesSize]);
+
+  // NOW we can have conditional returns after all hooks are called
+  if (!cubes || cubesCount === 0) {
+    return null;
+  }
+
   // Don't render until positions are available
   if (positions.length === 0) {
     return null;
@@ -421,12 +492,12 @@ const Cubes = () => {
         if (!geometry) return null;
         
         // Enhanced glow effect with better visibility
-        const glowColor = shapeGlow.useObjectColor ? cubes.color : (shapeGlow.customColor || cubes.color);
-        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        const glowColor = shapeGlow?.useObjectColor ? cubesColor : (shapeGlow?.customColor || cubesColor);
+        const glowIntensity = shapeGlow?.enabled ? shapeGlow?.intensity : 0;
         
         // Create material for this cube with enhanced glow
         const material = new THREE.MeshStandardMaterial({
-          color: cubes.color,
+          color: cubesColor,
           emissive: new THREE.Color(glowColor),
           emissiveIntensity: glowIntensity * 2.0, // Much stronger glow
           transparent: true,
@@ -440,10 +511,10 @@ const Cubes = () => {
         
         return (
           <TrailObject 
-            key={`cube-${i}-${cubes.count}`} 
+            key={`cube-${i}-${cubesCount}`} 
             id={`cube-${i}`}
-            color={new THREE.Color(cubes.color)}
-            size={cubes.size}
+            color={new THREE.Color(cubesColor)}
+            size={cubesSize}
             velocityThreshold={0.05}
             geometry={geometry}
             material={material}
@@ -453,7 +524,7 @@ const Cubes = () => {
               <mesh geometry={geometry} material={material} />
               
               {/* Add pulsing glow effect when enabled */}
-              {shapeGlow.enabled && shapeGlow.pulsing && (
+              {shapeGlow?.enabled && shapeGlow?.pulsing && (
                 <mesh geometry={geometry} position={[0, 0, 0]}>
                   <meshBasicMaterial
                     color={glowColor}
@@ -492,6 +563,7 @@ const Toruses = () => {
     return geometry;
   };
 
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { geometric, globalEffects, backgroundConfig, globalAnimationSpeed } = useVisualStore();
   const { toruses } = geometric;
   const { shapeGlow } = globalEffects;
@@ -538,20 +610,23 @@ const Toruses = () => {
     setPositions(generatedPositions);
   }, [generatedPositions]);
 
-  if (!toruses || toruses.count === 0) {
-    return null;
-  }
-
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state) => {
-    if (!groupRef.current) return;
+    // Early return if conditions aren't met
+    if (!groupRef.current || !toruses || toruses.count === 0) return;
     
     const time = state.clock.elapsedTime;
     const timeScale = backgroundConfig.timeScale;
     // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
     const scaledTime = time * timeScale * safeAnimationSpeed;
-    const waveIntensity = globalEffects.distortion.wave * 2;
-    const rippleIntensity = globalEffects.distortion.ripple * 3;
+    
+    // Add safety checks for globalEffects properties
+    const distortion = globalEffects?.distortion;
+    const waveIntensity = (distortion?.wave ?? 0) * 2;
+    const rippleIntensity = (distortion?.ripple ?? 0) * 3;
+    const distortionFrequency = distortion?.frequency ?? 1;
+    
     // Calculate final rotation speed: individual torus rotation * global animation speed
     const finalRotationSpeed = toruses.speed * safeAnimationSpeed;
     
@@ -568,8 +643,8 @@ const Toruses = () => {
       
       // Add wave distortion
       if (waveIntensity > 0) {
-        child.position.x = pos.x + Math.sin(scaledTime * globalEffects.distortion.frequency + i) * waveIntensity;
-        child.position.z = pos.z + Math.cos(scaledTime * globalEffects.distortion.frequency + i * 0.5) * waveIntensity;
+        child.position.x = pos.x + Math.sin(scaledTime * distortionFrequency + i) * waveIntensity;
+        child.position.z = pos.z + Math.cos(scaledTime * distortionFrequency + i * 0.5) * waveIntensity;
       } else {
         child.position.x = pos.x;
         child.position.z = pos.z;
@@ -594,6 +669,11 @@ const Toruses = () => {
     });
   });
 
+  // NOW we can have conditional returns after all hooks are called
+  if (!toruses || toruses.count === 0) {
+    return null;
+  }
+
   // Don't render until positions are available
   if (positions.length === 0) {
     return null;
@@ -607,8 +687,8 @@ const Toruses = () => {
         if (!geometry) return null;
         
         // Enhanced glow effect with better visibility
-        const glowColor = shapeGlow.useObjectColor ? toruses.color : (shapeGlow.customColor || toruses.color);
-        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        const glowColor = shapeGlow?.useObjectColor ? toruses.color : (shapeGlow?.customColor || toruses.color);
+        const glowIntensity = shapeGlow?.enabled ? shapeGlow?.intensity : 0;
         
         // Create material for this torus with enhanced glow
         const material = new THREE.MeshStandardMaterial({
@@ -639,7 +719,7 @@ const Toruses = () => {
               <mesh geometry={geometry} material={material} />
               
               {/* Add pulsing glow effect when enabled */}
-              {shapeGlow.enabled && shapeGlow.pulsing && (
+              {shapeGlow?.enabled && shapeGlow?.pulsing && (
                 <mesh geometry={geometry} position={[0, 0, 0]}>
                   <meshBasicMaterial
                     color={glowColor}
@@ -700,7 +780,11 @@ const Particles = () => {
     // Safety check: clamp global animation speed to prevent crashes
     const safeAnimationSpeed = Math.max(0.01, Math.min(5.0, globalAnimationSpeed));
     const scaledTime = time * timeScale * safeAnimationSpeed;
-    const turbulence = globalEffects.particleInteraction.turbulence;
+    
+    // Add safety checks for globalEffects properties
+    const particleInteraction = globalEffects?.particleInteraction;
+    const turbulence = particleInteraction?.turbulence ?? 0;
+    
     // Calculate final speed: individual particle speed * global animation speed
     const finalSpeed = safeSpeed * safeAnimationSpeed;
     
@@ -741,9 +825,9 @@ const Particles = () => {
       {generatedPositions.map((pos, i) => {
         const geometry = new THREE.SphereGeometry(0.1, 8, 6);
         
-        // Enhanced glow effect for particles
-        const glowColor = shapeGlow.useObjectColor ? particles.color : (shapeGlow.customColor || particles.color);
-        const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+        // Enhanced glow effect for particles with safety checks
+        const glowColor = shapeGlow?.useObjectColor ? particles.color : (shapeGlow?.customColor || particles.color);
+        const glowIntensity = shapeGlow?.enabled ? (shapeGlow?.intensity ?? 0) : 0;
         
         const material = new THREE.MeshStandardMaterial({
           color: particles.color,
@@ -779,7 +863,7 @@ const Particles = () => {
               />
               
               {/* Add pulsing glow effect when enabled */}
-              {shapeGlow.enabled && shapeGlow.pulsing && (
+              {shapeGlow?.enabled && shapeGlow?.pulsing && (
                 <mesh geometry={geometry} position={[0, 0, 0]}>
                   <meshBasicMaterial
                     color={glowColor}
@@ -800,9 +884,9 @@ const Particles = () => {
 
 const VolumetricFog = () => {
   const { globalEffects } = useVisualStore();
-  const { volumetric } = globalEffects;
+  const volumetric = globalEffects?.volumetric;
 
-  if (!volumetric.enabled || volumetric.fog <= 0) {
+  if (!volumetric?.enabled || (volumetric?.fog ?? 0) <= 0) {
     return null;
   }
 
@@ -810,15 +894,15 @@ const VolumetricFog = () => {
   // Fog: 0-1 range, Density: 0-2 range
   // Lower fog distance = more fog (objects fade out sooner)
   const baseDistance = 50;
-  const fogMultiplier = 1 + (volumetric.fog * 4); // 1 to 5
-  const densityMultiplier = 1 + (volumetric.density * 2); // 1 to 5
+  const fogMultiplier = 1 + ((volumetric?.fog ?? 0) * 4); // 1 to 5
+  const densityMultiplier = 1 + ((volumetric?.density ?? 0.5) * 2); // 1 to 5
   const fogDistance = baseDistance / (fogMultiplier * densityMultiplier);
   
   return (
     <>
       <fog
         attach="fog"
-        args={[volumetric.color, 1, fogDistance]}
+        args={[volumetric?.color ?? '#4169e1', 1, fogDistance]}
         near={1}
         far={50}
       />
@@ -828,35 +912,51 @@ const VolumetricFog = () => {
 };
 
 const Scene = () => {
-  const { geometric, globalEffects, backgroundConfig } = useVisualStore();
-  const { blobs, waveInterference, metamorphosis, fireflies, layeredSineWaves } = geometric;
-  const { trails } = globalEffects;
-
+  const { effects, globalEffects, background, globalAnimationSpeed } = useVisualStore();
+  
+  // DEBUG: Log current effects values
+  console.log('🎨 Scene component - Current store values:', {
+    effects: effects,
+    globalEffects: {
+      atmosphericBlur: globalEffects?.atmosphericBlur,
+      volumetric: globalEffects?.volumetric,
+      distortion: globalEffects?.distortion
+    },
+    background: background,
+    globalAnimationSpeed: globalAnimationSpeed
+  });
+  
   return (
     <>
+      {/* Background */}
+      <color attach="background" args={[background.color]} />
+      
       {/* Lighting */}
       <ambientLight intensity={0.4} />
-      <directionalLight position={[10, 10, 5]} intensity={0.8} />
+      <directionalLight position={[10, 10, 5]} intensity={1} />
       <pointLight position={[-10, -10, -5]} intensity={0.5} />
-      
-      {/* 3D Trail Renderer - only when trails are enabled */}
-      {trails.enabled && <TrailRenderer />}
-      
-      {/* Geometric Objects */}
-      <OptimizedGeometricSystem />
       
       {/* Volumetric Fog */}
       <VolumetricFog />
       
-      {/* Special Effects */}
-      {blobs.count > 0 && <Blobs />}
-      {globalEffects.waveInterference.enabled && <WaveInterference />}
-      {globalEffects.metamorphosis.enabled && <Metamorphosis />}
-      {globalEffects.fireflies.enabled && <Fireflies />}
-      {globalEffects.layeredSineWaves.enabled && <LayeredSineWaves />}
+      {/* Geometric Objects */}
+      <Spheres />
+      <Cubes />
+      <Toruses />
+      <Blobs />
       
-      {/* Object Trails */}
-      {trails.enabled && <ObjectTrails />}
+      {/* Particles */}
+      <Particles />
+      
+      {/* Special Effects */}
+      <WaveInterference />
+      <Metamorphosis />
+      <Fireflies />
+      <LayeredSineWaves />
+      
+      {/* Trail System */}
+      <TrailRenderer />
+      <ObjectTrails />
     </>
   );
 };
@@ -906,6 +1006,7 @@ const CameraSync = () => {
 
 // NEW: Camera Controls Component for positioning mode
 const CameraControls = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { camera, ui, updateCamera } = useVisualStore();
   const controlsRef = useRef<any>(null);
   const three = useThree();
@@ -964,6 +1065,7 @@ const CameraControls = () => {
     }
   });
 
+  // NOW we can have conditional returns after all hooks are called
   if (!ui.cameraPositioningMode) return null;
 
   return (
@@ -1051,8 +1153,10 @@ const AutoPanSystem = () => {
 
 // Auto-pan indicator component with speed selector
 const AutoPanIndicator = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { camera, updateCamera } = useVisualStore();
-  
+
+  // NOW we can have conditional returns after all hooks are called
   if (!camera.autoPan.enabled) return null;
 
   const speedOptions = [
@@ -1137,8 +1241,83 @@ const AutoPanIndicator = () => {
 
 const EnhancedVisualCanvas = () => {
   const visualStore = useVisualStore();
-  const { globalEffects, effects, camera, backgroundConfig, ui, globalBlendMode } = visualStore;
-  const { chromatic, volumetric, atmosphericBlur, colorBlending, distortion } = globalEffects;
+  
+  // Add safety check for store initialization
+  if (!visualStore) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <div className="text-white text-lg">Initializing Store...</div>
+        </div>
+      </div>
+    );
+  }
+  
+  const { globalEffects, effects, camera, backgroundConfig, ui, globalBlendMode } = visualStore || {};
+  
+  // Add safety checks for potentially undefined properties
+  const chromatic = globalEffects?.chromatic || {
+    enabled: false,
+    aberration: 0,
+    aberrationColors: { red: '#ff0000', green: '#00ff00', blue: '#0000ff' },
+    rainbow: { enabled: false, intensity: 0, speed: 1, rotation: 0, blendMode: 'normal', colors: [], opacity: 0 },
+    prism: 0
+  };
+  const volumetric = globalEffects?.volumetric || {
+    enabled: false,
+    fog: 0,
+    lightShafts: 0,
+    density: 0,
+    color: '#ffffff'
+  };
+  const atmosphericBlur = globalEffects?.atmosphericBlur || {
+    enabled: false,
+    intensity: 0,
+    layers: 1
+  };
+  const colorBlending = globalEffects?.colorBlending || {
+    enabled: false,
+    mode: 'screen',
+    intensity: 0
+  };
+  const distortion = globalEffects?.distortion || {
+    enabled: false,
+    wave: 0,
+    ripple: 0,
+    noise: 0,
+    frequency: 1
+  };
+  
+  // Add safety checks for other properties
+  const safeEffects = effects || {
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+    glow: 0,
+    vignette: 0
+  };
+  
+  // Use actual camera state from store, with proper fallback for depthOfField
+  const safeCamera = {
+    ...camera,
+    depthOfField: camera?.depthOfField || { enabled: false, focusDistance: 10, focalLength: 50, bokehScale: 1, blur: 0.5 }
+  };
+  
+  const safeBackgroundConfig = backgroundConfig || {
+    enabled: false,
+    timeScale: 1
+  };
+  
+  const safeUI = ui || {
+    cameraPositioningMode: false
+  };
+  
+  const safeGlobalBlendMode = globalBlendMode || {
+    mode: 'normal',
+    opacity: 0
+  };
+  
   const [canvasReady, setCanvasReady] = useState(false);
   
   // WebGL context event handlers
@@ -1172,28 +1351,31 @@ const EnhancedVisualCanvas = () => {
   // Handle ESC key to exit camera positioning mode
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && ui.cameraPositioningMode) {
+      if (event.key === 'Escape' && safeUI.cameraPositioningMode) {
         visualStore.setCameraPositioningMode(false);
       }
     };
 
-    if (ui.cameraPositioningMode) {
+    if (safeUI.cameraPositioningMode) {
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
-  }, [ui.cameraPositioningMode]);
+  }, [safeUI.cameraPositioningMode]);
 
   // Create depth of field layer - MOVED INSIDE COMPONENT
   const depthOfFieldLayer = useMemo(() => {
-    if (!camera.depthOfField.enabled) {
+    if (!safeCamera.depthOfField?.enabled) {
       return null;
     }
 
-    const { focusDistance, focalLength, bokehScale, blur } = camera.depthOfField;
+    const { focusDistance, focalLength, bokehScale, blur } = safeCamera.depthOfField;
+    
+    // Debug logging to verify values are updating
+    console.log('🎯 Depth of Field Update:', { focusDistance, focalLength, bokehScale, blur });
     
     // Calculate blur intensity based on depth of field settings
-    const blurIntensity = blur * bokehScale * 10; // Much stronger for visibility
-    const focusRange = focalLength * 0.3; // Larger focus range
+    const blurIntensity = blur * bokehScale * 20; // Increased from 10 to 20 for more visibility
+    const focusRange = focalLength * 0.5; // Increased from 0.3 to 0.5 for larger focus range
     
     // Create multiple layers for more dramatic effect
     return (
@@ -1204,7 +1386,7 @@ const EnhancedVisualCanvas = () => {
           inset: 0,
           background: 'transparent',
           backdropFilter: `blur(${blurIntensity}px)`,
-          opacity: 0.8, // High opacity for visibility
+          opacity: 0.95, // Increased from 0.8 to 0.95 for more visibility
           pointerEvents: 'none',
           zIndex: 5,
           // Create a radial gradient that simulates depth of field
@@ -1224,7 +1406,7 @@ const EnhancedVisualCanvas = () => {
           inset: 0,
           background: 'transparent',
           backdropFilter: `blur(${blurIntensity * 0.5}px)`,
-          opacity: 0.4,
+          opacity: 0.7, // Increased from 0.4 to 0.7 for more visibility
           pointerEvents: 'none',
           zIndex: 6,
           mixBlendMode: 'overlay',
@@ -1239,7 +1421,7 @@ const EnhancedVisualCanvas = () => {
         }} />
       </>
     );
-  }, [camera.depthOfField]);
+  }, [safeCamera.depthOfField]);
 
   // Create atmospheric blur layers
   const atmosphericBlurLayers = useMemo(() => {
@@ -1427,13 +1609,13 @@ const EnhancedVisualCanvas = () => {
 
   // Post-processing overlay for brightness and vignette
   const postProcessingOverlay = useMemo(() => {
-    if (effects.vignette <= 0) {
+    if (safeEffects.vignette <= 0) {
       return null;
     }
     
-    const gradientStart = Math.max(20, 100 - (effects.vignette * 60));
+    const gradientStart = Math.max(20, 100 - (safeEffects.vignette * 60));
     const gradientEnd = 100;
-    const opacity = Math.min(1, effects.vignette * 1.5);
+    const opacity = Math.min(1, safeEffects.vignette * 1.5);
     
     return (
       <div
@@ -1447,11 +1629,11 @@ const EnhancedVisualCanvas = () => {
         }}
       />
     );
-  }, [effects.vignette]);
+  }, [safeEffects.vignette]);
 
   // Create bloom effect using CSS layers
   const bloomLayer = useMemo(() => {
-    const bloom = GLOBAL_DEFAULTS.visual.bloom;
+    const bloom = GLOBAL_DEFAULTS?.visual?.bloom;
     if (!bloom) {
       return null;
     }
@@ -1484,25 +1666,25 @@ const EnhancedVisualCanvas = () => {
         />
       </>
     );
-  }, [GLOBAL_DEFAULTS.visual.bloom]);
+  }, [GLOBAL_DEFAULTS?.visual?.bloom]);
 
   // Global blend mode overlay - FIXED IMPLEMENTATION
   const blendModeOverlay = useMemo(() => {
-    if (!globalBlendMode || globalBlendMode.mode === 'normal' || globalBlendMode.opacity <= 0) {
+    if (!safeGlobalBlendMode || safeGlobalBlendMode.mode === 'normal' || safeGlobalBlendMode.opacity <= 0) {
       return null;
     }
     
     // Create a colored overlay for blend modes
     let overlayColor = 'white';
-    if (globalBlendMode.mode === 'multiply') {
+    if (safeGlobalBlendMode.mode === 'multiply') {
       overlayColor = '#808080'; // Gray for multiply
-    } else if (globalBlendMode.mode === 'screen') {
+    } else if (safeGlobalBlendMode.mode === 'screen') {
       overlayColor = '#404040'; // Dark gray for screen
-    } else if (globalBlendMode.mode === 'overlay') {
+    } else if (safeGlobalBlendMode.mode === 'overlay') {
       overlayColor = '#606060'; // Medium gray for overlay
-    } else if (globalBlendMode.mode === 'color-dodge') {
+    } else if (safeGlobalBlendMode.mode === 'color-dodge') {
       overlayColor = '#202020'; // Very dark for color dodge
-    } else if (globalBlendMode.mode === 'color-burn') {
+    } else if (safeGlobalBlendMode.mode === 'color-burn') {
       overlayColor = '#a0a0a0'; // Light gray for color burn
     }
     
@@ -1514,38 +1696,38 @@ const EnhancedVisualCanvas = () => {
           pointerEvents: 'none',
           zIndex: 9999,
           background: overlayColor,
-          mixBlendMode: globalBlendMode.mode as any,
-          opacity: globalBlendMode.opacity,
+          mixBlendMode: safeGlobalBlendMode.mode as any,
+          opacity: safeGlobalBlendMode.opacity,
           transition: 'opacity 0.3s',
         }}
       />
     );
-  }, [globalBlendMode]);
+  }, [safeGlobalBlendMode]);
 
   // Optimize Canvas style calculation
   const canvasStyle: React.CSSProperties = useMemo(() => {
     const filters = [];
     
     // Add brightness filter (should always work)
-    if (effects.brightness !== 1) {
-      filters.push(`brightness(${effects.brightness})`);
+    if (safeEffects.brightness !== 1) {
+      filters.push(`brightness(${safeEffects.brightness})`);
     }
     
     // Add contrast filter
-    if (effects.contrast !== 1) {
-      filters.push(`contrast(${effects.contrast})`);
+    if (safeEffects.contrast !== 1) {
+      filters.push(`contrast(${safeEffects.contrast})`);
     }
     
     // Add saturation filter
-    if (effects.saturation !== 1) {
-      filters.push(`saturate(${effects.saturation})`);
+    if (safeEffects.saturation !== 1) {
+      filters.push(`saturate(${safeEffects.saturation})`);
     }
     
     // Add glow filter
-    if (effects.glow > 0) {
+    if (safeEffects.glow > 0) {
       // Glow effect using drop-shadow filter
-      const glowIntensity = effects.glow * 2; // Scale up for visibility
-      filters.push(`drop-shadow(0 0 ${glowIntensity}px rgba(255, 255, 255, ${effects.glow * 0.5}))`);
+      const glowIntensity = safeEffects.glow * 2; // Scale up for visibility
+      filters.push(`drop-shadow(0 0 ${glowIntensity}px rgba(255, 255, 255, ${safeEffects.glow * 0.5}))`);
     }
     
     // Add atmospheric blur filter
@@ -1568,7 +1750,7 @@ const EnhancedVisualCanvas = () => {
       willChange: 'filter, opacity',
       isolation: 'isolate'
     };
-  }, [effects.brightness, effects.contrast, effects.saturation, effects.glow, atmosphericBlur.enabled, atmosphericBlur.intensity, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
+  }, [safeEffects.brightness, safeEffects.contrast, safeEffects.saturation, safeEffects.glow, atmosphericBlur.enabled, atmosphericBlur.intensity, chromatic.enabled, chromatic.prism, colorBlending.enabled, colorBlending.mode, colorBlending.intensity]);
   
   if (!canvasReady) {
     return <div>Initializing Canvas...</div>;
@@ -1580,145 +1762,158 @@ const EnhancedVisualCanvas = () => {
     // Background-specific styles are now applied directly in Canvas style prop
   };
 
-  return (
-    <CanvasErrorBoundary>
-      <WebGLContextManager>
-        <div className={styles.canvasContainer}>
-          {aberrationLayers}
-          {rainbowLayer}
-          {fogLayer}
-          {atmosphericBlurLayers}
-          {postProcessingOverlay}
-          {bloomLayer}
-          {blendModeOverlay}
-          
-          {/* Company Logo Overlay */}
-          <CompanyLogo />
-          
-          {/* Camera Positioning Mode Indicator */}
-          {ui.cameraPositioningMode && !camera.autoPan.enabled && (
-            <div style={{
-              position: 'absolute',
-              top: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(0, 0, 0, 0.8)',
-              color: '#00ff00',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              zIndex: 10000,
-              border: '2px solid #00ff00',
-              backdropFilter: 'blur(10px)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
+  try {
+    return (
+      <CanvasErrorBoundary>
+        <WebGLContextManager>
+          <div className={styles.canvasContainer}>
+            {aberrationLayers}
+            {rainbowLayer}
+            {fogLayer}
+            {atmosphericBlurLayers}
+            {depthOfFieldLayer}
+            {postProcessingOverlay}
+            {bloomLayer}
+            {blendModeOverlay}
+            
+            {/* Company Logo Overlay */}
+            <CompanyLogo />
+            
+            {/* Camera Positioning Mode Indicator */}
+            {safeUI.cameraPositioningMode && !safeCamera.autoPan?.enabled && (
               <div style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: '#00ff00',
-                animation: 'pulse 1.5s infinite'
-              }} />
-              Camera Positioning Mode Active
-              <div style={{
-                fontSize: '12px',
-                opacity: 0.8,
-                marginLeft: '8px'
+                position: 'absolute',
+                top: '20px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'rgba(0, 0, 0, 0.8)',
+                color: '#00ff00',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                zIndex: 10000,
+                border: '2px solid #00ff00',
+                backdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                Click and drag to move • Scroll to zoom • ESC to exit
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#00ff00',
+                  animation: 'pulse 1.5s infinite'
+                }} />
+                Camera Positioning Mode Active
+                <div style={{
+                  fontSize: '12px',
+                  opacity: 0.8,
+                  marginLeft: '8px'
+                }}>
+                  Click and drag to move • Scroll to zoom • ESC to exit
+                </div>
               </div>
-            </div>
-          )}
-          
-          {/* Auto Pan Indicator */}
-          <AutoPanIndicator />
-          
-          <Canvas
-            camera={{ 
-              position: [0, 0, 25], // Default position - CameraSync will override this
-              fov: 60, // Default FOV - CameraSync will override this
-              near: 0.1,
-              far: 2000 // Keep the increased far clipping for the extreme distance
-            }}
-            onCreated={({ gl }) => {
-              // Set WebGL context attributes for better performance
-              gl.setClearColor(0x000000, 0);
-              gl.autoClear = false;
-              gl.autoClearColor = false;
-              gl.autoClearDepth = false;
-              gl.autoClearStencil = false;
-              
-              // Add a longer delay to ensure WebGL context is fully initialized
-              // React Three Fiber needs more time to properly set up the context
-              // Retry mechanism for WebGL optimization
-              let attempts = 0;
-              const maxAttempts = 3;
-              
-              const tryOptimizeWebGL = () => {
-                attempts++;
-                try {
-                  const optimizationResult = performanceOptimizer.optimizeWebGLContext(gl);
-                  if (optimizationResult) {
-                    return; // Success, stop retrying
-                  } else {
-                    console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
-                  }
-                } catch (error) {
-                  console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
-                }
+            )}
+            
+            {/* Auto Pan Indicator */}
+            <AutoPanIndicator />
+            
+            <Canvas
+              camera={{ 
+                position: [0, 0, 25], // Default position - CameraSync will override this
+                fov: 60, // Default FOV - CameraSync will override this
+                near: 0.1,
+                far: 2000 // Keep the increased far clipping for the extreme distance
+              }}
+              onCreated={({ gl }) => {
+                // Set WebGL context attributes for better performance
+                gl.setClearColor(0x000000, 0);
+                gl.autoClear = false;
+                gl.autoClearColor = false;
+                gl.autoClearDepth = false;
+                gl.autoClearStencil = false;
                 
-                // Retry with exponential backoff if we haven't reached max attempts
-                if (attempts < maxAttempts) {
-                  const delay = Math.pow(2, attempts) * 500; // 500ms, 1000ms, 2000ms
-                  setTimeout(tryOptimizeWebGL, delay);
-                } else {
-                  console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
-                }
-              };
-              
-              // Start the optimization process with initial delay
-              setTimeout(tryOptimizeWebGL, 500);
-              
-              const canvas = gl.domElement;
-              canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
-              canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
-              
-              // Add error handling for WebGL errors
-              const handleWebGLError = (event: Event) => {
-                console.warn('WebGL error detected:', event);
-              };
-              
-              canvas.addEventListener('webglcontextlost', handleWebGLError);
-            }}
-            onError={(error) => {
-              console.error('Canvas error:', error);
-              setCanvasReady(false);
-            }}
-            style={{
-              ...canvasStyleWithBackground,
-              ...(backgroundConfig.enabled && {
-                position: 'fixed' as const,
-                top: 0,
-                left: 0,
-                zIndex: -1,
-                filter: backgroundConfig.mode === 'modalFriendly' ? 'saturate(1.2) contrast(1.1)' : 'none',
-                pointerEvents: backgroundConfig.mode === 'modalFriendly' ? 'none' as const : 'auto' as const,
-                border: backgroundConfig.camera.fixed ? '4px solid rgba(255, 255, 0, 0.3)' : 'none'
-              })
-            }}
-          >
-            <CameraSync />
-            <CameraControls />
-            <AutoPanSystem />
-            <Scene />
-          </Canvas>
+                // Add a longer delay to ensure WebGL context is fully initialized
+                // React Three Fiber needs more time to properly set up the context
+                // Retry mechanism for WebGL optimization
+                let attempts = 0;
+                const maxAttempts = 3;
+                
+                const tryOptimizeWebGL = () => {
+                  attempts++;
+                  try {
+                    const optimizationResult = performanceOptimizer.optimizeWebGLContext(gl);
+                    if (optimizationResult) {
+                      return; // Success, stop retrying
+                    } else {
+                      console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
+                    }
+                  } catch (error) {
+                    console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
+                  }
+                  
+                  // Retry with exponential backoff if we haven't reached max attempts
+                  if (attempts < maxAttempts) {
+                    const delay = Math.pow(2, attempts) * 500; // 500ms, 1000ms, 2000ms
+                    setTimeout(tryOptimizeWebGL, delay);
+                  } else {
+                    console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
+                  }
+                };
+                
+                // Start the optimization process with initial delay
+                setTimeout(tryOptimizeWebGL, 500);
+                
+                const canvas = gl.domElement;
+                canvas.addEventListener('webglcontextlost', handleWebGLContextLost);
+                canvas.addEventListener('webglcontextrestored', handleWebGLContextRestored);
+                
+                // Add error handling for WebGL errors
+                const handleWebGLError = (event: Event) => {
+                  console.warn('WebGL error detected:', event);
+                };
+                
+                canvas.addEventListener('webglcontextlost', handleWebGLError);
+              }}
+              onError={(error) => {
+                console.error('Canvas error:', error);
+                setCanvasReady(false);
+              }}
+              style={{
+                ...canvasStyleWithBackground,
+                ...(safeBackgroundConfig.enabled && {
+                  position: 'fixed' as const,
+                  top: 0,
+                  left: 0,
+                  zIndex: -1,
+                  filter: safeBackgroundConfig.mode === 'modalFriendly' ? 'saturate(1.2) contrast(1.1)' : 'none',
+                  pointerEvents: safeBackgroundConfig.mode === 'modalFriendly' ? 'none' as const : 'auto' as const,
+                  border: safeBackgroundConfig.camera?.fixed ? '4px solid rgba(255, 255, 0, 0.3)' : 'none'
+                })
+              }}
+            >
+              <CameraSync />
+              <CameraControls />
+              <AutoPanSystem />
+              <Scene />
+            </Canvas>
+          </div>
+        </WebGLContextManager>
+      </CanvasErrorBoundary>
+    );
+  } catch (error) {
+    console.error('Error rendering EnhancedVisualCanvas:', error);
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-lg mb-4">Canvas Error</div>
+          <div className="text-gray-400 text-sm">Please refresh the page</div>
         </div>
-      </WebGLContextManager>
-    </CanvasErrorBoundary>
-  );
+      </div>
+    );
+  }
 };
 
 export default EnhancedVisualCanvas;

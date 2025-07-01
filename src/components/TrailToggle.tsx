@@ -8,7 +8,10 @@ interface TrailToggleProps {
 
 export const TrailToggle: React.FC<TrailToggleProps> = ({ isOpen, onToggle }) => {
   const { globalEffects } = useVisualStore();
-  const { trails } = globalEffects;
+  
+  // Add safety checks to prevent undefined access
+  const trails = globalEffects?.trails;
+  const isTrailsEnabled = trails?.enabled ?? false;
 
   return (
     <button
@@ -41,7 +44,7 @@ export const TrailToggle: React.FC<TrailToggleProps> = ({ isOpen, onToggle }) =>
         width: 8, 
         height: 8, 
         borderRadius: '50%', 
-        background: trails.enabled ? '#10b981' : '#6b7280',
+        background: isTrailsEnabled ? '#10b981' : '#6b7280',
         border: '1px solid rgba(0,0,0,0.3)',
         transition: 'background 0.3s ease'
       }} />

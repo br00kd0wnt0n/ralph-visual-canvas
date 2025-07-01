@@ -70,6 +70,7 @@ const arePropsEqual = (prevProps: {}, nextProps: {}) => {
 };
 
 const WaveInterferenceComponent = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { waveInterference } = globalEffects;
   const meshRef = useRef<THREE.Mesh>(null);
@@ -361,7 +362,9 @@ const WaveInterferenceComponent = () => {
     waveInterference?.edgeFade
   ]);
 
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state, delta) => {
+    // Early return if conditions aren't met
     if (!waveInterference?.enabled || !meshRef.current) return;
 
     const speed = waveInterference.speed || 0.5;
@@ -388,6 +391,7 @@ const WaveInterferenceComponent = () => {
     }
   });
 
+  // NOW we can have conditional returns after all hooks are called
   if (!waveInterference?.enabled) return null;
 
   return (

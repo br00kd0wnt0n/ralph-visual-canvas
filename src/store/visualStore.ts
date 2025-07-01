@@ -1,5 +1,15 @@
 import { create } from 'zustand';
 import type { StateCreator } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { 
+  ThemeAnalysis, 
+  VisualCharacteristics, 
+  WeatherData, 
+  WeatherMappings,
+  EnhancedColorPalette, 
+  ColorHarmonyConfig,
+  PerformanceMetrics 
+} from '../types/unified';
 
 // Add new interface (doesn't break existing code)
 interface BackgroundConfig {
@@ -428,6 +438,52 @@ export interface VisualState {
     opacity: number; // Allow any number for opacity
   },
 
+  // AI Integration (optional - doesn't break existing functionality)
+  ai?: {
+    enabled: boolean;
+    
+    // Core AI System Integration
+    analysis?: {
+      theme: string;
+      mood: string[];
+      confidence: number;
+      weatherData?: WeatherData;
+      visualCharacteristics: VisualCharacteristics;
+      lastUpdated: Date;
+    };
+    
+    // Enhanced AI System Integration
+    colorHarmony?: {
+      palette: EnhancedColorPalette;
+      harmonyConfig: ColorHarmonyConfig;
+      lastGenerated: Date;
+      performanceMetrics: PerformanceMetrics;
+    };
+    
+    // Weather Integration
+    weatherIntegration?: {
+      enabled: boolean;
+      currentWeather: WeatherData;
+      weatherMappings: WeatherMappings;
+      lastUpdated: Date;
+    };
+    
+    // AI System Status
+    status: {
+      coreAI: 'idle' | 'analyzing' | 'error';
+      enhancedAI: 'idle' | 'generating' | 'error';
+      weatherService: 'idle' | 'fetching' | 'error';
+    };
+    
+    // Feature Flags
+    features: {
+      weatherIntegration: boolean;
+      colorHarmony: boolean;
+      themeAnalysis: boolean;
+      parameterInterpolation: boolean;
+    };
+  };
+
   location: string;
   error?: Error | null;
 }
@@ -466,6 +522,20 @@ export interface VisualActions {
   setCanvasError: (error: Error | null) => void;
   clearCanvasError: () => void;
   updateAutoPanAngle: (newAngle: number) => void; // NEW: Function to update only auto-pan angle without affecting enabled state
+
+  // AI Integration Actions
+  toggleAI: () => void;
+  setAIEnabled: (enabled: boolean) => void;
+  updateAIAnalysis: (analysis: NonNullable<VisualState['ai']>['analysis']) => void;
+  updateAIColorHarmony: (colorHarmony: NonNullable<VisualState['ai']>['colorHarmony']) => void;
+  updateAIWeatherIntegration: (weatherIntegration: NonNullable<VisualState['ai']>['weatherIntegration']) => void;
+  updateAIStatus: (status: NonNullable<VisualState['ai']>['status']) => void;
+  updateAIFeatures: (features: NonNullable<VisualState['ai']>['features']) => void;
+  applyAIThemeAnalysis: (themeAnalysis: ThemeAnalysis) => void;
+  applyEnhancedColorPalette: (colorPalette: EnhancedColorPalette) => void;
+  clearAIAnalysis: () => void;
+  clearAIColorHarmony: () => void;
+  clearAIWeatherIntegration: () => void;
 }
 
 // Update the VisualPreset type to use VisualState
@@ -556,7 +626,7 @@ export const GLOBAL_DEFAULTS = {
   
   // Logo defaults
   logo: {
-    enabled: true,
+    enabled: false,
     size: 800,
     position: {
       x: 'center' as const, // 'left', 'center', 'right'
@@ -1024,624 +1094,1041 @@ const defaultState: VisualState = {
 
 type Store = VisualState & VisualActions;
 
-export const useVisualStore = create<Store>((set, get) => ({
-  ...defaultState,
+export const useVisualStore = create<Store>()(
+  persist(
+    (set, get) => ({
+      ...defaultState,
 
-  toggleDashboards: () => {
-    set((state) => ({
-      ui: { ...state.ui, showDashboards: !state.ui.showDashboards }
-    }));
-  },
+      toggleDashboards: () => {
+        set((state) => ({
+          ui: { ...state.ui, showDashboards: !state.ui.showDashboards }
+        }));
+      },
 
-  setDashboardsVisible: (visible: boolean) => {
-    set((state) => ({
-      ui: { ...state.ui, showDashboards: visible }
-    }));
-  },
+      setDashboardsVisible: (visible: boolean) => {
+        set((state) => ({
+          ui: { ...state.ui, showDashboards: visible }
+        }));
+      },
 
-  toggleCameraPositioningMode: () => {
-    set((state) => ({
-      ui: { ...state.ui, cameraPositioningMode: !state.ui.cameraPositioningMode }
-    }));
-  },
+      toggleCameraPositioningMode: () => {
+        set((state) => ({
+          ui: { ...state.ui, cameraPositioningMode: !state.ui.cameraPositioningMode }
+        }));
+      },
 
-  setCameraPositioningMode: (enabled: boolean) => {
-    set((state) => ({
-      ui: { ...state.ui, cameraPositioningMode: enabled }
-    }));
-  },
+      setCameraPositioningMode: (enabled: boolean) => {
+        set((state) => ({
+          ui: { ...state.ui, cameraPositioningMode: enabled }
+        }));
+      },
 
-  toggleAutoPan: () => {
-    set((state) => {
-      const newEnabled = !state.camera.autoPan.enabled;
-      return {
-        camera: {
-          ...state.camera,
-          autoPan: {
-            ...state.camera.autoPan,
-            enabled: newEnabled
-          }
-        }
-      };
-    });
-  },
-
-  updateBackground: (updates) => {
-    set((state) => ({
-      background: { ...state.background, ...updates }
-    }));
-  },
-
-  updateGeometric: (shape, updates) => {
-    set((state) => ({
-      geometric: {
-        ...state.geometric,
-        [shape]: { ...state.geometric[shape], ...updates }
-      }
-    }));
-  },
-
-  updateParticles: (updates) => {
-    set((state) => ({
-      particles: { ...state.particles, ...updates }
-    }));
-  },
-
-  updateGlobalEffects: (updates) => {
-    set((state) => ({
-      globalEffects: { ...state.globalEffects, ...updates }
-    }));
-  },
-
-  updateEffects: (updates) => {
-    set((state) => ({
-      effects: { ...state.effects, ...updates }
-    }));
-  },
-
-  updateCamera: (updates) => {
-    set((state) => ({
-      camera: { 
-        ...state.camera, 
-        ...updates,
-        // Deep merge for nested objects like autoPan
-        autoPan: updates.autoPan ? { ...state.camera.autoPan, ...updates.autoPan } : state.camera.autoPan,
-        depthOfField: updates.depthOfField ? { ...state.camera.depthOfField, ...updates.depthOfField } : state.camera.depthOfField
-      }
-    }));
-  },
-
-  updateGlobalAnimationSpeed: (speed: number) => {
-    set((state) => {
-      const clampedSpeed = clampAnimationSpeed(speed);
-      return {
-        globalAnimationSpeed: clampedSpeed
-      };
-    });
-  },
-
-  resetToDefaults: () => set(defaultState),
-
-  savePreset: (name) => {
-    const state = get();
-    const preset: VisualPreset = {
-      ui: state.ui,
-      background: state.background,
-      backgroundConfig: state.backgroundConfig,
-      logo: state.logo,
-      geometric: state.geometric,
-      particles: state.particles,
-      globalEffects: state.globalEffects,
-      effects: state.effects,
-      camera: state.camera,
-      globalAnimationSpeed: state.globalAnimationSpeed,
-      globalBlendMode: state.globalBlendMode,
-      location: state.location,
-      savedAt: new Date().toISOString(),
-      version: '1.0'
-    };
-    
-    try {
-      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-      presets[name] = preset;
-      localStorage.setItem('visualPresets', JSON.stringify(presets));
-    } catch (error) {
-    }
-  },
-
-  loadPreset: (name) => {
-    try {
-      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-      if (presets[name]) {
-        const preset = presets[name];
-        
+      toggleAutoPan: () => {
         set((state) => {
-          // Deep merge for globalEffects to ensure all nested properties are preserved
-          const mergedGlobalEffects = {
-            ...state.globalEffects,
-            ...(isPlainObject(preset.globalEffects) ? preset.globalEffects : {}),
-            // Ensure trails object is properly merged with all required properties
-            trails: {
-              ...state.globalEffects.trails,
-              ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails) ? preset.globalEffects.trails : {}),
-              // Ensure all trail types have required properties
-              sphereTrails: {
-                ...state.globalEffects.trails.sphereTrails,
-                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.sphereTrails) ? preset.globalEffects.trails.sphereTrails : {})
-              },
-              cubeTrails: {
-                ...state.globalEffects.trails.cubeTrails,
-                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.cubeTrails) ? preset.globalEffects.trails.cubeTrails : {})
-              },
-              blobTrails: {
-                ...state.globalEffects.trails.blobTrails,
-                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.blobTrails) ? preset.globalEffects.trails.blobTrails : {})
-              },
-              torusTrails: {
-                ...state.globalEffects.trails.torusTrails,
-                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.torusTrails) ? preset.globalEffects.trails.torusTrails : {})
-              },
-              particleTrails: {
-                ...state.globalEffects.trails.particleTrails,
-                ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.particleTrails) ? preset.globalEffects.trails.particleTrails : {})
+          const newEnabled = !state.camera.autoPan.enabled;
+          return {
+            camera: {
+              ...state.camera,
+              autoPan: {
+                ...state.camera.autoPan,
+                enabled: newEnabled
               }
             }
-          };
-
-          const newGlobalAnimationSpeed = typeof preset.globalAnimationSpeed === 'number' ? preset.globalAnimationSpeed : state.globalAnimationSpeed;
-
-          // Deep merge camera settings including DoF
-          const mergedCamera = {
-            ...state.camera,
-            ...(isPlainObject(preset.camera) ? preset.camera : {}),
-            depthOfField: {
-              ...state.camera.depthOfField,
-              ...(isPlainObject(preset.camera && preset.camera.depthOfField) ? preset.camera.depthOfField : {})
-            }
-          };
-          
-          return {
-            ...state,
-            // Don't override UI state from preset data - keep panels closed by default
-            ui: { ...state.ui },
-            background: { ...state.background, ...(isPlainObject(preset.background) ? preset.background : {}) },
-            backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(preset.backgroundConfig) ? preset.backgroundConfig : {}) },
-            logo: { ...state.logo, ...(isPlainObject(preset.logo) ? preset.logo : {}) },
-            geometric: { ...state.geometric, ...(isPlainObject(preset.geometric) ? preset.geometric : {}) },
-            particles: { ...state.particles, ...(isPlainObject(preset.particles) ? preset.particles : {}) },
-            globalEffects: mergedGlobalEffects,
-            effects: { ...state.effects, ...(isPlainObject(preset.effects) ? preset.effects : {}) },
-            camera: mergedCamera,
-            globalAnimationSpeed: newGlobalAnimationSpeed,
-            globalBlendMode: isPlainObject(preset.globalBlendMode) ? preset.globalBlendMode : state.globalBlendMode,
-            location: typeof preset.location === 'string' ? preset.location : state.location,
           };
         });
-      } else {
-      }
-    } catch (error) {
-    }
-  },
+      },
 
-  loadPresetData: (presetData) => {
-    set((state) => {
-      // Merge the preset data with current state
-      const mergedState = { ...state, ...presetData };
-      
-      // Ensure globalAnimationSpeed is properly set
-      const newGlobalAnimationSpeed = presetData.globalAnimationSpeed ?? state.globalAnimationSpeed;
-      
-      // Ensure camera settings are properly merged
-      const mergedCamera = {
-        ...state.camera,
-        ...presetData.camera
-      };
-      
-      return {
-        ...mergedState,
-        globalAnimationSpeed: newGlobalAnimationSpeed,
-        camera: mergedCamera
-      };
-    });
-  },
+      updateBackground: (updates) => {
+        set((state) => ({
+          background: { ...state.background, ...updates }
+        }));
+      },
 
-  getAvailablePresets: () => {
-    try {
-      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-      return Object.keys(presets).sort();
-    } catch (error) {
-      return [];
-    }
-  },
+      updateGeometric: (shape, updates) => {
+        set((state) => ({
+          geometric: {
+            ...state.geometric,
+            [shape]: { ...state.geometric[shape], ...updates }
+          }
+        }));
+      },
 
-  deletePreset: (name) => {
-    try {
-      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-      delete presets[name];
-      localStorage.setItem('visualPresets', JSON.stringify(presets));
-    } catch (error) {
-    }
-  },
+      updateParticles: (updates) => {
+        set((state) => ({
+          particles: { ...state.particles, ...updates }
+        }));
+      },
 
-  updateBackgroundConfig: (updates) => {
-    // Safety check: clamp timeScale if it's being updated
-    if (updates.timeScale !== undefined) {
-      updates.timeScale = clampTimeScale(updates.timeScale);
-    }
-    
-    set((state) => ({
-      backgroundConfig: { ...state.backgroundConfig, ...updates }
-    }));
-  },
+      updateGlobalEffects: (updates) => {
+        set((state) => ({
+          globalEffects: { ...state.globalEffects, ...updates }
+        }));
+      },
 
-  // Global defaults management
-  updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: any) => {
-    // Update the global defaults (this affects future resets)
-    Object.assign(GLOBAL_DEFAULTS[category], updates);
-    
-    // If updating camera defaults, also update current camera if it matches old defaults
-    if (category === 'camera') {
-      set((state) => ({
-        camera: { ...state.camera, ...updates }
-      }));
-    }
-    
-    // If updating visual defaults, also update current effects
-    if (category === 'visual') {
-      const newEffects = {
-        glow: GLOBAL_DEFAULTS.visual.glow,
-        contrast: GLOBAL_DEFAULTS.visual.contrast,
-        saturation: GLOBAL_DEFAULTS.visual.saturation,
-        brightness: GLOBAL_DEFAULTS.visual.brightness,
-        vignette: GLOBAL_DEFAULTS.visual.vignette,
-      };
-      
-      set((state) => ({
-        effects: {
-          ...state.effects,
-          ...newEffects
-        }
-      }));
-    }
-    
-    // If updating animation defaults, also update current global animation speed
-    if (category === 'animation') {
-      const safeSpeed = clampAnimationSpeed(GLOBAL_DEFAULTS.animation.defaultSpeed);
-      set((state) => ({
-        globalAnimationSpeed: safeSpeed
-      }));
-    }
-    
-    // If updating globalBlendMode defaults, also update current globalBlendMode
-    if (category === 'globalBlendMode') {
-      set((state) => ({
-        globalBlendMode: { ...state.globalBlendMode, ...updates }
-      }));
-    }
-    
-    // If updating logo defaults, also update current logo
-    if (category === 'logo') {
-      set((state) => ({
-        logo: { ...state.logo, ...updates }
-      }));
-    }
-  },
+      updateEffects: (updates) => {
+        set((state) => ({
+          effects: { ...state.effects, ...updates }
+        }));
+      },
 
-  resetToGlobalDefaults: () => {
-    set((state) => ({
-      ...state,
-      camera: { ...GLOBAL_DEFAULTS.camera },
-      effects: {
-        ...state.effects,
-        glow: GLOBAL_DEFAULTS.visual.glow,
-        contrast: GLOBAL_DEFAULTS.visual.contrast,
-        saturation: GLOBAL_DEFAULTS.visual.saturation,
-        brightness: GLOBAL_DEFAULTS.visual.brightness,
-        vignette: GLOBAL_DEFAULTS.visual.vignette,
-      }
-    }));
-  },
+      updateCamera: (updates) => {
+        set((state) => ({
+          camera: { 
+            ...state.camera, 
+            ...updates,
+            // Deep merge for nested objects like autoPan
+            autoPan: updates.autoPan ? { ...state.camera.autoPan, ...updates.autoPan } : state.camera.autoPan,
+            depthOfField: updates.depthOfField ? { ...state.camera.depthOfField, ...updates.depthOfField } : state.camera.depthOfField
+          }
+        }));
+      },
 
-  resetCameraToDefaults: () => {
-    set((state) => ({
-      camera: { ...GLOBAL_DEFAULTS.camera }
-    }));
-  },
+      updateGlobalAnimationSpeed: (speed: number) => {
+        set((state) => {
+          const clampedSpeed = clampAnimationSpeed(speed);
+          return {
+            globalAnimationSpeed: clampedSpeed
+          };
+        });
+      },
 
-  resetVisualEffectsToDefaults: () => {
-    set((state) => ({
-      effects: {
-        ...state.effects,
-        glow: GLOBAL_DEFAULTS.visual.glow,
-        contrast: GLOBAL_DEFAULTS.visual.contrast,
-        saturation: GLOBAL_DEFAULTS.visual.saturation,
-        brightness: GLOBAL_DEFAULTS.visual.brightness,
-        vignette: GLOBAL_DEFAULTS.visual.vignette,
-      }
-    }));
-  },
+      resetToDefaults: () => set(defaultState),
 
-  forceApplyGlobalDefaults: () => {
-    set((state) => ({
-      ...state,
-      camera: { ...GLOBAL_DEFAULTS.camera },
-      effects: {
-        ...state.effects,
-        glow: GLOBAL_DEFAULTS.visual.glow,
-        contrast: GLOBAL_DEFAULTS.visual.contrast,
-        saturation: GLOBAL_DEFAULTS.visual.saturation,
-        brightness: GLOBAL_DEFAULTS.visual.brightness,
-        vignette: GLOBAL_DEFAULTS.visual.vignette,
-      }
-    }));
-  },
-
-  getGlobalDefaults: () => {
-    return GLOBAL_DEFAULTS;
-  },
-
-  // Clear cached defaults and force refresh
-  clearCachedDefaults: () => {
-    try {
-      localStorage.removeItem('globalDefaults');
-    } catch (error) {
-    }
-  },
-
-  setLocation: (location: string) => set({ location }),
-
-  setCanvasError: (error) => set({ error }),
-  clearCanvasError: () => set({ error: null }),
-
-  // NEW: Function to update only auto-pan angle without affecting enabled state
-  updateAutoPanAngle: (newAngle: number) => {
-    set((state) => ({
-      camera: {
-        ...state.camera,
-        autoPan: {
-          ...state.camera.autoPan,
-          currentAngle: newAngle
-        }
-      }
-    }));
-  },
-
-  transitionPreset: async (name, duration = 2500) => {
-    try {
-      const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
-      if (!presets[name]) {
-        return;
-      }
-
-      const targetPreset = presets[name];
-      
-      // Get current state
-      const currentState = get();
-      
-      // Create a promise that resolves when transition is complete
-      return new Promise<void>((resolve) => {
-        const startTime = Date.now();
+      savePreset: (name) => {
+        const state = get();
+        const preset: VisualPreset = {
+          ui: state.ui,
+          background: state.background,
+          backgroundConfig: state.backgroundConfig,
+          logo: state.logo,
+          geometric: state.geometric,
+          particles: state.particles,
+          globalEffects: state.globalEffects,
+          effects: state.effects,
+          camera: state.camera,
+          globalAnimationSpeed: state.globalAnimationSpeed,
+          globalBlendMode: state.globalBlendMode,
+          location: state.location,
+          savedAt: new Date().toISOString(),
+          version: '1.0'
+        };
         
-        // Animation function
-        const animate = () => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          
-          // Easing function for smooth animation
-          const easeInOutCubic = (t: number) => 
-            t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-          
-          const easedProgress = easeInOutCubic(progress);
-          
-          set((state) => {
-            // Helper function to interpolate between two values
-            const interpolate = (start: number, end: number, t: number) => 
-              start + (end - start) * t;
+        try {
+          const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+          presets[name] = preset;
+          localStorage.setItem('visualPresets', JSON.stringify(presets));
+        } catch (error) {
+        }
+      },
+
+      loadPreset: (name) => {
+        try {
+          const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+          if (presets[name]) {
+            const preset = presets[name];
             
-            // Helper function to interpolate colors
-            const interpolateColor = (start: string, end: string, t: number) => {
-              // Simple color interpolation - could be enhanced with proper color space conversion
-              return t > 0.5 ? end : start;
-            };
-            
-            // Interpolate each parameter group
-            const interpolatedBackground = {
-              opacity: interpolate(currentState.background.opacity, targetPreset.background?.opacity || currentState.background.opacity, easedProgress),
-              blur: interpolate(currentState.background.blur, targetPreset.background?.blur || currentState.background.blur, easedProgress),
-              color: interpolateColor(currentState.background.color, targetPreset.background?.color || currentState.background.color, easedProgress),
-              gradient: targetPreset.background?.gradient !== undefined ? targetPreset.background.gradient : currentState.background.gradient
-            };
-            
-            const interpolatedGeometric = {
-              spheres: {
-                count: Math.round(interpolate(currentState.geometric.spheres.count, targetPreset.geometric?.spheres?.count || currentState.geometric.spheres.count, easedProgress)),
-                size: interpolate(currentState.geometric.spheres.size, targetPreset.geometric?.spheres?.size || currentState.geometric.spheres.size, easedProgress),
-                color: interpolateColor(currentState.geometric.spheres.color, targetPreset.geometric?.spheres?.color || currentState.geometric.spheres.color, easedProgress),
-                speed: interpolate(currentState.geometric.spheres.speed, targetPreset.geometric?.spheres?.speed || currentState.geometric.spheres.speed, easedProgress),
-                rotation: interpolate(currentState.geometric.spheres.rotation, targetPreset.geometric?.spheres?.rotation || currentState.geometric.spheres.rotation, easedProgress),
-                opacity: interpolate(currentState.geometric.spheres.opacity, targetPreset.geometric?.spheres?.opacity || currentState.geometric.spheres.opacity, easedProgress),
-                organicness: interpolate(currentState.geometric.spheres.organicness, targetPreset.geometric?.spheres?.organicness || currentState.geometric.spheres.organicness, easedProgress),
-                movementPattern: targetPreset.geometric?.spheres?.movementPattern || currentState.geometric.spheres.movementPattern,
-                distance: interpolate(currentState.geometric.spheres.distance, targetPreset.geometric?.spheres?.distance || currentState.geometric.spheres.distance, easedProgress),
-                pulseEnabled: targetPreset.geometric?.spheres?.pulseEnabled !== undefined ? targetPreset.geometric.spheres.pulseEnabled : currentState.geometric.spheres.pulseEnabled,
-                pulseSize: interpolate(currentState.geometric.spheres.pulseSize, targetPreset.geometric?.spheres?.pulseSize || currentState.geometric.spheres.pulseSize, easedProgress)
-              },
-              cubes: {
-                count: Math.round(interpolate(currentState.geometric.cubes.count, targetPreset.geometric?.cubes?.count || currentState.geometric.cubes.count, easedProgress)),
-                size: interpolate(currentState.geometric.cubes.size, targetPreset.geometric?.cubes?.size || currentState.geometric.cubes.size, easedProgress),
-                color: interpolateColor(currentState.geometric.cubes.color, targetPreset.geometric?.cubes?.color || currentState.geometric.cubes.color, easedProgress),
-                rotation: interpolate(currentState.geometric.cubes.rotation, targetPreset.geometric?.cubes?.rotation || currentState.geometric.cubes.rotation, easedProgress),
-                speed: interpolate(currentState.geometric.cubes.speed, targetPreset.geometric?.cubes?.speed || currentState.geometric.cubes.speed, easedProgress),
-                opacity: interpolate(currentState.geometric.cubes.opacity, targetPreset.geometric?.cubes?.opacity || currentState.geometric.cubes.opacity, easedProgress),
-                organicness: interpolate(currentState.geometric.cubes.organicness, targetPreset.geometric?.cubes?.organicness || currentState.geometric.cubes.organicness, easedProgress),
-                movementPattern: targetPreset.geometric?.cubes?.movementPattern || currentState.geometric.cubes.movementPattern,
-                distance: interpolate(currentState.geometric.cubes.distance, targetPreset.geometric?.cubes?.distance || currentState.geometric.cubes.distance, easedProgress),
-                pulseEnabled: targetPreset.geometric?.cubes?.pulseEnabled !== undefined ? targetPreset.geometric.cubes.pulseEnabled : currentState.geometric.cubes.pulseEnabled,
-                pulseSize: interpolate(currentState.geometric.cubes.pulseSize, targetPreset.geometric?.cubes?.pulseSize || currentState.geometric.cubes.pulseSize, easedProgress)
-              },
-              toruses: {
-                count: Math.round(interpolate(currentState.geometric.toruses.count, targetPreset.geometric?.toruses?.count || currentState.geometric.toruses.count, easedProgress)),
-                size: interpolate(currentState.geometric.toruses.size, targetPreset.geometric?.toruses?.size || currentState.geometric.toruses.size, easedProgress),
-                color: interpolateColor(currentState.geometric.toruses.color, targetPreset.geometric?.toruses?.color || currentState.geometric.toruses.color, easedProgress),
-                speed: interpolate(currentState.geometric.toruses.speed, targetPreset.geometric?.toruses?.speed || currentState.geometric.toruses.speed, easedProgress),
-                rotation: interpolate(currentState.geometric.toruses.rotation, targetPreset.geometric?.toruses?.rotation || currentState.geometric.toruses.rotation, easedProgress),
-                opacity: interpolate(currentState.geometric.toruses.opacity, targetPreset.geometric?.toruses?.opacity || currentState.geometric.toruses.opacity, easedProgress),
-                organicness: interpolate(currentState.geometric.toruses.organicness, targetPreset.geometric?.toruses?.organicness || currentState.geometric.toruses.organicness, easedProgress),
-                movementPattern: targetPreset.geometric?.toruses?.movementPattern || currentState.geometric.toruses.movementPattern,
-                distance: interpolate(currentState.geometric.toruses.distance, targetPreset.geometric?.toruses?.distance || currentState.geometric.toruses.distance, easedProgress),
-                pulseEnabled: targetPreset.geometric?.toruses?.pulseEnabled !== undefined ? targetPreset.geometric.toruses.pulseEnabled : currentState.geometric.toruses.pulseEnabled,
-                pulseSize: interpolate(currentState.geometric.toruses.pulseSize, targetPreset.geometric?.toruses?.pulseSize || currentState.geometric.toruses.pulseSize, easedProgress)
-              },
-              blobs: {
-                count: Math.round(interpolate(currentState.geometric.blobs.count, targetPreset.geometric?.blobs?.count || currentState.geometric.blobs.count, easedProgress)),
-                size: interpolate(currentState.geometric.blobs.size, targetPreset.geometric?.blobs?.size || currentState.geometric.blobs.size, easedProgress),
-                color: interpolateColor(currentState.geometric.blobs.color, targetPreset.geometric?.blobs?.color || currentState.geometric.blobs.color, easedProgress),
-                speed: interpolate(currentState.geometric.blobs.speed, targetPreset.geometric?.blobs?.speed || currentState.geometric.blobs.speed, easedProgress),
-                opacity: interpolate(currentState.geometric.blobs.opacity, targetPreset.geometric?.blobs?.opacity || currentState.geometric.blobs.opacity, easedProgress),
-                organicness: interpolate(currentState.geometric.blobs.organicness, targetPreset.geometric?.blobs?.organicness || currentState.geometric.blobs.organicness, easedProgress),
-                movementPattern: targetPreset.geometric?.blobs?.movementPattern || currentState.geometric.blobs.movementPattern,
-                distance: interpolate(currentState.geometric.blobs.distance, targetPreset.geometric?.blobs?.distance || currentState.geometric.blobs.distance, easedProgress),
-                pulseEnabled: targetPreset.geometric?.blobs?.pulseEnabled !== undefined ? targetPreset.geometric.blobs.pulseEnabled : currentState.geometric.blobs.pulseEnabled,
-                pulseSize: interpolate(currentState.geometric.blobs.pulseSize, targetPreset.geometric?.blobs?.pulseSize || currentState.geometric.blobs.pulseSize, easedProgress)
-              },
-              crystals: {
-                count: Math.round(interpolate(currentState.geometric.crystals.count, targetPreset.geometric?.crystals?.count || currentState.geometric.crystals.count, easedProgress)),
-                size: interpolate(currentState.geometric.crystals.size, targetPreset.geometric?.crystals?.size || currentState.geometric.crystals.size, easedProgress),
-                color: interpolateColor(currentState.geometric.crystals.color, targetPreset.geometric?.crystals?.color || currentState.geometric.crystals.color, easedProgress),
-                rotation: interpolate(currentState.geometric.crystals.rotation, targetPreset.geometric?.crystals?.rotation || currentState.geometric.crystals.rotation, easedProgress),
-                opacity: interpolate(currentState.geometric.crystals.opacity, targetPreset.geometric?.crystals?.opacity || currentState.geometric.crystals.opacity, easedProgress),
-                complexity: interpolate(currentState.geometric.crystals.complexity, targetPreset.geometric?.crystals?.complexity || currentState.geometric.crystals.complexity, easedProgress),
-                organicness: interpolate(currentState.geometric.crystals.organicness, targetPreset.geometric?.crystals?.organicness || currentState.geometric.crystals.organicness, easedProgress)
-              },
-              waveInterference: {
-                color: interpolateColor(currentState.geometric.waveInterference.color, targetPreset.geometric?.waveInterference?.color || currentState.geometric.waveInterference.color, easedProgress)
-              },
-              metamorphosis: {
-                color: interpolateColor(currentState.geometric.metamorphosis.color, targetPreset.geometric?.metamorphosis?.color || currentState.geometric.metamorphosis.color, easedProgress)
-              },
-              fireflies: {
-                color: interpolateColor(currentState.geometric.fireflies.color, targetPreset.geometric?.fireflies?.color || currentState.geometric.fireflies.color, easedProgress)
-              },
-              layeredSineWaves: {
-                color: interpolateColor(currentState.geometric.layeredSineWaves.color, targetPreset.geometric?.layeredSineWaves?.color || currentState.geometric.layeredSineWaves.color, easedProgress)
-              }
-            };
-            
-            const interpolatedParticles = {
-              count: Math.round(interpolate(currentState.particles.count, targetPreset.particles?.count || currentState.particles.count, easedProgress)),
-              size: interpolate(currentState.particles.size, targetPreset.particles?.size || currentState.particles.size, easedProgress),
-              color: interpolateColor(currentState.particles.color, targetPreset.particles?.color || currentState.particles.color, easedProgress),
-              speed: interpolate(currentState.particles.speed, targetPreset.particles?.speed || currentState.particles.speed, easedProgress),
-              opacity: interpolate(currentState.particles.opacity, targetPreset.particles?.opacity || currentState.particles.opacity, easedProgress),
-              spread: interpolate(currentState.particles.spread, targetPreset.particles?.spread || currentState.particles.spread, easedProgress),
-              movementPattern: targetPreset.particles?.movementPattern || currentState.particles.movementPattern,
-              distance: interpolate(currentState.particles.distance, targetPreset.particles?.distance || currentState.particles.distance, easedProgress),
-              pulseEnabled: targetPreset.particles?.pulseEnabled !== undefined ? targetPreset.particles.pulseEnabled : currentState.particles.pulseEnabled,
-              pulseSize: interpolate(currentState.particles.pulseSize, targetPreset.particles?.pulseSize || currentState.particles.pulseSize, easedProgress)
-            };
-            
-            const interpolatedEffects = {
-              glow: interpolate(currentState.effects.glow, targetPreset.effects?.glow || currentState.effects.glow, easedProgress),
-              contrast: interpolate(currentState.effects.contrast, targetPreset.effects?.contrast || currentState.effects.contrast, easedProgress),
-              saturation: interpolate(currentState.effects.saturation, targetPreset.effects?.saturation || currentState.effects.saturation, easedProgress),
-              hue: interpolate(currentState.effects.hue, targetPreset.effects?.hue || currentState.effects.hue, easedProgress),
-              brightness: interpolate(currentState.effects.brightness, targetPreset.effects?.brightness || currentState.effects.brightness, easedProgress),
-              vignette: interpolate(currentState.effects.vignette, targetPreset.effects?.vignette || currentState.effects.vignette, easedProgress)
-            };
-            
-            const interpolatedGlobalAnimationSpeed = interpolate(
-              currentState.globalAnimationSpeed, 
-              targetPreset.globalAnimationSpeed || currentState.globalAnimationSpeed, 
-              easedProgress
-            );
-            
-            return {
-              ...state,
-              background: interpolatedBackground,
-              geometric: interpolatedGeometric,
-              particles: interpolatedParticles,
-              effects: interpolatedEffects,
-              globalAnimationSpeed: interpolatedGlobalAnimationSpeed,
-              // Keep UI state unchanged
-              ui: { ...state.ui }
-            };
-          });
-          
-          // Continue animation or complete
-          if (progress < 1) {
-            requestAnimationFrame(animate);
-          } else {
-            // Animation complete - set final state exactly
             set((state) => {
+              // Deep merge for globalEffects to ensure all nested properties are preserved
               const mergedGlobalEffects = {
                 ...state.globalEffects,
-                ...(isPlainObject(targetPreset.globalEffects) ? targetPreset.globalEffects : {}),
+                ...(isPlainObject(preset.globalEffects) ? preset.globalEffects : {}),
+                // Ensure trails object is properly merged with all required properties
                 trails: {
                   ...state.globalEffects.trails,
-                  ...(isPlainObject(targetPreset.globalEffects?.trails) ? targetPreset.globalEffects.trails : {}),
+                  ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails) ? preset.globalEffects.trails : {}),
+                  // Ensure all trail types have required properties
                   sphereTrails: {
                     ...state.globalEffects.trails.sphereTrails,
-                    ...(isPlainObject(targetPreset.globalEffects?.trails?.sphereTrails) ? targetPreset.globalEffects.trails.sphereTrails : {})
+                    ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.sphereTrails) ? preset.globalEffects.trails.sphereTrails : {})
                   },
                   cubeTrails: {
                     ...state.globalEffects.trails.cubeTrails,
-                    ...(isPlainObject(targetPreset.globalEffects?.trails?.cubeTrails) ? targetPreset.globalEffects.trails.cubeTrails : {})
+                    ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.cubeTrails) ? preset.globalEffects.trails.cubeTrails : {})
                   },
                   blobTrails: {
                     ...state.globalEffects.trails.blobTrails,
-                    ...(isPlainObject(targetPreset.globalEffects?.trails?.blobTrails) ? targetPreset.globalEffects.trails.blobTrails : {})
+                    ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.blobTrails) ? preset.globalEffects.trails.blobTrails : {})
                   },
                   torusTrails: {
                     ...state.globalEffects.trails.torusTrails,
-                    ...(isPlainObject(targetPreset.globalEffects?.trails?.torusTrails) ? targetPreset.globalEffects.trails.torusTrails : {})
+                    ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.torusTrails) ? preset.globalEffects.trails.torusTrails : {})
                   },
                   particleTrails: {
                     ...state.globalEffects.trails.particleTrails,
-                    ...(isPlainObject(targetPreset.globalEffects?.trails?.particleTrails) ? targetPreset.globalEffects.trails.particleTrails : {})
+                    ...(isPlainObject(preset.globalEffects && preset.globalEffects.trails && preset.globalEffects.trails.particleTrails) ? preset.globalEffects.trails.particleTrails : {})
                   }
                 }
               };
 
+              const newGlobalAnimationSpeed = typeof preset.globalAnimationSpeed === 'number' ? preset.globalAnimationSpeed : state.globalAnimationSpeed;
+
+              // Deep merge camera settings including DoF
               const mergedCamera = {
                 ...state.camera,
-                ...(isPlainObject(targetPreset.camera) ? targetPreset.camera : {}),
+                ...(isPlainObject(preset.camera) ? preset.camera : {}),
                 depthOfField: {
                   ...state.camera.depthOfField,
-                  ...(isPlainObject(targetPreset.camera?.depthOfField) ? targetPreset.camera.depthOfField : {})
+                  ...(isPlainObject(preset.camera && preset.camera.depthOfField) ? preset.camera.depthOfField : {})
                 }
               };
               
               return {
                 ...state,
+                // Don't override UI state from preset data - keep panels closed by default
                 ui: { ...state.ui },
-                background: { ...state.background, ...(isPlainObject(targetPreset.background) ? targetPreset.background : {}) },
-                backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(targetPreset.backgroundConfig) ? targetPreset.backgroundConfig : {}) },
-                logo: { ...state.logo, ...(isPlainObject(targetPreset.logo) ? targetPreset.logo : {}) },
-                geometric: { ...state.geometric, ...(isPlainObject(targetPreset.geometric) ? targetPreset.geometric : {}) },
-                particles: { ...state.particles, ...(isPlainObject(targetPreset.particles) ? targetPreset.particles : {}) },
+                background: { ...state.background, ...(isPlainObject(preset.background) ? preset.background : {}) },
+                backgroundConfig: { ...state.backgroundConfig, ...(isPlainObject(preset.backgroundConfig) ? preset.backgroundConfig : {}) },
+                logo: { ...state.logo, ...(isPlainObject(preset.logo) ? preset.logo : {}) },
+                geometric: { ...state.geometric, ...(isPlainObject(preset.geometric) ? preset.geometric : {}) },
+                particles: { ...state.particles, ...(isPlainObject(preset.particles) ? preset.particles : {}) },
                 globalEffects: mergedGlobalEffects,
-                effects: { ...state.effects, ...(isPlainObject(targetPreset.effects) ? targetPreset.effects : {}) },
+                effects: { ...state.effects, ...(isPlainObject(preset.effects) ? preset.effects : {}) },
                 camera: mergedCamera,
-                globalAnimationSpeed: typeof targetPreset.globalAnimationSpeed === 'number' ? targetPreset.globalAnimationSpeed : state.globalAnimationSpeed,
-                globalBlendMode: isPlainObject(targetPreset.globalBlendMode) ? targetPreset.globalBlendMode : state.globalBlendMode,
-                location: typeof targetPreset.location === 'string' ? targetPreset.location : state.location,
+                globalAnimationSpeed: newGlobalAnimationSpeed,
+                globalBlendMode: isPlainObject(preset.globalBlendMode) ? preset.globalBlendMode : state.globalBlendMode,
+                location: typeof preset.location === 'string' ? preset.location : state.location,
               };
             });
-            
-            resolve();
+          } else {
           }
-        };
+        } catch (error) {
+        }
+      },
+
+      loadPresetData: (presetData: Partial<VisualPreset>) => {
+        console.log('🎨 loadPresetData called with:', presetData);
         
-        // Start animation
-        requestAnimationFrame(animate);
-      });
-      
-    } catch (error) {
-      throw error;
+        set((state) => {
+          // Ensure globalAnimationSpeed is properly set
+          const newGlobalAnimationSpeed = presetData.globalAnimationSpeed ?? state.globalAnimationSpeed;
+          
+          // Ensure camera settings are properly merged
+          const mergedCamera = {
+            ...state.camera,
+            ...presetData.camera
+          };
+          
+          // Properly merge globalEffects to prevent undefined properties
+          const mergedGlobalEffects = {
+            ...state.globalEffects,
+            ...(isPlainObject(presetData.globalEffects) ? presetData.globalEffects : {})
+          };
+
+          // Debug: Check what geometric data we're receiving
+          console.log('🎨 Preset geometric data:', presetData.geometric);
+          console.log('🎨 Current geometric state:', state.geometric);
+          
+          // Debug: Check specific sphere and cube data
+          if (presetData.geometric) {
+            console.log('🎨 Preset spheres data:', presetData.geometric.spheres);
+            console.log('🎨 Preset cubes data:', presetData.geometric.cubes);
+            console.log('🎨 Current spheres data:', state.geometric.spheres);
+            console.log('🎨 Current cubes data:', state.geometric.cubes);
+          }
+          
+          // Properly merge geometric shapes with deep merging
+          const mergedGeometric = presetData.geometric ? {
+            ...state.geometric,
+            spheres: { ...state.geometric.spheres, ...presetData.geometric.spheres },
+            cubes: { ...state.geometric.cubes, ...presetData.geometric.cubes },
+            toruses: { ...state.geometric.toruses, ...presetData.geometric.toruses },
+            blobs: { ...state.geometric.blobs, ...presetData.geometric.blobs },
+            crystals: { ...state.geometric.crystals, ...presetData.geometric.crystals },
+            waveInterference: { ...state.geometric.waveInterference, ...presetData.geometric.waveInterference },
+            metamorphosis: { ...state.geometric.metamorphosis, ...presetData.geometric.metamorphosis },
+            fireflies: { ...state.geometric.fireflies, ...presetData.geometric.fireflies },
+            layeredSineWaves: { ...state.geometric.layeredSineWaves, ...presetData.geometric.layeredSineWaves }
+          } : state.geometric;
+          
+          // Debug: Check the merged geometric data
+          console.log('🎨 Merged geometric data:', mergedGeometric);
+
+          // Properly merge particles
+          const mergedParticles = {
+            ...state.particles,
+            ...(presetData.particles || {})
+          };
+
+          // Properly merge effects
+          const mergedEffects = {
+            ...state.effects,
+            ...(presetData.effects || {})
+          };
+          
+          // Properly merge AI state if it exists
+          const mergedAI = presetData.ai ? {
+            ...state.ai,
+            ...presetData.ai
+          } : state.ai;
+          
+          // Destructure presetData to exclude properties we handle separately
+          const { geometric: presetGeometric, globalEffects: presetGlobalEffects, particles: presetParticles, effects: presetEffects, camera: presetCamera, globalAnimationSpeed: presetGlobalAnimationSpeed, ai: presetAI, ...otherPresetData } = presetData;
+          
+          const newState = {
+            ...state,
+            ...otherPresetData,
+            geometric: mergedGeometric,
+            globalAnimationSpeed: newGlobalAnimationSpeed,
+            camera: mergedCamera,
+            globalEffects: mergedGlobalEffects,
+            particles: mergedParticles,
+            effects: mergedEffects,
+            ai: mergedAI,
+            // Add a timestamp to force re-renders
+            _lastUpdate: Date.now()
+          };
+          
+          console.log('🎨 New visual store state:', newState);
+          console.log('🎨 Geometric shapes updated:', {
+            spheres: newState.geometric.spheres,
+            cubes: newState.geometric.cubes,
+            particles: newState.particles
+          });
+          
+          // Add specific count debugging
+          console.log('🎨 Count values after merge:');
+          console.log('  - Spheres count:', newState.geometric.spheres.count);
+          console.log('  - Cubes count:', newState.geometric.cubes.count);
+          console.log('  - Particles count:', newState.particles.count);
+          
+          // Force a store update to ensure all subscribers are notified
+          console.log('🎨 Forcing store update...');
+          
+          return newState;
+        });
+      },
+
+      getAvailablePresets: () => {
+        try {
+          const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+          return Object.keys(presets).sort();
+        } catch (error) {
+          return [];
+        }
+      },
+
+      deletePreset: (name) => {
+        try {
+          const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+          delete presets[name];
+          localStorage.setItem('visualPresets', JSON.stringify(presets));
+        } catch (error) {
+        }
+      },
+
+      updateBackgroundConfig: (updates) => {
+        // Safety check: clamp timeScale if it's being updated
+        if (updates.timeScale !== undefined) {
+          updates.timeScale = clampTimeScale(updates.timeScale);
+        }
+        
+        set((state) => ({
+          backgroundConfig: { ...state.backgroundConfig, ...updates }
+        }));
+      },
+
+      // Global defaults management
+      updateGlobalDefaults: (category: keyof typeof GLOBAL_DEFAULTS, updates: any) => {
+        // Update the global defaults (this affects future resets)
+        Object.assign(GLOBAL_DEFAULTS[category], updates);
+        
+        // If updating camera defaults, also update current camera if it matches old defaults
+        if (category === 'camera') {
+          set((state) => ({
+            camera: { 
+              ...state.camera, 
+              ...updates,
+              // Ensure depthOfField is properly merged if it's being updated
+              depthOfField: updates.depthOfField 
+                ? { ...state.camera.depthOfField, ...updates.depthOfField }
+                : state.camera.depthOfField
+            }
+          }));
+        }
+        
+        // If updating visual defaults, also update current effects
+        if (category === 'visual') {
+          const newEffects = {
+            glow: GLOBAL_DEFAULTS.visual.glow,
+            contrast: GLOBAL_DEFAULTS.visual.contrast,
+            saturation: GLOBAL_DEFAULTS.visual.saturation,
+            brightness: GLOBAL_DEFAULTS.visual.brightness,
+            vignette: GLOBAL_DEFAULTS.visual.vignette,
+          };
+          
+          set((state) => ({
+            effects: {
+              ...state.effects,
+              ...newEffects
+            }
+          }));
+        }
+        
+        // If updating animation defaults, also update current global animation speed
+        if (category === 'animation') {
+          const safeSpeed = clampAnimationSpeed(GLOBAL_DEFAULTS.animation.defaultSpeed);
+          set((state) => ({
+            globalAnimationSpeed: safeSpeed
+          }));
+        }
+        
+        // If updating globalBlendMode defaults, also update current globalBlendMode
+        if (category === 'globalBlendMode') {
+          set((state) => ({
+            globalBlendMode: { ...state.globalBlendMode, ...updates }
+          }));
+        }
+        
+        // If updating logo defaults, also update current logo
+        if (category === 'logo') {
+          set((state) => ({
+            logo: { ...state.logo, ...updates }
+          }));
+        }
+      },
+
+      resetToGlobalDefaults: () => {
+        set((state) => ({
+          ...state,
+          camera: { ...GLOBAL_DEFAULTS.camera },
+          effects: {
+            ...state.effects,
+            glow: GLOBAL_DEFAULTS.visual.glow,
+            contrast: GLOBAL_DEFAULTS.visual.contrast,
+            saturation: GLOBAL_DEFAULTS.visual.saturation,
+            brightness: GLOBAL_DEFAULTS.visual.brightness,
+            vignette: GLOBAL_DEFAULTS.visual.vignette,
+          }
+        }));
+      },
+
+      resetCameraToDefaults: () => {
+        set((state) => ({
+          camera: { ...GLOBAL_DEFAULTS.camera }
+        }));
+      },
+
+      resetVisualEffectsToDefaults: () => {
+        set((state) => ({
+          effects: {
+            ...state.effects,
+            glow: GLOBAL_DEFAULTS.visual.glow,
+            contrast: GLOBAL_DEFAULTS.visual.contrast,
+            saturation: GLOBAL_DEFAULTS.visual.saturation,
+            brightness: GLOBAL_DEFAULTS.visual.brightness,
+            vignette: GLOBAL_DEFAULTS.visual.vignette,
+          }
+        }));
+      },
+
+      forceApplyGlobalDefaults: () => {
+        set((state) => ({
+          ...state,
+          camera: { ...GLOBAL_DEFAULTS.camera },
+          effects: {
+            ...state.effects,
+            glow: GLOBAL_DEFAULTS.visual.glow,
+            contrast: GLOBAL_DEFAULTS.visual.contrast,
+            saturation: GLOBAL_DEFAULTS.visual.saturation,
+            brightness: GLOBAL_DEFAULTS.visual.brightness,
+            vignette: GLOBAL_DEFAULTS.visual.vignette,
+          }
+        }));
+      },
+
+      getGlobalDefaults: () => {
+        return GLOBAL_DEFAULTS;
+      },
+
+      // Clear cached defaults and force refresh
+      clearCachedDefaults: () => {
+        try {
+          localStorage.removeItem('globalDefaults');
+        } catch (error) {
+        }
+      },
+
+      setLocation: (location: string) => set({ location }),
+
+      setCanvasError: (error) => set({ error }),
+      clearCanvasError: () => set({ error: null }),
+
+      // NEW: Function to update only auto-pan angle without affecting enabled state
+      updateAutoPanAngle: (newAngle: number) => {
+        set((state) => ({
+          camera: {
+            ...state.camera,
+            autoPan: {
+              ...state.camera.autoPan,
+              currentAngle: newAngle
+            }
+          }
+        }));
+      },
+
+      transitionPreset: async (name, duration = 2500) => {
+        try {
+          const presets = JSON.parse(localStorage.getItem('visualPresets') || '{}') as PresetStorage;
+          if (!presets[name]) {
+            return;
+          }
+
+          const targetPreset = presets[name];
+          
+          // Get current state
+          const currentState = get();
+          
+          // Create a promise that resolves when transition is complete
+          return new Promise<void>((resolve) => {
+            const startTime = Date.now();
+            
+            const animate = () => {
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+              
+              // Easing function for smooth transition
+              const easeInOutCubic = (t: number) => 
+                t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+              
+              const easedProgress = easeInOutCubic(progress);
+              
+              // Interpolate between current and target values
+              const interpolate = (start: number, end: number, t: number) => 
+                start + (end - start) * t;
+              
+              const interpolateColor = (start: string, end: string, t: number) => {
+                // Simple color interpolation - convert to RGB and interpolate
+                const startRGB = hexToRgb(start);
+                const endRGB = hexToRgb(end);
+                
+                const r = Math.round(interpolate(startRGB.r, endRGB.r, t));
+                const g = Math.round(interpolate(startRGB.g, endRGB.g, t));
+                const b = Math.round(interpolate(startRGB.b, endRGB.b, t));
+                
+                return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+              };
+              
+              // Create interpolated state
+              const interpolatedState: Partial<VisualState> = {};
+              
+              // Interpolate geometric shapes
+              if (targetPreset.geometric) {
+                interpolatedState.geometric = { ...currentState.geometric };
+                
+                // Interpolate spheres
+                if (targetPreset.geometric.spheres) {
+                  interpolatedState.geometric.spheres = {
+                    ...currentState.geometric.spheres,
+                    count: Math.round(interpolate(currentState.geometric.spheres.count, targetPreset.geometric.spheres.count, easedProgress)),
+                    size: interpolate(currentState.geometric.spheres.size, targetPreset.geometric.spheres.size, easedProgress),
+                    color: interpolateColor(currentState.geometric.spheres.color, targetPreset.geometric.spheres.color, easedProgress),
+                    speed: interpolate(currentState.geometric.spheres.speed, targetPreset.geometric.spheres.speed, easedProgress),
+                    rotation: interpolate(currentState.geometric.spheres.rotation, targetPreset.geometric.spheres.rotation, easedProgress),
+                    opacity: interpolate(currentState.geometric.spheres.opacity, targetPreset.geometric.spheres.opacity, easedProgress),
+                    organicness: interpolate(currentState.geometric.spheres.organicness, targetPreset.geometric.spheres.organicness, easedProgress),
+                    distance: interpolate(currentState.geometric.spheres.distance, targetPreset.geometric.spheres.distance, easedProgress),
+                    pulseSize: interpolate(currentState.geometric.spheres.pulseSize, targetPreset.geometric.spheres.pulseSize, easedProgress)
+                  };
+                }
+                
+                // Interpolate cubes
+                if (targetPreset.geometric.cubes) {
+                  interpolatedState.geometric.cubes = {
+                    ...currentState.geometric.cubes,
+                    count: Math.round(interpolate(currentState.geometric.cubes.count, targetPreset.geometric.cubes.count, easedProgress)),
+                    size: interpolate(currentState.geometric.cubes.size, targetPreset.geometric.cubes.size, easedProgress),
+                    color: interpolateColor(currentState.geometric.cubes.color, targetPreset.geometric.cubes.color, easedProgress),
+                    speed: interpolate(currentState.geometric.cubes.speed, targetPreset.geometric.cubes.speed, easedProgress),
+                    rotation: interpolate(currentState.geometric.cubes.rotation, targetPreset.geometric.cubes.rotation, easedProgress),
+                    opacity: interpolate(currentState.geometric.cubes.opacity, targetPreset.geometric.cubes.opacity, easedProgress),
+                    organicness: interpolate(currentState.geometric.cubes.organicness, targetPreset.geometric.cubes.organicness, easedProgress),
+                    distance: interpolate(currentState.geometric.cubes.distance, targetPreset.geometric.cubes.distance, easedProgress),
+                    pulseSize: interpolate(currentState.geometric.cubes.pulseSize, targetPreset.geometric.cubes.pulseSize, easedProgress)
+                  };
+                }
+                
+                // Interpolate toruses
+                if (targetPreset.geometric.toruses) {
+                  interpolatedState.geometric.toruses = {
+                    ...currentState.geometric.toruses,
+                    count: Math.round(interpolate(currentState.geometric.toruses.count, targetPreset.geometric.toruses.count, easedProgress)),
+                    size: interpolate(currentState.geometric.toruses.size, targetPreset.geometric.toruses.size, easedProgress),
+                    color: interpolateColor(currentState.geometric.toruses.color, targetPreset.geometric.toruses.color, easedProgress),
+                    speed: interpolate(currentState.geometric.toruses.speed, targetPreset.geometric.toruses.speed, easedProgress),
+                    rotation: interpolate(currentState.geometric.toruses.rotation, targetPreset.geometric.toruses.rotation, easedProgress),
+                    opacity: interpolate(currentState.geometric.toruses.opacity, targetPreset.geometric.toruses.opacity, easedProgress),
+                    organicness: interpolate(currentState.geometric.toruses.organicness, targetPreset.geometric.toruses.organicness, easedProgress),
+                    distance: interpolate(currentState.geometric.toruses.distance, targetPreset.geometric.toruses.distance, easedProgress),
+                    pulseSize: interpolate(currentState.geometric.toruses.pulseSize, targetPreset.geometric.toruses.pulseSize, easedProgress)
+                  };
+                }
+                
+                // Interpolate blobs
+                if (targetPreset.geometric.blobs) {
+                  interpolatedState.geometric.blobs = {
+                    ...currentState.geometric.blobs,
+                    count: Math.round(interpolate(currentState.geometric.blobs.count, targetPreset.geometric.blobs.count, easedProgress)),
+                    size: interpolate(currentState.geometric.blobs.size, targetPreset.geometric.blobs.size, easedProgress),
+                    color: interpolateColor(currentState.geometric.blobs.color, targetPreset.geometric.blobs.color, easedProgress),
+                    speed: interpolate(currentState.geometric.blobs.speed, targetPreset.geometric.blobs.speed, easedProgress),
+                    opacity: interpolate(currentState.geometric.blobs.opacity, targetPreset.geometric.blobs.opacity, easedProgress),
+                    organicness: interpolate(currentState.geometric.blobs.organicness, targetPreset.geometric.blobs.organicness, easedProgress),
+                    distance: interpolate(currentState.geometric.blobs.distance, targetPreset.geometric.blobs.distance, easedProgress),
+                    pulseSize: interpolate(currentState.geometric.blobs.pulseSize, targetPreset.geometric.blobs.pulseSize, easedProgress)
+                  };
+                }
+              }
+              
+              // Interpolate particles
+              if (targetPreset.particles) {
+                interpolatedState.particles = {
+                  ...currentState.particles,
+                  count: Math.round(interpolate(currentState.particles.count, targetPreset.particles.count, easedProgress)),
+                  size: interpolate(currentState.particles.size, targetPreset.particles.size, easedProgress),
+                  color: interpolateColor(currentState.particles.color, targetPreset.particles.color, easedProgress),
+                  speed: interpolate(currentState.particles.speed, targetPreset.particles.speed, easedProgress),
+                  opacity: interpolate(currentState.particles.opacity, targetPreset.particles.opacity, easedProgress),
+                  spread: interpolate(currentState.particles.spread, targetPreset.particles.spread, easedProgress),
+                  distance: interpolate(currentState.particles.distance, targetPreset.particles.distance, easedProgress),
+                  pulseSize: interpolate(currentState.particles.pulseSize, targetPreset.particles.pulseSize, easedProgress)
+                };
+              }
+              
+              // Interpolate effects
+              if (targetPreset.effects) {
+                interpolatedState.effects = {
+                  ...currentState.effects,
+                  glow: interpolate(currentState.effects.glow, targetPreset.effects.glow, easedProgress),
+                  contrast: interpolate(currentState.effects.contrast, targetPreset.effects.contrast, easedProgress),
+                  saturation: interpolate(currentState.effects.saturation, targetPreset.effects.saturation, easedProgress),
+                  brightness: interpolate(currentState.effects.brightness, targetPreset.effects.brightness, easedProgress),
+                  vignette: interpolate(currentState.effects.vignette, targetPreset.effects.vignette, easedProgress),
+                  hue: interpolate(currentState.effects.hue, targetPreset.effects.hue, easedProgress)
+                };
+              }
+              
+              // Interpolate global animation speed
+              if (typeof targetPreset.globalAnimationSpeed === 'number') {
+                interpolatedState.globalAnimationSpeed = interpolate(
+                  currentState.globalAnimationSpeed, 
+                  targetPreset.globalAnimationSpeed, 
+                  easedProgress
+                );
+              }
+              
+              // Apply interpolated state
+              set((state) => ({
+                ...state,
+                ...interpolatedState
+              }));
+              
+              // Continue animation if not complete
+              if (progress < 1) {
+                requestAnimationFrame(animate);
+              } else {
+                resolve();
+              }
+            };
+            
+            animate();
+          });
+        } catch (error) {
+          console.error('Error during preset transition:', error);
+        }
+      },
+
+      // AI Integration Actions
+      toggleAI: () => {
+        set((state) => {
+          const currentAI = state.ai;
+          const newEnabled = !(currentAI?.enabled ?? false);
+          
+          return {
+            ai: buildAIState(
+              newEnabled,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      setAIEnabled: (enabled: boolean) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              enabled,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      updateAIAnalysis: (analysis: NonNullable<VisualState['ai']>['analysis']) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              analysis,
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      updateAIColorHarmony: (colorHarmony: NonNullable<VisualState['ai']>['colorHarmony']) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      updateAIWeatherIntegration: (weatherIntegration: NonNullable<VisualState['ai']>['weatherIntegration']) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              currentAI?.colorHarmony,
+              weatherIntegration
+            )
+          };
+        });
+      },
+
+      updateAIStatus: (status: NonNullable<VisualState['ai']>['status']) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              status,
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      updateAIFeatures: (features: NonNullable<VisualState['ai']>['features']) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              features,
+              currentAI?.analysis,
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      applyAIThemeAnalysis: (themeAnalysis: ThemeAnalysis) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              { 
+                theme: themeAnalysis.theme,
+                mood: themeAnalysis.mood,
+                confidence: themeAnalysis.confidence,
+                weatherData: undefined,
+                visualCharacteristics: themeAnalysis.visualCharacteristics,
+                lastUpdated: new Date()
+              },
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      applyEnhancedColorPalette: (colorPalette: EnhancedColorPalette) => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              { 
+                palette: colorPalette,
+                harmonyConfig: {
+                  baseColor: colorPalette.primary,
+                  harmonyLevel: 0.5,
+                  targetMood: [],
+                  targetTemperature: 'neutral',
+                  targetSaturation: 0.5,
+                  targetBrightness: 0.5,
+                  accessibilityMode: false,
+                  maxSupportingColors: 5
+                },
+                lastGenerated: new Date(),
+                performanceMetrics: {
+                  generationTime: 0,
+                  memoryUsage: 0,
+                  cacheHitRate: 0,
+                  validationTime: 0
+                }
+              },
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      clearAIAnalysis: () => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              undefined,
+              currentAI?.colorHarmony,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      clearAIColorHarmony: () => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              undefined,
+              currentAI?.weatherIntegration
+            )
+          };
+        });
+      },
+
+      clearAIWeatherIntegration: () => {
+        set((state) => {
+          const currentAI = state.ai;
+          
+          return {
+            ai: buildAIState(
+              currentAI?.enabled ?? false,
+              currentAI?.status ?? {
+                coreAI: 'idle',
+                enhancedAI: 'idle',
+                weatherService: 'idle'
+              },
+              currentAI?.features ?? {
+                weatherIntegration: false,
+                colorHarmony: false,
+                themeAnalysis: false,
+                parameterInterpolation: false
+              },
+              currentAI?.analysis,
+              currentAI?.colorHarmony,
+              undefined
+            )
+          };
+        });
+      },
+    }),
+    {
+      name: 'visual-store', // unique name for localStorage key
+      partialize: (state) => ({
+        // Only persist the visual state, not the actions
+        ui: state.ui,
+        background: state.background,
+        backgroundConfig: state.backgroundConfig,
+        logo: state.logo,
+        geometric: state.geometric,
+        particles: state.particles,
+        globalEffects: state.globalEffects,
+        effects: state.effects,
+        camera: state.camera,
+        globalAnimationSpeed: state.globalAnimationSpeed,
+        globalBlendMode: state.globalBlendMode,
+        location: state.location
+      }),
+      // Temporarily disable persistence to test if it's causing the issue
+      skipHydration: true
     }
-  },
-}));
+  )
+);
 
 function isPlainObject(obj: any): obj is object {
   return obj && typeof obj === 'object' && !Array.isArray(obj);
+}
+
+// Utility function for color conversion
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 0, b: 0 };
+}
+
+// Helper function to build AI state safely
+function buildAIState(
+  enabled: boolean,
+  status: VisualState['ai']['status'],
+  features: VisualState['ai']['features'],
+  analysis?: VisualState['ai']['analysis'],
+  colorHarmony?: VisualState['ai']['colorHarmony'],
+  weatherIntegration?: VisualState['ai']['weatherIntegration']
+): VisualState['ai'] {
+  const result: VisualState['ai'] = {
+    enabled,
+    status,
+    features
+  };
+  
+  if (analysis) {
+    result.analysis = analysis;
+  }
+  if (colorHarmony) {
+    result.colorHarmony = colorHarmony;
+  }
+  if (weatherIntegration) {
+    result.weatherIntegration = weatherIntegration;
+  }
+  
+  return result;
 } 

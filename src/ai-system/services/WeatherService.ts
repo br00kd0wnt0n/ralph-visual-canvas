@@ -22,6 +22,16 @@ export class WeatherService {
   }
 
   public setApiKey(apiKey: string): void {
+    // Validate API key format (OpenWeather keys are typically 32 characters, not OpenAI format)
+    if (apiKey && apiKey.startsWith('sk-')) {
+      console.warn('⚠️ You are using an OpenAI API key for the weather service. Please use a valid OpenWeather API key instead.');
+      return; // Don't set invalid keys
+    }
+    
+    if (apiKey && apiKey.length < 20) {
+      console.warn('⚠️ OpenWeather API key seems too short. Please check your API key format.');
+    }
+    
     this.apiKey = apiKey;
     if (typeof window !== 'undefined') {
       localStorage.setItem('openweather-api-key', apiKey);
@@ -30,6 +40,31 @@ export class WeatherService {
 
   public getApiKey(): string | null {
     return this.apiKey;
+  }
+
+  public async testApiKey(): Promise<boolean> {
+    if (!this.apiKey) {
+      throw new Error('No API key configured');
+    }
+
+    try {
+      // Test with a simple location lookup
+      const response = await fetch(
+        `https://api.openweathermap.org/geo/1.0/direct?q=London&limit=1&appid=${this.apiKey}`
+      );
+
+      if (response.ok) {
+        console.log('✅ OpenWeather API key is valid');
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.error('❌ OpenWeather API key test failed:', errorText);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ OpenWeather API key test error:', error);
+      return false;
+    }
   }
 
   public async getWeatherData(location: string): Promise<WeatherData> {

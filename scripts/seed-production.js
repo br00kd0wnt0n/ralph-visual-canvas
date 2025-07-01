@@ -90,7 +90,7 @@ const samplePresets = [
         }
       },
       logo: {
-        enabled: true,
+        enabled: false,
         size: 800,
         position: {
           x: 'center',

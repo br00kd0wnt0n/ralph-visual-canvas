@@ -8,6 +8,7 @@ interface FormFunction {
 }
 
 export const Metamorphosis = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { metamorphosis } = globalEffects;
   const groupRef = useRef<THREE.Group>(null);
@@ -15,6 +16,10 @@ export const Metamorphosis = () => {
   const timeRef = useRef(0);
   const frameCountRef = useRef(0);
   const lastUpdateRef = useRef(0);
+
+  // Pre-allocate geometry objects for reuse
+  const geometryPoolRef = useRef<THREE.BufferGeometry[]>([]);
+  const linePoolRef = useRef<THREE.Line[]>([]);
 
   // Debug: Log when component mounts
   useEffect(() => {
@@ -74,6 +79,17 @@ export const Metamorphosis = () => {
     }
   ], []);
 
+  // Create wireframe material with ref for dynamic updates
+  const wireframeMaterial = useMemo(() => {
+    const material = new THREE.LineBasicMaterial({
+      color: geometric.metamorphosis?.color || '#333333',
+      transparent: true,
+      opacity: metamorphosis?.wireframeOpacity || 0.4,
+    });
+    materialRef.current = material;
+    return material;
+  }, [geometric.metamorphosis?.color]);
+
   // Interpolate between forms
   const interpolateForms = (formA: FormFunction, formB: FormFunction, u: number, v: number, t: number, blend: number): THREE.Vector3 => {
     const pointA = formA(u, v, t);
@@ -113,21 +129,6 @@ export const Metamorphosis = () => {
     return interpolateForms(forms[formIndex], forms[nextFormIndex], u, v, t, blend);
   };
 
-  // Create wireframe material with ref for dynamic updates
-  const wireframeMaterial = useMemo(() => {
-    const material = new THREE.LineBasicMaterial({
-      color: geometric.metamorphosis?.color || '#333333',
-      transparent: true,
-      opacity: metamorphosis?.wireframeOpacity || 0.4,
-    });
-    materialRef.current = material;
-    return material;
-  }, [geometric.metamorphosis?.color]);
-
-  // Pre-allocate geometry objects for reuse
-  const geometryPoolRef = useRef<THREE.BufferGeometry[]>([]);
-  const linePoolRef = useRef<THREE.Line[]>([]);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -163,7 +164,9 @@ export const Metamorphosis = () => {
     };
   }, []);
 
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state, delta) => {
+    // Early return if conditions aren't met
     if (!metamorphosis?.enabled || !groupRef.current) {
       return;
     }
@@ -349,6 +352,7 @@ export const Metamorphosis = () => {
     groupRef.current.rotation.set(rotateX, rotateY, rotateZ);
   });
 
+  // NOW we can have conditional returns after all hooks are called
   if (!metamorphosis?.enabled) return null;
 
   return (

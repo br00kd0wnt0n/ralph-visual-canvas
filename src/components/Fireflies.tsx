@@ -15,6 +15,7 @@ interface Firefly {
 }
 
 export const Fireflies = () => {
+  // ALL HOOKS MUST BE CALLED FIRST, BEFORE ANY CONDITIONAL LOGIC
   const { globalEffects, geometric, globalAnimationSpeed } = useVisualStore();
   const { fireflies } = globalEffects;
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
@@ -69,7 +70,9 @@ export const Fireflies = () => {
     }
   }, [fireflies?.count, fireflies?.enabled]);
 
+  // ALWAYS call useFrame, but make it conditional inside
   useFrame((state, delta) => {
+    // Early return if conditions aren't met
     if (!fireflies?.enabled || !instancedMeshRef.current || firefliesRef.current.length === 0) {
       return;
     }
@@ -177,6 +180,7 @@ export const Fireflies = () => {
     }
   });
 
+  // NOW we can have conditional returns after all hooks are called
   if (!fireflies?.enabled) return null;
 
   const count = fireflies?.count || 50;

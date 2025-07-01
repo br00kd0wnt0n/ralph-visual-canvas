@@ -6,7 +6,7 @@ import * as THREE from 'three';
 export const Particles = () => {
   const { particles, globalEffects, globalAnimationSpeed } = useVisualStore();
   const { shapeGlow } = globalEffects;
-  const glowIntensity = shapeGlow.enabled ? shapeGlow.intensity : 0;
+  const glowIntensity = shapeGlow?.enabled ? (shapeGlow?.intensity ?? 0) : 0;
 
   const particlePositions = useMemo(() => {
     const positions = [];
@@ -126,6 +126,26 @@ export const Particles = () => {
             }
           }
         }
+      }
+    });
+
+    console.log('🎨 Particles component - Current store values:', {
+      count: particles.count,
+      size: particles.size,
+      color: particles.color,
+      speed: particles.speed,
+      opacity: particles.opacity,
+      spread: particles.spread,
+      movementPattern: particles.movementPattern,
+      distance: particles.distance,
+      pulseEnabled: particles.pulseEnabled,
+      pulseSize: particles.pulseSize,
+      globalAnimationSpeed: globalAnimationSpeed,
+      shapeGlow: {
+        enabled: shapeGlow?.enabled,
+        intensity: shapeGlow?.intensity,
+        useObjectColor: shapeGlow?.useObjectColor,
+        customColor: shapeGlow?.customColor
       }
     });
   });

@@ -130,6 +130,187 @@ const SelectControl: React.FC<SelectControlProps> = React.memo(({
 export const ShapeParticleDashboard = React.memo(() => {
   const { geometric, particles, globalEffects, updateGeometric, updateParticles, updateGlobalEffects } = useVisualStore();
 
+  // Create safe defaults for globalEffects
+  const defaultGlobalEffects = {
+    atmosphericBlur: {
+      enabled: false,
+      intensity: 0.5,
+      layers: 5,
+    },
+    colorBlending: {
+      enabled: false,
+      mode: 'screen',
+      intensity: 0.5,
+    },
+    shapeGlow: {
+      enabled: false,
+      intensity: 0.4,
+      radius: 20,
+      useObjectColor: true,
+      customColor: '#ffffff',
+      pulsing: false,
+      pulseSpeed: 1.0,
+    },
+    chromatic: {
+      enabled: false,
+      aberration: 0,
+      aberrationColors: {
+        red: '#ff0000',
+        green: '#00ff00',
+        blue: '#0000ff',
+      },
+      rainbow: {
+        enabled: false,
+        intensity: 0,
+        speed: 1,
+        rotation: 0,
+        blendMode: 'screen',
+        colors: [
+          '#ff0000',
+          '#ff7f00',
+          '#ffff00',
+          '#00ff00',
+          '#0000ff',
+          '#4b0082',
+          '#9400d3'
+        ],
+        opacity: 0.3
+      },
+      prism: 0,
+    },
+    distortion: {
+      enabled: false,
+      wave: 0,
+      ripple: 0,
+      noise: 0,
+      frequency: 1,
+    },
+    particleInteraction: {
+      enabled: false,
+      magnetism: 0,
+      repulsion: 0,
+      flowField: false,
+      turbulence: 0,
+    },
+    volumetric: {
+      enabled: false,
+      fog: 0,
+      lightShafts: 0,
+      density: 0.5,
+      color: '#4169e1',
+    },
+    trails: {
+      enabled: true,
+      sphereTrails: {
+        enabled: true,
+        length: 150,
+        opacity: 0.6,
+        width: 0.8,
+        fadeRate: 0.3,
+      },
+      cubeTrails: {
+        enabled: true,
+        length: 120,
+        opacity: 0.5,
+        width: 0.7,
+        fadeRate: 0.4,
+      },
+      blobTrails: {
+        enabled: true,
+        length: 200,
+        opacity: 0.7,
+        width: 0.9,
+        fadeRate: 0.2,
+      },
+      torusTrails: {
+        enabled: true,
+        length: 100,
+        opacity: 0.5,
+        width: 0.6,
+        fadeRate: 0.5,
+      },
+      particleTrails: {
+        enabled: true,
+        length: 300,
+        opacity: 0.8,
+        width: 0.3,
+        fadeRate: 0.1,
+      },
+    },
+    waveInterference: {
+      enabled: false,
+      speed: 0.5,
+      amplitude: 0.5,
+      contourLevels: 5,
+      preset: 1,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5,
+      },
+    },
+    metamorphosis: {
+      enabled: true,
+      morphSpeed: 0.5,
+      rotationSpeed: 0.5,
+      wireframeOpacity: 0.8,
+      size: 1.5,
+      blur: 0.0,
+      intensity: 1.0,
+      layers: 1,
+    },
+    fireflies: {
+      enabled: false,
+      count: 100,
+      speed: 0.5,
+      glowIntensity: 0.5,
+      swarmRadius: 20,
+    },
+    layeredSineWaves: {
+      enabled: false,
+      layers: 80,
+      points: 200,
+      waveAmplitude: 40,
+      speed: 0.5,
+      opacity: 0.5,
+      lineWidth: 0.6,
+      size: 1.0,
+      width: 100,
+      height: 100,
+      intensity: 1.0,
+      layerCount: 1,
+      edgeFade: {
+        enabled: true,
+        fadeStart: 0.3,
+        fadeEnd: 0.5,
+      },
+    },
+  };
+
+  // Deep merge function
+  const deepMerge = (defaults: any, actual: any): any => {
+    if (!actual) return defaults;
+    const result = { ...defaults };
+    for (const key in actual) {
+      if (actual[key] && typeof actual[key] === 'object' && !Array.isArray(actual[key])) {
+        result[key] = deepMerge(defaults[key] || {}, actual[key]);
+      } else if (actual[key] !== undefined) {
+        result[key] = actual[key];
+      }
+    }
+    return result;
+  };
+
+  // Safe globalEffects
+  const safeGlobalEffects = deepMerge(defaultGlobalEffects, globalEffects);
+
+  // Safe update function
+  const safeUpdateGlobalEffects = (updates: any) => {
+    const currentSafe = deepMerge(defaultGlobalEffects, globalEffects);
+    const updated = deepMerge(currentSafe, updates);
+    updateGlobalEffects(updated);
+  };
+
   return (
     <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 text-white shadow-xl">
       <div className="flex items-center justify-between mb-4">
@@ -556,49 +737,49 @@ export const ShapeParticleDashboard = React.memo(() => {
         <CollapsibleSection title="Fireflies" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
-            value={globalEffects.fireflies.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, enabled: value }
+            value={safeGlobalEffects.fireflies?.enabled ?? false}
+            onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+              fireflies: { ...safeGlobalEffects.fireflies, enabled: value }
             })}
           />
           <SliderControl
             label="Count"
-            value={globalEffects.fireflies.count || 50}
+            value={safeGlobalEffects.fireflies?.count ?? 50}
             min={10}
             max={100}
             step={5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, count: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              fireflies: { ...safeGlobalEffects.fireflies, count: value }
             })}
           />
           <SliderControl
             label="Speed"
-            value={globalEffects.fireflies.speed || 1}
+            value={safeGlobalEffects.fireflies?.speed ?? 1}
             min={0.1}
             max={3}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, speed: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              fireflies: { ...safeGlobalEffects.fireflies, speed: value }
             })}
           />
           <SliderControl
             label="Glow Intensity"
-            value={globalEffects.fireflies.glowIntensity || 1}
+            value={safeGlobalEffects.fireflies?.glowIntensity ?? 1}
             min={0.1}
             max={2}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, glowIntensity: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              fireflies: { ...safeGlobalEffects.fireflies, glowIntensity: value }
             })}
           />
           <SliderControl
             label="Swarm Radius"
-            value={globalEffects.fireflies.swarmRadius || 30}
+            value={safeGlobalEffects.fireflies?.swarmRadius ?? 30}
             min={10}
             max={50}
             step={5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              fireflies: { ...globalEffects.fireflies, swarmRadius: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              fireflies: { ...safeGlobalEffects.fireflies, swarmRadius: value }
             })}
           />
           <ColorControl
@@ -612,79 +793,79 @@ export const ShapeParticleDashboard = React.memo(() => {
         <CollapsibleSection title="Metamorphosis" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
-            value={globalEffects.metamorphosis.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, enabled: value }
+            value={safeGlobalEffects.metamorphosis?.enabled ?? false}
+            onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, enabled: value }
             })}
           />
           <SliderControl
             label="Intensity"
-            value={globalEffects.metamorphosis.intensity || 1.0}
+            value={safeGlobalEffects.metamorphosis?.intensity ?? 1.0}
             min={0.1}
             max={3.0}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, intensity: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, intensity: value }
             })}
           />
           <SliderControl
             label="Layers"
-            value={globalEffects.metamorphosis.layers || 1}
+            value={safeGlobalEffects.metamorphosis?.layers ?? 1}
             min={1}
             max={5}
             step={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, layers: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, layers: value }
             })}
           />
           <SliderControl
             label="Morph Speed"
-            value={globalEffects.metamorphosis.morphSpeed || 1}
+            value={safeGlobalEffects.metamorphosis?.morphSpeed ?? 1}
             min={0.1}
             max={3}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, morphSpeed: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, morphSpeed: value }
             })}
           />
           <SliderControl
             label="Rotation Speed"
-            value={globalEffects.metamorphosis.rotationSpeed || 1}
+            value={safeGlobalEffects.metamorphosis?.rotationSpeed ?? 1}
             min={0}
             max={2}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, rotationSpeed: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, rotationSpeed: value }
             })}
           />
           <SliderControl
             label="Wireframe Opacity"
-            value={globalEffects.metamorphosis.wireframeOpacity || 0.4}
+            value={safeGlobalEffects.metamorphosis?.wireframeOpacity ?? 0.4}
             min={0.1}
             max={1}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, wireframeOpacity: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, wireframeOpacity: value }
             })}
           />
           <SliderControl
             label="Size"
-            value={globalEffects.metamorphosis.size || 1.0}
+            value={safeGlobalEffects.metamorphosis?.size ?? 1.0}
             min={0.1}
             max={15.0}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, size: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, size: value }
             })}
           />
           <SliderControl
             label="Blur"
-            value={globalEffects.metamorphosis.blur || 0.0}
+            value={safeGlobalEffects.metamorphosis?.blur ?? 0.0}
             min={0.0}
             max={1.0}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              metamorphosis: { ...globalEffects.metamorphosis, blur: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              metamorphosis: { ...safeGlobalEffects.metamorphosis, blur: value }
             })}
           />
           <ColorControl
@@ -698,106 +879,106 @@ export const ShapeParticleDashboard = React.memo(() => {
         <CollapsibleSection title="Wave Interference" defaultExpanded={false}>
           <ToggleControl
             label="Enable"
-            value={globalEffects.waveInterference.enabled}
-            onChange={(value: boolean) => updateGlobalEffects({ 
-              waveInterference: { ...globalEffects.waveInterference, enabled: value }
+            value={safeGlobalEffects.waveInterference.enabled}
+            onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+              waveInterference: { ...safeGlobalEffects.waveInterference, enabled: value }
             })}
           />
           <SelectControl
             label="Preset"
-            value={globalEffects.waveInterference.preset?.toString() || "1"}
+            value={safeGlobalEffects.waveInterference.preset?.toString() || "1"}
             options={[
               { value: "1", label: "1 - Classic Interference" },
               { value: "2", label: "2 - Spiral Waves" },
               { value: "3", label: "3 - Chaotic Turbulence" },
               { value: "4", label: "4 - Harmonic Resonance" }
             ]}
-            onChange={(value: string) => updateGlobalEffects({ 
-              waveInterference: { ...globalEffects.waveInterference, preset: parseInt(value) }
+            onChange={(value: string) => safeUpdateGlobalEffects({ 
+              waveInterference: { ...safeGlobalEffects.waveInterference, preset: parseInt(value) }
             })}
           />
           {/* Preset descriptions */}
           <div className="text-xs text-gray-400 mt-1 mb-2 px-2">
-            {globalEffects.waveInterference.preset === 1 && "Traditional wave interference with grid sources"}
-            {globalEffects.waveInterference.preset === 2 && "Concentric spiral wave pattern with rotation effects"}
-            {globalEffects.waveInterference.preset === 3 && "Random chaotic wave interference with noise"}
-            {globalEffects.waveInterference.preset === 4 && "Harmonic wave patterns with frequency relationships"}
+            {safeGlobalEffects.waveInterference.preset === 1 && "Traditional wave interference with grid sources"}
+            {safeGlobalEffects.waveInterference.preset === 2 && "Concentric spiral wave pattern with rotation effects"}
+            {safeGlobalEffects.waveInterference.preset === 3 && "Random chaotic wave interference with noise"}
+            {safeGlobalEffects.waveInterference.preset === 4 && "Harmonic wave patterns with frequency relationships"}
           </div>
           <SliderControl
             label="Speed"
-            value={globalEffects.waveInterference.speed || 0.5}
+            value={safeGlobalEffects.waveInterference.speed || 0.5}
             min={0.1}
             max={2.0}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              waveInterference: { ...globalEffects.waveInterference, speed: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              waveInterference: { ...safeGlobalEffects.waveInterference, speed: value }
             })}
           />
           <SliderControl
             label="Amplitude"
-            value={globalEffects.waveInterference.amplitude || 0.5}
+            value={safeGlobalEffects.waveInterference.amplitude || 0.5}
             min={0.1}
             max={2.0}
             step={0.1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              waveInterference: { ...globalEffects.waveInterference, amplitude: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              waveInterference: { ...safeGlobalEffects.waveInterference, amplitude: value }
             })}
           />
           <SliderControl
             label="Contour Levels"
-            value={globalEffects.waveInterference.contourLevels || 5}
+            value={safeGlobalEffects.waveInterference.contourLevels || 5}
             min={2}
             max={20}
             step={1}
-            onChange={(value: number) => updateGlobalEffects({ 
-              waveInterference: { ...globalEffects.waveInterference, contourLevels: value }
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              waveInterference: { ...safeGlobalEffects.waveInterference, contourLevels: value }
             })}
           />
           
           {/* Edge Fade Controls */}
           <ToggleControl
             label="Edge Fade"
-            value={globalEffects.waveInterference.edgeFade?.enabled ?? true}
-            onChange={(value: boolean) => updateGlobalEffects({ 
+            value={safeGlobalEffects.waveInterference.edgeFade?.enabled ?? true}
+            onChange={(value: boolean) => safeUpdateGlobalEffects({ 
               waveInterference: { 
-                ...globalEffects.waveInterference, 
+                ...safeGlobalEffects.waveInterference, 
                 edgeFade: { 
                   enabled: value,
-                  fadeStart: globalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3,
-                  fadeEnd: globalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5
+                  fadeStart: safeGlobalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3,
+                  fadeEnd: safeGlobalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5
                 }
               }
             })}
           />
           <SliderControl
             label="Fade Start"
-            value={globalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3}
+            value={safeGlobalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3}
             min={0.1}
             max={0.8}
             step={0.05}
-            onChange={(value: number) => updateGlobalEffects({ 
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
               waveInterference: { 
-                ...globalEffects.waveInterference, 
+                ...safeGlobalEffects.waveInterference, 
                 edgeFade: { 
-                  enabled: globalEffects.waveInterference.edgeFade?.enabled ?? true,
+                  enabled: safeGlobalEffects.waveInterference.edgeFade?.enabled ?? true,
                   fadeStart: value,
-                  fadeEnd: globalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5
+                  fadeEnd: safeGlobalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5
                 }
               }
             })}
           />
           <SliderControl
             label="Fade End"
-            value={globalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5}
+            value={safeGlobalEffects.waveInterference.edgeFade?.fadeEnd ?? 0.5}
             min={0.2}
             max={0.9}
             step={0.05}
-            onChange={(value: number) => updateGlobalEffects({ 
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
               waveInterference: { 
-                ...globalEffects.waveInterference, 
+                ...safeGlobalEffects.waveInterference, 
                 edgeFade: { 
-                  enabled: globalEffects.waveInterference.edgeFade?.enabled ?? true,
-                  fadeStart: globalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3,
+                  enabled: safeGlobalEffects.waveInterference.edgeFade?.enabled ?? true,
+                  fadeStart: safeGlobalEffects.waveInterference.edgeFade?.fadeStart ?? 0.3,
                   fadeEnd: value
                 }
               }

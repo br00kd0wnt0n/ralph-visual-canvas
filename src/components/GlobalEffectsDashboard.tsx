@@ -37,7 +37,181 @@ const SelectControl = React.memo(({
 ));
 
 export const GlobalEffectsDashboard = () => {
-  const { globalEffects, updateGlobalEffects, effects, updateEffects, camera, updateCamera, geometric, updateGeometric, globalAnimationSpeed, updateGlobalAnimationSpeed } = useVisualStore();
+  const { globalEffects, updateGlobalEffects, effects, updateEffects, globalAnimationSpeed, updateGlobalAnimationSpeed } = useVisualStore();
+
+  // Create safe defaults with proper nested structure
+  const defaultGlobalEffects = {
+    colorBlending: {
+      enabled: false,
+      mode: 'screen' as const,
+      intensity: 0.5
+    },
+    shapeGlow: {
+      enabled: false,
+      intensity: 0.4,
+      radius: 20,
+      useObjectColor: false,
+      customColor: '#ffffff',
+      pulsing: false,
+      pulseSpeed: 1.0
+    },
+    chromatic: {
+      enabled: false,
+      aberration: 0,
+      aberrationColors: {
+        red: '#ff0000',
+        green: '#00ff00',
+        blue: '#0000ff'
+      },
+      rainbow: {
+        enabled: false,
+        intensity: 0.5,
+        speed: 1.0,
+        rotation: 0,
+        blendMode: 'screen' as const,
+        colors: ['#ff0000', '#00ff00', '#0000ff'],
+        opacity: 0.5
+      },
+      prism: 0
+    },
+    distortion: {
+      enabled: false,
+      wave: 0,
+      ripple: 0,
+      noise: 0,
+      frequency: 1
+    },
+    particleInteraction: {
+      enabled: false,
+      magnetism: 0,
+      repulsion: 0,
+      flowField: false,
+      turbulence: 0
+    },
+    volumetric: {
+      enabled: false,
+      fog: 0,
+      lightShafts: 0,
+      density: 0.5,
+      color: '#4169e1'
+    },
+    trails: {
+      enabled: false,
+      sphereTrails: {
+        enabled: false,
+        length: 10,
+        opacity: 0.3,
+        width: 2,
+        fadeRate: 0.95
+      },
+      cubeTrails: {
+        enabled: false,
+        length: 10,
+        opacity: 0.3,
+        width: 2,
+        fadeRate: 0.95
+      },
+      blobTrails: {
+        enabled: false,
+        length: 10,
+        opacity: 0.3,
+        width: 2,
+        fadeRate: 0.95
+      },
+      torusTrails: {
+        enabled: false,
+        length: 10,
+        opacity: 0.3,
+        width: 2,
+        fadeRate: 0.95
+      },
+      particleTrails: {
+        enabled: false,
+        length: 10,
+        opacity: 0.3,
+        width: 2,
+        fadeRate: 0.95
+      }
+    },
+    waveInterference: {
+      enabled: false,
+      speed: 1.0,
+      amplitude: 0.5,
+      contourLevels: 10,
+      preset: 1,
+      edgeFade: {
+        enabled: false,
+        fadeStart: 0.7,
+        fadeEnd: 1.0
+      }
+    },
+    metamorphosis: {
+      enabled: false,
+      morphSpeed: 1.0,
+      rotationSpeed: 1.0,
+      wireframeOpacity: 0.3,
+      size: 1.0,
+      blur: 0.1,
+      intensity: 0.5,
+      layers: 3
+    },
+    fireflies: {
+      enabled: false,
+      count: 50,
+      speed: 1.0,
+      glowIntensity: 0.5,
+      swarmRadius: 20
+    },
+    layeredSineWaves: {
+      enabled: false,
+      layers: 3,
+      points: 100,
+      waveAmplitude: 0.5,
+      speed: 1.0,
+      opacity: 0.3,
+      lineWidth: 1,
+      size: 1.0,
+      width: 100,
+      height: 100,
+      intensity: 0.5,
+      layerCount: 3,
+      edgeFade: {
+        enabled: false,
+        fadeStart: 0.7,
+        fadeEnd: 1.0
+      }
+    }
+  };
+
+  const defaultEffects = {
+    glow: 0,
+    contrast: 1,
+    saturation: 1,
+    hue: 0,
+    brightness: 1,
+    vignette: 0
+  };
+
+  // Deep merge function to handle nested objects
+  const deepMerge = (defaults: any, actual: any): any => {
+    if (!actual) return defaults;
+    
+    const result = { ...defaults };
+    
+    for (const key in actual) {
+      if (actual[key] && typeof actual[key] === 'object' && !Array.isArray(actual[key])) {
+        result[key] = deepMerge(defaults[key] || {}, actual[key]);
+      } else {
+        result[key] = actual[key];
+      }
+    }
+    
+    return result;
+  };
+
+  // Create safe versions with proper defaults
+  const safeGlobalEffects = deepMerge(defaultGlobalEffects, globalEffects);
+  const safeEffects = deepMerge(defaultEffects, effects);
 
   const blendModeOptions = useMemo(() => [
     { value: 'screen', label: 'Screen' },
@@ -46,7 +220,17 @@ export const GlobalEffectsDashboard = () => {
     { value: 'soft-light', label: 'Soft Light' },
     { value: 'hard-light', label: 'Hard Light' },
     { value: 'color-dodge', label: 'Color Dodge' },
+    { value: 'color-burn', label: 'Color Burn' },
+    { value: 'difference', label: 'Difference' },
+    { value: 'exclusion', label: 'Exclusion' }
   ], []);
+
+  // Safe update function that ensures all required properties exist
+  const safeUpdateGlobalEffects = (updates: any) => {
+    const currentSafe = deepMerge(defaultGlobalEffects, globalEffects);
+    const updated = deepMerge(currentSafe, updates);
+    updateGlobalEffects(updated);
+  };
 
   return (
     <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-700/50 rounded-lg p-4 text-white shadow-xl">
@@ -64,52 +248,42 @@ export const GlobalEffectsDashboard = () => {
       {/* Global Animation Speed */}
       <CollapsibleSection title="Global Animation Speed" defaultExpanded={false}>
         <SliderControl
-          label="Speed Multiplier"
-          value={globalAnimationSpeed}
+          label="Animation Speed"
+          value={globalAnimationSpeed || 1.0}
           min={0.1}
-          max={3.0}
+          max={3}
           step={0.1}
           onChange={(value: number) => updateGlobalAnimationSpeed(value)}
         />
-        <div className="text-xs text-gray-400 mt-1">
-          {globalAnimationSpeed.toFixed(1)}x
-          {globalAnimationSpeed > 2.0 && (
-            <span className="text-yellow-400 ml-2">⚠️ High speed may affect performance</span>
-          )}
-        </div>
-        <div className="text-xs text-gray-400 mt-2">
-          This controls the global animation speed multiplier that affects all animated elements in the scene.
-          Lower values create slower, more cinematic animations, while higher values create faster, more energetic movements.
-        </div>
       </CollapsibleSection>
 
       {/* Atmospheric Blur */}
       <CollapsibleSection title="Atmospheric Blur" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
-          value={globalEffects.atmosphericBlur.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            atmosphericBlur: { ...globalEffects.atmosphericBlur, enabled: value }
+          value={safeGlobalEffects.atmosphericBlur.enabled}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            atmosphericBlur: { ...safeGlobalEffects.atmosphericBlur, enabled: value }
           })}
         />
         <SliderControl
           label="Intensity"
-          value={globalEffects.atmosphericBlur.intensity || 0.5}
+          value={safeGlobalEffects.atmosphericBlur.intensity || 0.5}
           min={0}
           max={25}
           step={0.5}
-          onChange={(value: number) => updateGlobalEffects({ 
-            atmosphericBlur: { ...globalEffects.atmosphericBlur, intensity: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            atmosphericBlur: { ...safeGlobalEffects.atmosphericBlur, intensity: value }
           })}
         />
         <SliderControl
           label="Layers"
-          value={globalEffects.atmosphericBlur.layers || 5}
+          value={safeGlobalEffects.atmosphericBlur.layers || 5}
           min={1}
           max={20}
           step={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            atmosphericBlur: { ...globalEffects.atmosphericBlur, layers: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            atmosphericBlur: { ...safeGlobalEffects.atmosphericBlur, layers: value }
           })}
         />
       </CollapsibleSection>
@@ -118,27 +292,27 @@ export const GlobalEffectsDashboard = () => {
       <CollapsibleSection title="Color Blending" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
-          value={globalEffects.colorBlending.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            colorBlending: { ...globalEffects.colorBlending, enabled: value }
+          value={safeGlobalEffects.colorBlending.enabled}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            colorBlending: { ...safeGlobalEffects.colorBlending, enabled: value }
           })}
         />
         <SelectControl
           label="Blend Mode"
-          value={globalEffects.colorBlending.mode}
+          value={safeGlobalEffects.colorBlending.mode}
           options={blendModeOptions}
-          onChange={(value) => updateGlobalEffects({ 
-            colorBlending: { ...globalEffects.colorBlending, mode: value as any }
+          onChange={(value) => safeUpdateGlobalEffects({ 
+            colorBlending: { ...safeGlobalEffects.colorBlending, mode: value as any }
           })}
         />
         <SliderControl
           label="Intensity"
-          value={globalEffects.colorBlending.intensity || 0.5}
+          value={safeGlobalEffects.colorBlending.intensity || 0.5}
           min={0}
           max={2}
           step={0.1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            colorBlending: { ...globalEffects.colorBlending, intensity: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            colorBlending: { ...safeGlobalEffects.colorBlending, intensity: value }
           })}
         />
       </CollapsibleSection>
@@ -146,67 +320,74 @@ export const GlobalEffectsDashboard = () => {
       {/* Shape Glow */}
       <CollapsibleSection title="Shape Glow" defaultExpanded={false}>
         <ToggleControl
-          label="Enable"
-          value={globalEffects.shapeGlow.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            shapeGlow: { ...globalEffects.shapeGlow, enabled: value }
+          label="Enable Shape Glow"
+          value={safeGlobalEffects?.shapeGlow?.enabled ?? false}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            shapeGlow: { ...safeGlobalEffects?.shapeGlow, enabled: value }
           })}
         />
+        
         <ToggleControl
           label="Use Object Color"
-          value={globalEffects.shapeGlow.useObjectColor}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            shapeGlow: { ...globalEffects.shapeGlow, useObjectColor: value }
+          value={safeGlobalEffects?.shapeGlow?.useObjectColor ?? false}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            shapeGlow: { ...safeGlobalEffects?.shapeGlow, useObjectColor: value }
           })}
         />
-        {!globalEffects.shapeGlow.useObjectColor && (
+        
+        {!safeGlobalEffects?.shapeGlow?.useObjectColor && (
           <div className={styles.colorControls}>
             <label>Glow Color</label>
             <input
               type="color"
-              value={globalEffects.shapeGlow.customColor || '#ffffff'}
-              onChange={(e) => updateGlobalEffects({
+              value={safeGlobalEffects?.shapeGlow?.customColor || '#ffffff'}
+              onChange={(e) => safeUpdateGlobalEffects({
                 shapeGlow: {
-                  ...globalEffects.shapeGlow,
+                  ...safeGlobalEffects?.shapeGlow,
                   customColor: e.target.value
                 }
               })}
             />
           </div>
         )}
+        
         <SliderControl
-          label="Intensity"
-          value={globalEffects.shapeGlow.intensity || 0.4}
+          label="Glow Intensity"
+          value={safeGlobalEffects?.shapeGlow?.intensity ?? 0.4}
           min={0}
-          max={3}
-          onChange={(value: number) => updateGlobalEffects({ 
-            shapeGlow: { ...globalEffects.shapeGlow, intensity: value }
+          max={2}
+          step={0.1}
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            shapeGlow: { ...safeGlobalEffects?.shapeGlow, intensity: value }
           })}
         />
+        
         <SliderControl
-          label="Radius"
-          value={globalEffects.shapeGlow.radius || 20}
-          min={5}
-          max={100}
-          onChange={(value: number) => updateGlobalEffects({ 
-            shapeGlow: { ...globalEffects.shapeGlow, radius: value }
+          label="Glow Radius"
+          value={safeGlobalEffects?.shapeGlow?.radius ?? 20}
+          min={1}
+          max={50}
+          step={1}
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            shapeGlow: { ...safeGlobalEffects?.shapeGlow, radius: value }
           })}
         />
         <ToggleControl
-          label="Pulsing"
-          value={globalEffects.shapeGlow.pulsing}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            shapeGlow: { ...globalEffects.shapeGlow, pulsing: value }
+          label="Pulsing Glow"
+          value={safeGlobalEffects?.shapeGlow?.pulsing ?? false}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            shapeGlow: { ...safeGlobalEffects?.shapeGlow, pulsing: value }
           })}
         />
-        {globalEffects.shapeGlow.pulsing && (
+        {safeGlobalEffects?.shapeGlow?.pulsing && (
           <SliderControl
             label="Pulse Speed"
-            value={globalEffects.shapeGlow.pulseSpeed || 1.0}
+            value={safeGlobalEffects?.shapeGlow?.pulseSpeed ?? 1.0}
             min={0.1}
-            max={5}
-            onChange={(value: number) => updateGlobalEffects({ 
-              shapeGlow: { ...globalEffects.shapeGlow, pulseSpeed: value }
+            max={3}
+            step={0.1}
+            onChange={(value: number) => safeUpdateGlobalEffects({ 
+              shapeGlow: { ...safeGlobalEffects?.shapeGlow, pulseSpeed: value }
             })}
           />
         )}
@@ -216,30 +397,30 @@ export const GlobalEffectsDashboard = () => {
       <CollapsibleSection title="Chromatic Effects" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
-          value={globalEffects.chromatic.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            chromatic: { ...globalEffects.chromatic, enabled: value }
+          value={safeGlobalEffects.chromatic.enabled}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            chromatic: { ...safeGlobalEffects.chromatic, enabled: value }
           })}
         />
         <SliderControl
           label="Aberration"
-          value={globalEffects.chromatic.aberration || 0}
+          value={safeGlobalEffects.chromatic.aberration || 0}
           min={0}
           max={10}
-          onChange={(value: number) => updateGlobalEffects({ 
-            chromatic: { ...globalEffects.chromatic, aberration: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            chromatic: { ...safeGlobalEffects.chromatic, aberration: value }
           })}
         />
         <div className={styles.colorControls}>
           <label>Red Channel</label>
           <input
             type="color"
-            value={globalEffects.chromatic.aberrationColors.red || '#ff0000'}
-            onChange={(e) => updateGlobalEffects({
+            value={safeGlobalEffects.chromatic.aberrationColors.red || '#ff0000'}
+            onChange={(e) => safeUpdateGlobalEffects({
               chromatic: {
-                ...globalEffects.chromatic,
+                ...safeGlobalEffects.chromatic,
                 aberrationColors: {
-                  ...globalEffects.chromatic.aberrationColors,
+                  ...safeGlobalEffects.chromatic.aberrationColors,
                   red: e.target.value
                 }
               }
@@ -248,12 +429,12 @@ export const GlobalEffectsDashboard = () => {
           <label>Green Channel</label>
           <input
             type="color"
-            value={globalEffects.chromatic.aberrationColors.green || '#00ff00'}
-            onChange={(e) => updateGlobalEffects({
+            value={safeGlobalEffects.chromatic.aberrationColors.green || '#00ff00'}
+            onChange={(e) => safeUpdateGlobalEffects({
               chromatic: {
-                ...globalEffects.chromatic,
+                ...safeGlobalEffects.chromatic,
                 aberrationColors: {
-                  ...globalEffects.chromatic.aberrationColors,
+                  ...safeGlobalEffects.chromatic.aberrationColors,
                   green: e.target.value
                 }
               }
@@ -262,12 +443,12 @@ export const GlobalEffectsDashboard = () => {
           <label>Blue Channel</label>
           <input
             type="color"
-            value={globalEffects.chromatic.aberrationColors.blue || '#0000ff'}
-            onChange={(e) => updateGlobalEffects({
+            value={safeGlobalEffects.chromatic.aberrationColors.blue || '#0000ff'}
+            onChange={(e) => safeUpdateGlobalEffects({
               chromatic: {
-                ...globalEffects.chromatic,
+                ...safeGlobalEffects.chromatic,
                 aberrationColors: {
-                  ...globalEffects.chromatic.aberrationColors,
+                  ...safeGlobalEffects.chromatic.aberrationColors,
                   blue: e.target.value
                 }
               }
@@ -276,11 +457,11 @@ export const GlobalEffectsDashboard = () => {
         </div>
         <SliderControl
           label="Prism"
-          value={globalEffects.chromatic.prism || 0}
+          value={safeGlobalEffects.chromatic.prism || 0}
           min={0}
           max={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            chromatic: { ...globalEffects.chromatic, prism: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            chromatic: { ...safeGlobalEffects.chromatic, prism: value }
           })}
         />
       </CollapsibleSection>
@@ -289,67 +470,67 @@ export const GlobalEffectsDashboard = () => {
       <CollapsibleSection title="Rainbow Effect" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
-          value={globalEffects.chromatic.rainbow.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
+          value={safeGlobalEffects.chromatic.rainbow.enabled}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
             chromatic: { 
-              ...globalEffects.chromatic, 
-              rainbow: { ...globalEffects.chromatic.rainbow, enabled: value }
+              ...safeGlobalEffects.chromatic, 
+              rainbow: { ...safeGlobalEffects.chromatic.rainbow, enabled: value }
             }
           })}
         />
         <SliderControl
           label="Intensity"
-          value={globalEffects.chromatic.rainbow.intensity || 0}
+          value={safeGlobalEffects.chromatic.rainbow.intensity || 0}
           min={0}
           max={2}
-          onChange={(value: number) => updateGlobalEffects({ 
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
             chromatic: { 
-              ...globalEffects.chromatic, 
-              rainbow: { ...globalEffects.chromatic.rainbow, intensity: value }
+              ...safeGlobalEffects.chromatic, 
+              rainbow: { ...safeGlobalEffects.chromatic.rainbow, intensity: value }
             }
           })}
         />
         <SliderControl
           label="Speed"
-          value={globalEffects.chromatic.rainbow.speed || 1}
+          value={safeGlobalEffects.chromatic.rainbow.speed || 1}
           min={0}
           max={5}
-          onChange={(value: number) => updateGlobalEffects({ 
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
             chromatic: { 
-              ...globalEffects.chromatic, 
-              rainbow: { ...globalEffects.chromatic.rainbow, speed: value }
+              ...safeGlobalEffects.chromatic, 
+              rainbow: { ...safeGlobalEffects.chromatic.rainbow, speed: value }
             }
           })}
         />
         <SliderControl
           label="Rotation"
-          value={globalEffects.chromatic.rainbow.rotation || 0}
+          value={safeGlobalEffects.chromatic.rainbow.rotation || 0}
           min={0}
           max={360}
           step={1}
-          onChange={(value: number) => updateGlobalEffects({ 
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
             chromatic: { 
-              ...globalEffects.chromatic, 
-              rainbow: { ...globalEffects.chromatic.rainbow, rotation: value }
+              ...safeGlobalEffects.chromatic, 
+              rainbow: { ...safeGlobalEffects.chromatic.rainbow, rotation: value }
             }
           })}
         />
         <SliderControl
           label="Opacity"
-          value={globalEffects.chromatic.rainbow.opacity || 0.3}
+          value={safeGlobalEffects.chromatic.rainbow.opacity || 0.3}
           min={0}
           max={1}
           step={0.01}
-          onChange={(value: number) => updateGlobalEffects({ 
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
             chromatic: { 
-              ...globalEffects.chromatic, 
-              rainbow: { ...globalEffects.chromatic.rainbow, opacity: value }
+              ...safeGlobalEffects.chromatic, 
+              rainbow: { ...safeGlobalEffects.chromatic.rainbow, opacity: value }
             }
           })}
         />
         <SelectControl
           label="Blend Mode"
-          value={globalEffects.chromatic.rainbow.blendMode}
+          value={safeGlobalEffects.chromatic.rainbow.blendMode}
           options={[
             { value: 'normal', label: 'Normal' },
             { value: 'screen', label: 'Screen' },
@@ -361,29 +542,29 @@ export const GlobalEffectsDashboard = () => {
             { value: 'difference', label: 'Difference' },
             { value: 'exclusion', label: 'Exclusion' }
           ]}
-          onChange={(value) => updateGlobalEffects({ 
+          onChange={(value) => safeUpdateGlobalEffects({ 
             chromatic: { 
-              ...globalEffects.chromatic, 
-              rainbow: { ...globalEffects.chromatic.rainbow, blendMode: value as any }
+              ...safeGlobalEffects.chromatic, 
+              rainbow: { ...safeGlobalEffects.chromatic.rainbow, blendMode: value as any }
             }
           })}
         />
         <div className={styles.colorControls}>
           <label>Rainbow Colors</label>
-          {(globalEffects.chromatic.rainbow.colors || []).map((color, index) => (
+          {(safeGlobalEffects.chromatic.rainbow.colors || []).map((color: string, index: number) => (
             <div key={index} className={styles.colorRow}>
               <input
                 type="color"
                 value={color}
                 onChange={(e) => {
-                  const currentColors = globalEffects.chromatic.rainbow.colors || [];
+                  const currentColors = safeGlobalEffects.chromatic.rainbow.colors || [];
                   const newColors = [...currentColors];
                   newColors[index] = e.target.value;
-                  updateGlobalEffects({
+                  safeUpdateGlobalEffects({
                     chromatic: {
-                      ...globalEffects.chromatic,
+                      ...safeGlobalEffects.chromatic,
                       rainbow: { 
-                        ...globalEffects.chromatic.rainbow, 
+                        ...safeGlobalEffects.chromatic.rainbow, 
                         colors: newColors 
                       }
                     }
@@ -393,14 +574,14 @@ export const GlobalEffectsDashboard = () => {
               <button
                 className={styles.removeColor}
                 onClick={() => {
-                  const currentColors = globalEffects.chromatic.rainbow.colors || [];
-                  const newColors = currentColors.filter((_, i) => i !== index);
+                  const currentColors = safeGlobalEffects.chromatic.rainbow.colors || [];
+                  const newColors = currentColors.filter((_: string, i: number) => i !== index);
                   if (newColors.length >= 2) {
-                    updateGlobalEffects({
+                    safeUpdateGlobalEffects({
                       chromatic: {
-                        ...globalEffects.chromatic,
+                        ...safeGlobalEffects.chromatic,
                         rainbow: { 
-                          ...globalEffects.chromatic.rainbow, 
+                          ...safeGlobalEffects.chromatic.rainbow, 
                           colors: newColors 
                         }
                       }
@@ -415,13 +596,13 @@ export const GlobalEffectsDashboard = () => {
           <button
             className={styles.addColor}
             onClick={() => {
-              const currentColors = globalEffects.chromatic.rainbow.colors || [];
+              const currentColors = safeGlobalEffects.chromatic.rainbow.colors || [];
               const newColors = [...currentColors, '#ffffff'];
-              updateGlobalEffects({
+              safeUpdateGlobalEffects({
                 chromatic: {
-                  ...globalEffects.chromatic,
+                  ...safeGlobalEffects.chromatic,
                   rainbow: { 
-                    ...globalEffects.chromatic.rainbow, 
+                    ...safeGlobalEffects.chromatic.rainbow, 
                     colors: newColors 
                   }
                 }
@@ -437,45 +618,45 @@ export const GlobalEffectsDashboard = () => {
       <CollapsibleSection title="Distortion" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
-          value={globalEffects.distortion.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            distortion: { ...globalEffects.distortion, enabled: value }
+          value={safeGlobalEffects.distortion.enabled}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            distortion: { ...safeGlobalEffects.distortion, enabled: value }
           })}
         />
         <SliderControl
           label="Wave"
-          value={globalEffects.distortion.wave || 0}
+          value={safeGlobalEffects.distortion.wave || 0}
           min={0}
           max={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            distortion: { ...globalEffects.distortion, wave: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            distortion: { ...safeGlobalEffects.distortion, wave: value }
           })}
         />
         <SliderControl
           label="Ripple"
-          value={globalEffects.distortion.ripple || 0}
+          value={safeGlobalEffects.distortion.ripple || 0}
           min={0}
           max={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            distortion: { ...globalEffects.distortion, ripple: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            distortion: { ...safeGlobalEffects.distortion, ripple: value }
           })}
         />
         <SliderControl
           label="Noise"
-          value={globalEffects.distortion.noise || 0}
+          value={safeGlobalEffects.distortion.noise || 0}
           min={0}
           max={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            distortion: { ...globalEffects.distortion, noise: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            distortion: { ...safeGlobalEffects.distortion, noise: value }
           })}
         />
         <SliderControl
           label="Frequency"
-          value={globalEffects.distortion.frequency || 1}
+          value={safeGlobalEffects.distortion.frequency || 1}
           min={0.1}
           max={5}
-          onChange={(value: number) => updateGlobalEffects({ 
-            distortion: { ...globalEffects.distortion, frequency: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            distortion: { ...safeGlobalEffects.distortion, frequency: value }
           })}
         />
       </CollapsibleSection>
@@ -484,37 +665,37 @@ export const GlobalEffectsDashboard = () => {
       <CollapsibleSection title="Volumetric" defaultExpanded={false}>
         <ToggleControl
           label="Enable"
-          value={globalEffects.volumetric.enabled}
-          onChange={(value: boolean) => updateGlobalEffects({ 
-            volumetric: { ...globalEffects.volumetric, enabled: value }
+          value={safeGlobalEffects.volumetric.enabled}
+          onChange={(value: boolean) => safeUpdateGlobalEffects({ 
+            volumetric: { ...safeGlobalEffects.volumetric, enabled: value }
           })}
         />
         <SliderControl
           label="Fog"
-          value={globalEffects.volumetric.fog || 0}
+          value={safeGlobalEffects.volumetric.fog || 0}
           min={0}
           max={1}
-          onChange={(value: number) => updateGlobalEffects({ 
-            volumetric: { ...globalEffects.volumetric, fog: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            volumetric: { ...safeGlobalEffects.volumetric, fog: value }
           })}
         />
         <SliderControl
           label="Density"
-          value={globalEffects.volumetric.density || 0.5}
+          value={safeGlobalEffects.volumetric.density || 0.5}
           min={0}
           max={2}
-          onChange={(value: number) => updateGlobalEffects({ 
-            volumetric: { ...globalEffects.volumetric, density: value }
+          onChange={(value: number) => safeUpdateGlobalEffects({ 
+            volumetric: { ...safeGlobalEffects.volumetric, density: value }
           })}
         />
         <div className={styles.colorControls}>
           <label>Fog Color</label>
           <input
             type="color"
-            value={globalEffects.volumetric.color || '#4169e1'}
-            onChange={(e) => updateGlobalEffects({
+            value={safeGlobalEffects.volumetric.color || '#4169e1'}
+            onChange={(e) => safeUpdateGlobalEffects({
               volumetric: {
-                ...globalEffects.volumetric,
+                ...safeGlobalEffects.volumetric,
                 color: e.target.value
               }
             })}
@@ -526,14 +707,46 @@ export const GlobalEffectsDashboard = () => {
       <CollapsibleSection title="Enhanced Post-FX" defaultExpanded={false}>
         <SliderControl
           label="Brightness"
-          value={effects.brightness || 1.0}
+          value={safeEffects.brightness}
           min={0.3}
           max={2}
           onChange={(value: number) => updateEffects({ brightness: value })}
         />
         <SliderControl
+          label="Contrast"
+          value={safeEffects.contrast}
+          min={0.5}
+          max={2}
+          step={0.1}
+          onChange={(value: number) => updateEffects({ contrast: value })}
+        />
+        <SliderControl
+          label="Saturation"
+          value={safeEffects.saturation}
+          min={0}
+          max={2}
+          step={0.1}
+          onChange={(value: number) => updateEffects({ saturation: value })}
+        />
+        <SliderControl
+          label="Hue"
+          value={safeEffects.hue}
+          min={-180}
+          max={180}
+          step={1}
+          onChange={(value: number) => updateEffects({ hue: value })}
+        />
+        <SliderControl
+          label="Glow"
+          value={safeEffects.glow}
+          min={0}
+          max={1}
+          step={0.1}
+          onChange={(value: number) => updateEffects({ glow: value })}
+        />
+        <SliderControl
           label="Vignette"
-          value={effects.vignette || 0}
+          value={safeEffects.vignette}
           min={0}
           max={1}
           onChange={(value: number) => updateEffects({ vignette: value })}
