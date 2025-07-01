@@ -172,6 +172,10 @@ const Spheres = () => {
     // Calculate final speed: individual sphere speed * global animation speed
     const finalSpeed = spheres.speed * safeAnimationSpeed;
     
+    // Get movement pattern from spheres store
+    const movementPattern = spheres.movementPattern || 'verticalSine';
+    const safeDistance = isNaN(spheres.distance) || spheres.distance < 0 ? 2.0 : spheres.distance;
+    
     // Update pulse time for glow animation
     if (shapeGlow?.enabled && shapeGlow?.pulsing) {
       pulseTimeRef.current += state.clock.getDelta() * (shapeGlow?.pulseSpeed ?? 1.0) * safeAnimationSpeed;
@@ -185,23 +189,38 @@ const Spheres = () => {
       const pos = positions[i];
       if (!pos) return;
       
-      // Base movement with individual speed * global animation speed
-      child.position.y = pos.y + Math.sin(scaledTime + i) * 2 * finalSpeed;
+      // Apply movement pattern logic
+      let x = pos.x;
+      let y = pos.y;
+      let z = pos.z;
+      
+      if (movementPattern === 'orbit') {
+        x = pos.x + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+        y = pos.y + Math.cos(scaledTime + i * 0.5) * 1.5 * finalSpeed * safeDistance;
+        z = pos.z + Math.sin(scaledTime * 0.7 + i) * 1 * finalSpeed * safeDistance;
+      } else if (movementPattern === 'verticalSine') {
+        y = pos.y + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+      } else if (movementPattern === 'random') {
+        x = pos.x + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        y = pos.y + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        z = pos.z + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+      }
+      // 'static' does nothing - spheres stay at base position
       
       // Add wave distortion
       if (waveIntensity > 0) {
-        child.position.x = pos.x + Math.sin(scaledTime * distortionFrequency + i) * waveIntensity;
-        child.position.z = pos.z + Math.cos(scaledTime * distortionFrequency + i * 0.5) * waveIntensity;
-      } else {
-        child.position.x = pos.x;
-        child.position.z = pos.z;
+        x += Math.sin(scaledTime * distortionFrequency + i) * waveIntensity;
+        z += Math.cos(scaledTime * distortionFrequency + i * 0.5) * waveIntensity;
       }
       
       // Add ripple effect
       if (rippleIntensity > 0) {
-        const distance = Math.sqrt(child.position.x ** 2 + child.position.z ** 2);
-        child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
+        const distance = Math.sqrt(x ** 2 + z ** 2);
+        y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
       }
+      
+      // Set final position
+      child.position.set(x, y, z);
       
       // Apply layer Z position when in background mode
       if (backgroundConfig.enabled) {
@@ -454,6 +473,9 @@ const Cubes = () => {
         child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
       }
       
+      // Set final position
+      child.position.set(child.position.x, child.position.y, child.position.z);
+      
       // Apply layer Z position when in background mode
       if (backgroundConfig.enabled) {
         // Apply viewport constraints for background mode
@@ -668,6 +690,9 @@ const Toruses = () => {
         child.position.y += Math.sin(scaledTime * 2 + distance * 0.5) * rippleIntensity;
       }
       
+      // Set final position
+      child.position.set(child.position.x, child.position.y, child.position.z);
+      
       // Apply layer Z position when in background mode
       if (backgroundConfig.enabled) {
         // Apply viewport constraints for background mode
@@ -800,6 +825,10 @@ const Particles = () => {
     // Calculate final speed: individual particle speed * global animation speed
     const finalSpeed = safeSpeed * safeAnimationSpeed;
     
+    // Get movement pattern from particles store
+    const movementPattern = particles.movementPattern || 'random';
+    const safeDistance = isNaN(particles.distance) || particles.distance < 0 ? 1.5 : particles.distance;
+    
     // PERFORMANCE OPTIMIZATION: Only apply viewport constraints every 5 frames
     frameCountRef.current++;
     const shouldApplyConstraints = backgroundConfig.enabled && frameCountRef.current % 5 === 0;
@@ -808,15 +837,38 @@ const Particles = () => {
       if (mesh) {
         // Set scale based on slider
         mesh.scale.set(safeSize, safeSize, safeSize);
-        // Base movement with individual speed * global animation speed
-        mesh.position.y += Math.sin(scaledTime + i) * 0.01 * finalSpeed;
+        
+        // Get base position from generated positions
+        const basePos = generatedPositions[i];
+        if (!basePos) return;
+        
+        // Apply movement pattern logic
+        let x = basePos.x;
+        let y = basePos.y;
+        let z = basePos.z;
+        
+        if (movementPattern === 'orbit') {
+          x = basePos.x + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+          y = basePos.y + Math.cos(scaledTime + i * 0.5) * 1.5 * finalSpeed * safeDistance;
+          z = basePos.z + Math.sin(scaledTime * 0.7 + i) * 1 * finalSpeed * safeDistance;
+        } else if (movementPattern === 'verticalSine') {
+          y = basePos.y + Math.sin(scaledTime + i) * 2 * finalSpeed * safeDistance;
+        } else if (movementPattern === 'random') {
+          x = basePos.x + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+          y = basePos.y + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+          z = basePos.z + (Math.random() - 0.5) * 0.5 * finalSpeed * safeDistance;
+        }
+        // 'static' does nothing - particles stay at base position
         
         // Add turbulence with individual speed * global animation speed
         if (turbulence > 0) {
-          mesh.position.x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
-          mesh.position.y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
-          mesh.position.z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          x += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          y += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
+          z += (Math.random() - 0.5) * turbulence * 0.1 * finalSpeed;
         }
+        
+        // Set final position
+        mesh.position.set(x, y, z);
         
         // Apply viewport constraints when in background mode (less frequently)
         if (shouldApplyConstraints) {
