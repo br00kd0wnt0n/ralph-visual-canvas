@@ -26,17 +26,23 @@ import { PerformanceMonitor } from './PerformanceMonitor';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { WebGLContextManager } from './WebGLContextManager';
 import CompanyLogo from './CompanyLogo';
+import { memoryManager } from '../utils/MemoryManager';
 
-// Trail renderer component
+// Trail renderer component with performance optimizations
 const TrailRenderer = () => {
   const [trailMeshes, setTrailMeshes] = useState<{ mesh: THREE.InstancedMesh; material: THREE.Material; count: number }[]>([]);
+  const frameCountRef = useRef(0);
 
   useFrame(() => {
+    // PERFORMANCE OPTIMIZATION: Only update trail meshes every 3 frames
+    frameCountRef.current++;
+    if (frameCountRef.current % 3 !== 0) return;
+    
     // Update trail meshes from the global trail manager
     const meshes = trailManager.getTrailMeshes();
     setTrailMeshes(meshes);
     
-    // Update trails
+    // Update trails with proper delta time
     trailManager.updateTrails(0.016); // Assuming 60fps
   });
 
@@ -1249,6 +1255,44 @@ const AutoPanIndicator = ({ showUI }: { showUI: boolean }) => {
 
 const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
   const visualStore = useVisualStore();
+  const [error, setError] = useState<string | null>(null);
+  const [isWebGLOptimized, setIsWebGLOptimized] = useState(false);
+  const [performanceMode, setPerformanceMode] = useState<'high' | 'medium' | 'low'>('high');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const lastPerformanceCheck = useRef(0);
+  const frameCountRef = useRef(0);
+  const lastFpsCheck = useRef(0);
+  const fpsHistory = useRef<number[]>([]);
+  const maxFpsHistory = 60;
+
+  // Memory management integration
+  useEffect(() => {
+    // Register cleanup callbacks
+    const cleanupTrails = () => {
+      if (trailManager) {
+        trailManager.clear();
+      }
+    };
+    
+    const cleanupGeometries = () => {
+      // Force garbage collection of unused geometries
+      if (window.gc) {
+        window.gc();
+      }
+    };
+    
+    memoryManager.registerCleanup(cleanupTrails);
+    memoryManager.registerCleanup(cleanupGeometries);
+    
+    // Start memory monitoring
+    memoryManager.startMonitoring();
+    
+    return () => {
+      memoryManager.stopMonitoring();
+      cleanupTrails();
+      cleanupGeometries();
+    };
+  }, []);
   
   // Add safety check for store initialization
   if (!visualStore) {

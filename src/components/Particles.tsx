@@ -22,6 +22,7 @@ export const Particles = () => {
 
   const particleRefs = useRef<THREE.Mesh[]>([]);
   const pulseTimeRef = useRef(0);
+  const frameCountRef = useRef(0);
 
   // Use a single geometry instance for all particles
   const particleGeometry = useMemo(() => {
@@ -56,25 +57,31 @@ export const Particles = () => {
     const pulseEnabled = particles.pulseEnabled || false;
     const pulseSize = isNaN(particles.pulseSize) || particles.pulseSize < 0 ? 1.0 : particles.pulseSize;
     
-    // Debug logging for pulsing state
-    if (pulseEnabled && Math.random() < 0.001) {
-      console.log(`🔍 [particles] Pulsing Debug:`, {
-        pulseEnabled,
-        pulseSize,
-        glowIntensity,
-        shapeGlow: {
-          enabled: shapeGlow.enabled,
-          intensity: shapeGlow.intensity,
-          useObjectColor: shapeGlow.useObjectColor,
-          customColor: shapeGlow.customColor
-        }
-      });
+    // PERFORMANCE OPTIMIZATION: Reduce debug logging frequency
+    if (pulseEnabled && Math.random() < 0.0001) { // Reduced from 0.001 to 0.0001
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 [particles] Pulsing Debug:`, {
+          pulseEnabled,
+          pulseSize,
+          glowIntensity,
+          shapeGlow: {
+            enabled: shapeGlow.enabled,
+            intensity: shapeGlow.intensity,
+            useObjectColor: shapeGlow.useObjectColor,
+            customColor: shapeGlow.customColor
+          }
+        });
+      }
     }
 
     // Update pulse time for individual particle pulsing
     if (pulseEnabled) {
       pulseTimeRef.current += state.clock.getDelta() * safeAnimationSpeed;
     }
+
+    // PERFORMANCE OPTIMIZATION: Only update particles every 2 frames for high counts
+    const shouldUpdateParticles = particles.count < 500 || frameCountRef.current % 2 === 0;
+    if (!shouldUpdateParticles) return;
 
     particleRefs.current.forEach((mesh, i) => {
       if (mesh && particlePositions[i]) {
@@ -113,16 +120,18 @@ export const Particles = () => {
             const newEmissiveIntensity = glowIntensity * 1.5 * pulseIntensity * pulseSize;
             material.emissiveIntensity = newEmissiveIntensity;
             
-            // Debug logging for first particle only
-            if (i === 0 && Math.random() < 0.01) {
-              console.log(`✨ [particle-${i}] Pulsing Animation:`, {
-                pulsePhase: pulsePhase.toFixed(2),
-                pulseIntensity: pulseIntensity.toFixed(3),
-                newEmissiveIntensity: newEmissiveIntensity.toFixed(3),
-                materialType: material.type,
-                hasEmissive: 'emissive' in material,
-                emissiveColor: material.emissive?.getHexString()
-              });
+            // PERFORMANCE OPTIMIZATION: Reduce debug logging frequency
+            if (i === 0 && Math.random() < 0.005) { // Reduced from 0.01 to 0.005
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`✨ [particle-${i}] Pulsing Animation:`, {
+                  pulsePhase: pulsePhase.toFixed(2),
+                  pulseIntensity: pulseIntensity.toFixed(3),
+                  newEmissiveIntensity: newEmissiveIntensity.toFixed(3),
+                  materialType: material.type,
+                  hasEmissive: 'emissive' in material,
+                  emissiveColor: material.emissive?.getHexString()
+                });
+              }
             }
           }
         }
@@ -150,6 +159,8 @@ export const Particles = () => {
         }
       });
     }
+
+    frameCountRef.current++;
   });
 
   return (

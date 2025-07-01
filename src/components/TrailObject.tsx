@@ -286,11 +286,13 @@ export const TrailObject = ({
     groupChild.getWorldQuaternion(currentQuaternion);
     currentRotation.setFromQuaternion(currentQuaternion);
 
-    // Debug: log the world position for sphere-0 every 30 frames
+    // PERFORMANCE OPTIMIZATION: Reduce debug logging frequency
     if (id === 'sphere-0') {
       debugFrame.current++;
-      if (debugFrame.current % 30 === 0) {
-        console.log(`[TrailObject DEBUG] sphere-0 world position:`, currentPosition.toArray());
+      if (debugFrame.current % 60 === 0) { // Reduced from 30 to 60
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[TrailObject DEBUG] sphere-0 world position:`, currentPosition.toArray());
+        }
       }
     }
     
@@ -301,7 +303,8 @@ export const TrailObject = ({
       const velocity = currentPosition.clone().sub(lastPosition.current).divideScalar(deltaTime);
       const speed = velocity.length();
       
-      if (speed > velocityThreshold && (currentTime - lastTrailTime.current) > trailThrottle) {
+      // PERFORMANCE OPTIMIZATION: Increase throttle to reduce trail creation frequency
+      if (speed > velocityThreshold && (currentTime - lastTrailTime.current) > trailThrottle * 2) {
         let trailMaterial = material;
         if (material) {
           trailMaterial = material.clone();
@@ -343,7 +346,8 @@ export const TrailObject = ({
           }
         );
         
-        if (id === 'sphere-0' && Math.random() < 0.1) {
+        // PERFORMANCE OPTIMIZATION: Reduce debug logging frequency
+        if (id === 'sphere-0' && Math.random() < 0.05) { // Reduced from 0.1 to 0.05
           if (process.env.NODE_ENV === 'development') {
             console.log(`🎨 Trail created for ${id}:`, {
               position: currentPosition.toArray(),
