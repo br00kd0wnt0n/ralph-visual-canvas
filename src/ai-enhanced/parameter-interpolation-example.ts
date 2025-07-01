@@ -230,12 +230,15 @@ const adapterExample = () => {
   // Simulate state transition
   const targetVisualState: Partial<MockVisualState> = {
     geometric: {
-      spheres: { count: 15, size: 1.5, color: '#FF6B6B', speed: 1.2, opacity: 1.0 }
+      spheres: { count: 15, size: 1.5, color: '#FF6B6B', speed: 1.2, opacity: 1.0 },
+      cubes: { count: 3, size: 0.8, color: '#00FF00', speed: 0.3, opacity: 0.6 },
+      toruses: { count: 2, size: 0.6, color: '#0000FF', speed: 0.4, opacity: 0.7 }
     },
     globalEffects: {
-      atmosphericBlur: { enabled: true, intensity: 0.6 }
+      atmosphericBlur: { enabled: true, intensity: 0.6 },
+      shapeGlow: { enabled: false, intensity: 0, radius: 0 }
     },
-    camera: { distance: 15, autoRotate: true }
+    camera: { distance: 15, fov: 60, autoRotate: true, autoRotateSpeed: 0 }
   };
 
   console.log('Simulating VisualStore state transition...');

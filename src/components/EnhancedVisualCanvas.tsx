@@ -1047,8 +1047,13 @@ const CameraControls = () => {
   }, [ui.cameraPositioningMode, camera.position, camera.target, three.camera]);
 
   // Handle camera changes and update store
-  useFrame(() => {
+  useFrame((state) => {
     if (ui.cameraPositioningMode && controlsRef.current) {
+      // PERFORMANCE OPTIMIZATION: Only check every 8 frames to reduce overhead
+      if (Math.floor(state.clock.elapsedTime * 60) % 8 !== 0) {
+        return;
+      }
+      
       const newPosition: [number, number, number] = [
         three.camera.position.x,
         three.camera.position.y,
@@ -1127,8 +1132,8 @@ const AutoPanSystem = () => {
     const time = state.clock.elapsedTime;
     const { speed, radius, height, easing, currentAngle } = camera.autoPan;
     
-    // PERFORMANCE OPTIMIZATION: Increase throttle to every 4 frames to reduce performance impact
-    if (Math.floor(time * 60) % 4 !== 0) {
+    // ULTRA AGGRESSIVE PERFORMANCE OPTIMIZATION: Only run every 16 frames (was 8)
+    if (Math.floor(time * 60) % 16 !== 0) {
       return;
     }
     
@@ -1145,28 +1150,25 @@ const AutoPanSystem = () => {
       
       // Update the store with the initial angle
       updateAutoPanAngle(initialAngle);
+      return; // Skip first frame calculations
     }
     
     // Calculate new angle with slower speed for more cinematic movement
-    const newAngle = currentAngle + (speed * 0.005); // Removed safeAnimationSpeed dependency
+    const newAngle = currentAngle + (speed * 0.005);
     
     // Calculate new camera position using circular motion around the center
     const newX = Math.cos(newAngle) * radius;
     const newZ = Math.sin(newAngle) * radius;
     const newY = height;
     
-    // Apply easing to smooth the movement
-    const currentPosition = three.camera.position;
-    const targetPosition = new THREE.Vector3(newX, newY, newZ);
-    
-    // Smooth interpolation with easing
-    currentPosition.lerp(targetPosition, easing);
+    // AGGRESSIVE OPTIMIZATION: Direct position assignment instead of lerp for better performance
+    three.camera.position.set(newX, newY, newZ);
     
     // Always look at the center (0, 0, 0)
     three.camera.lookAt(0, 0, 0);
     
-    // PERFORMANCE OPTIMIZATION: Only update store every 8 frames to reduce store update frequency
-    if (Math.floor(time * 60) % 8 === 0) {
+    // ULTRA AGGRESSIVE OPTIMIZATION: Only update store every 32 frames (was 16) to drastically reduce store update frequency
+    if (Math.floor(time * 60) % 32 === 0) {
       updateAutoPanAngle(newAngle);
     }
   });

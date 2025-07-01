@@ -274,7 +274,7 @@ export class ParameterInterpolator<T extends Record<string, any>> {
     const result: any = {};
     const allKeys = new Set([...Object.keys(fromObj), ...Object.keys(toObj)]);
     
-    for (const key of allKeys) {
+    for (const key of Array.from(allKeys)) {
       const fromValue = fromObj[key];
       const toValue = toObj[key];
       
@@ -481,7 +481,7 @@ export class ParameterInterpolator<T extends Record<string, any>> {
       
       const allKeys = new Set([...fromKeys, ...toKeys]);
       
-      for (const key of allKeys) {
+      for (const key of Array.from(allKeys)) {
         if (!resultKeys.includes(key)) {
           warnings.push(`Missing property: ${key}`);
         }
@@ -510,7 +510,7 @@ export class ParameterInterpolator<T extends Record<string, any>> {
     } catch (error) {
       return {
         isValid: false,
-        errors: [`Validation error: ${error}`],
+        errors: [`Validation error: ${error instanceof Error ? error.message : String(error)}`],
         warnings: [],
         suggestions: [],
         accuracy: 0,
@@ -645,18 +645,18 @@ export class ParameterInterpolator<T extends Record<string, any>> {
    */
   runPerformanceTests(): PerformanceMetrics {
     const startTime = performance.now();
-    const startMemory = performance.memory?.usedJSHeapSize || 0;
+    const startMemory = (performance as any).memory?.usedJSHeapSize || 0;
     
     // Run interpolation tests
-    const testState = { value: 0 };
-    const targetState = { value: 100 };
+    const testState = { value: 0 } as any;
+    const targetState = { value: 100 } as any;
     
     for (let i = 0; i < 100; i++) {
       this.interpolate(testState, targetState, i / 100, 'linear');
     }
     
     const endTime = performance.now();
-    const endMemory = performance.memory?.usedJSHeapSize || 0;
+    const endMemory = (performance as any).memory?.usedJSHeapSize || 0;
     
     this.performanceMetrics = {
       interpolationTime: endTime - startTime,
