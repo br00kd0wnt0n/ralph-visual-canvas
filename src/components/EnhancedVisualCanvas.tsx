@@ -1893,9 +1893,9 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
               onCreated={({ gl }) => {
                 // Set WebGL context attributes for better performance
                 gl.setClearColor(0x000000, 0);
-                gl.autoClear = false;
-                gl.autoClearColor = false;
-                gl.autoClearDepth = false;
+                gl.autoClear = true; // Enable auto-clear to prevent warnings
+                gl.autoClearColor = true;
+                gl.autoClearDepth = true;
                 gl.autoClearStencil = false;
                 
                 // Add a longer delay to ensure WebGL context is fully initialized
