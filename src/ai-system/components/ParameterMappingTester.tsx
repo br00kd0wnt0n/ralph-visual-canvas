@@ -159,8 +159,12 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
     return getNestedValue(currentParams, selectedVariable);
   }, [selectedVariable, currentParams, getNestedValue]);
 
-  // Performance monitoring
+  // Performance monitoring - only when component is actively visible
   useEffect(() => {
+    // Only run performance monitoring if the component is actually being used
+    // This prevents unnecessary performance overhead when the component is hidden
+    if (!showAdvanced && !liveMode) return;
+    
     let animationId: number | null = null;
     let lastTime = performance.now();
     let frameCount = 0;
@@ -191,9 +195,9 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [updatePerformanceMetrics]);
+  }, [updatePerformanceMetrics, showAdvanced, liveMode]);
 
-  // Auto-update in live mode
+  // Auto-update in live mode - optimized for performance
   useEffect(() => {
     if (!liveMode || !aiResults || !weatherData) return;
 
@@ -212,10 +216,12 @@ const ParameterMappingTester: React.FC<ParameterMappingTesterProps> = ({
         
         setMappingEngineStatus('idle');
       } catch (error) {
-        console.error('Error in live mode update:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error in live mode update:', error);
+        }
         setMappingEngineStatus('error');
       }
-    }, 1000); // Update every second
+    }, 2000); // Update every 2 seconds instead of 1 second for better performance
 
     return () => clearInterval(interval);
   }, [liveMode, aiResults, weatherData, currentParams, parameterMappingEngine, onParameterUpdate, addParameterUpdates, setMappingEngineStatus]);
