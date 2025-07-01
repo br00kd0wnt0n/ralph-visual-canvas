@@ -994,8 +994,8 @@ export const PaintingObject: React.FC<PaintingObjectProps> = ({
       
       const currentTime = Date.now() * 0.001;
       
-      // Debug: Log the actual position being tracked
-      if (Math.random() < 0.05) { // 5% chance per frame
+      // Debug: Log the actual position being tracked - reduced frequency for performance
+      if (process.env.NODE_ENV === 'development' && Math.random() < 0.01) { // Reduced from 0.05 to 0.01 (1% chance)
         console.log(`🎨 PaintingObject ${objectRef.current} tracking: parent group position=(${actualPosition.x.toFixed(2)}, ${actualPosition.y.toFixed(2)}, ${actualPosition.z.toFixed(2)})`);
       }
       
@@ -1041,8 +1041,13 @@ export const useArtisticPainter = () => {
 // Component to be used inside Canvas for handling camera and size updates
 export const ArtisticCanvasController: React.FC = () => {
   const { camera, size } = useThree();
+  const frameCountRef = useRef(0);
 
   useFrame(() => {
+    // PERFORMANCE OPTIMIZATION: Only update every 3 frames to reduce overhead
+    frameCountRef.current++;
+    if (frameCountRef.current % 3 !== 0) return;
+    
     // Update global camera and size information for the painting system
     updateGlobalCameraAndSize(camera, size);
     

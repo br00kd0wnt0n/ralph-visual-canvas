@@ -241,8 +241,8 @@ const Spheres = () => {
     });
   });
 
-  // DEBUG: Log current sphere values
-  if (process.env.NODE_ENV === 'development') {
+  // DEBUG: Log current sphere values - only log occasionally to reduce performance impact
+  if (process.env.NODE_ENV === 'development' && Math.random() < 0.001) { // 0.1% chance per frame
     console.log('🎨 Spheres component - Current store values:', {
       count: spheresCount,
       size: spheresSize,
@@ -256,7 +256,7 @@ const Spheres = () => {
 
   // TEMPORARY: Test with hardcoded values to see if component can render different counts
   const testCount = 35; // Hardcoded test value
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && Math.random() < 0.001) { // 0.1% chance per frame
     console.log('🎨 Testing with hardcoded count:', testCount);
   }
 
@@ -467,8 +467,8 @@ const Cubes = () => {
     });
   });
 
-  // DEBUG: Log current cube values
-  if (process.env.NODE_ENV === 'development') {
+  // DEBUG: Log current cube values - only log occasionally to reduce performance impact
+  if (process.env.NODE_ENV === 'development' && Math.random() < 0.001) { // 0.1% chance per frame
     console.log('🎨 Cubes component - Current store values:', {
       count: cubesCount,
       size: cubesSize,
@@ -926,8 +926,15 @@ const VolumetricFog = () => {
 const Scene = () => {
   const { effects, globalEffects, background, globalAnimationSpeed } = useVisualStore();
   
-  // DEBUG: Log current effects values
-  if (process.env.NODE_ENV === 'development') {
+  // Performance monitoring - only in development mode
+  useFrame(() => {
+    if (process.env.NODE_ENV === 'development') {
+      performanceMonitor.update();
+    }
+  });
+  
+  // DEBUG: Log current effects values - only log occasionally to reduce performance impact
+  if (process.env.NODE_ENV === 'development' && Math.random() < 0.001) { // 0.1% chance per frame
     console.log('🎨 Scene component - Current store values:', {
       effects: effects,
       globalEffects: {
@@ -1422,8 +1429,10 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
 
     const { focusDistance, focalLength, bokehScale, blur } = safeCamera.depthOfField;
     
-    // Debug logging to verify values are updating
-    console.log('🎯 Depth of Field Update:', { focusDistance, focalLength, bokehScale, blur });
+    // Debug logging to verify values are updating - only log occasionally to reduce performance impact
+    if (process.env.NODE_ENV === 'development' && Math.random() < 0.001) { // 0.1% chance per frame
+      console.log('🎯 Depth of Field Update:', { focusDistance, focalLength, bokehScale, blur });
+    }
     
     // Calculate blur intensity based on depth of field settings
     const blurIntensity = blur * bokehScale * 20; // Increased from 10 to 20 for more visibility

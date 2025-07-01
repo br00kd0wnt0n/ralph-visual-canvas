@@ -70,7 +70,7 @@ export class MemoryManager {
     }
   }
 
-  // Start memory monitoring
+  // Start memory monitoring - optimized for performance
   startMonitoring(): void {
     if (this.isMonitoring) return;
     this.isMonitoring = true;
@@ -103,10 +103,12 @@ export class MemoryManager {
         }
       }
       
-      requestAnimationFrame(checkMemory);
+      // Use setTimeout instead of requestAnimationFrame for memory monitoring
+      // This reduces the frequency and doesn't interfere with rendering
+      setTimeout(checkMemory, 1000); // Check every second instead of every frame
     };
     
-    requestAnimationFrame(checkMemory);
+    setTimeout(checkMemory, 1000);
   }
 
   // Stop memory monitoring

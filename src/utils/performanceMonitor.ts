@@ -117,7 +117,7 @@ export const usePerformanceMonitor = () => {
       const report = performanceMonitor.getPerformanceReport();
       setFps(report.averageFPS);
       setPerformance(report.performance);
-    }, 1000);
+    }, 2000); // Update every 2 seconds instead of 1 second
 
     return () => clearInterval(interval);
   }, []);
