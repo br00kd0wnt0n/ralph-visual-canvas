@@ -23,7 +23,7 @@ export class AIService {
 
   public setApiKey(apiKey: string): void {
     // Validate API key format
-    if (!apiKey.startsWith('sk-')) {
+    if (process.env.NODE_ENV === 'development') {
       console.warn('⚠️ OpenAI API key should start with "sk-". Please check your API key format.');
     }
     
@@ -57,19 +57,25 @@ export class AIService {
           model.id.includes('gpt-4o') || model.id.includes('gpt-4-vision')
         );
         
-        if (!hasVisionModel) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn('⚠️ Your OpenAI account may not have access to GPT-4o models');
         }
         
-        console.log('✅ OpenAI API key is valid');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ OpenAI API key is valid');
+        }
         return true;
       } else {
         const errorText = await response.text();
-        console.error('❌ OpenAI API key test failed:', errorText);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ OpenAI API key test failed:', errorText);
+        }
         return false;
       }
     } catch (error) {
-      console.error('❌ OpenAI API key test error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ OpenAI API key test error:', error);
+      }
       return false;
     }
   }
@@ -156,8 +162,10 @@ Return your analysis as a JSON object with this exact structure:
         body: JSON.stringify(requestPayload)
       });
 
-      console.log('🔍 OpenAI API Response Status:', response.status);
-      console.log('🔍 OpenAI API Response Headers:', Object.fromEntries(response.headers.entries()));
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 OpenAI API Response Status:', response.status);
+        console.log('🔍 OpenAI API Response Headers:', Object.fromEntries(response.headers.entries()));
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -214,7 +222,9 @@ Return your analysis as a JSON object with this exact structure:
         timestamp: new Date().toISOString()
       };
 
-      console.log('🤖 AI analysis complete:', enrichedAnalysis);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🤖 AI analysis complete:', enrichedAnalysis);
+      }
       return enrichedAnalysis;
 
     } catch (error) {
@@ -334,7 +344,9 @@ Return as JSON:
         timestamp: new Date().toISOString()
       };
 
-      console.log('🎨 Color harmony generated:', enhancedPalette);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎨 Color harmony generated:', enhancedPalette);
+      }
       return enhancedPalette;
 
     } catch (error) {

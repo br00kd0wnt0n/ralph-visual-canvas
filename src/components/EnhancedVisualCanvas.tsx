@@ -1848,10 +1848,14 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
                     if (optimizationResult) {
                       return; // Success, stop retrying
                     } else {
-                      console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
+                      if (process.env.NODE_ENV === 'development') {
+                        console.warn(`⚠️ WebGL context optimization attempt ${attempts} failed`);
+                      }
                     }
                   } catch (error) {
-                    console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
+                    if (process.env.NODE_ENV === 'development') {
+                      console.warn(`⚠️ Error during WebGL optimization attempt ${attempts}:`, error);
+                    }
                   }
                   
                   // Retry with exponential backoff if we haven't reached max attempts
@@ -1859,7 +1863,9 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
                     const delay = Math.pow(2, attempts) * 500; // 500ms, 1000ms, 2000ms
                     setTimeout(tryOptimizeWebGL, delay);
                   } else {
-                    console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
+                    if (process.env.NODE_ENV === 'development') {
+                      console.warn('⚠️ WebGL context optimization failed after all attempts, using default settings');
+                    }
                   }
                 };
                 
@@ -1872,13 +1878,17 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
                 
                 // Add error handling for WebGL errors
                 const handleWebGLError = (event: Event) => {
-                  console.warn('WebGL error detected:', event);
+                  if (process.env.NODE_ENV === 'development') {
+                    console.warn('WebGL error detected:', event);
+                  }
                 };
                 
                 canvas.addEventListener('webglcontextlost', handleWebGLError);
               }}
               onError={(error) => {
-                console.error('Canvas error:', error);
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('Canvas error:', error);
+                }
                 setCanvasReady(false);
               }}
               style={{
@@ -1904,7 +1914,9 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
       </CanvasErrorBoundary>
     );
   } catch (error) {
-    console.error('Error rendering EnhancedVisualCanvas:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error rendering EnhancedVisualCanvas:', error);
+    }
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">

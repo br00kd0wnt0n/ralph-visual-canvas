@@ -542,14 +542,16 @@ export class ContextAnalyzer {
    * Log detailed analysis results
    */
   private logAnalysisResults(imageContext: ImageContext, colorAnalysis: ColorAnalysis, compositionAnalysis: CompositionAnalysis): void {
-    console.log('\n🏷️ Classification Results:');
-    console.log(`  Image Type: ${imageContext.imageType} (${imageContext.confidence.toFixed(2)} confidence)`);
-    console.log(`  Mood: [${imageContext.mood.join(', ')}]`);
-    console.log(`  Time of Day: ${imageContext.timeOfDay || 'Unknown'}`);
-    console.log(`  Weather: ${imageContext.weatherSuggestion || 'Unknown'}`);
-    console.log(`  Art Style: ${imageContext.artStyle}`);
-    console.log(`  Complexity: ${imageContext.complexity.toFixed(2)}`);
-    console.log(`  Total Analysis Time: ${imageContext.analysisTime.toFixed(2)}ms`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('\n🏷️ Classification Results:');
+      console.log(`  Image Type: ${imageContext.imageType} (${imageContext.confidence.toFixed(2)} confidence)`);
+      console.log(`  Mood: [${imageContext.mood.join(', ')}]`);
+      console.log(`  Time of Day: ${imageContext.timeOfDay || 'Unknown'}`);
+      console.log(`  Weather: ${imageContext.weatherSuggestion || 'Unknown'}`);
+      console.log(`  Art Style: ${imageContext.artStyle}`);
+      console.log(`  Complexity: ${imageContext.complexity.toFixed(2)}`);
+      console.log(`  Total Analysis Time: ${imageContext.analysisTime.toFixed(2)}ms`);
+    }
   }
 
   // ===== TESTING METHODS =====

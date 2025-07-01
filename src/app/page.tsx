@@ -34,7 +34,9 @@ export default function Home() {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === '1') {
         setShowUI(prev => !prev);
-        console.log(`🎛️ UI ${!showUI ? 'shown' : 'hidden'}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🎛️ UI ${!showUI ? 'shown' : 'hidden'}`);
+        }
       }
     };
 
@@ -46,7 +48,9 @@ export default function Home() {
   useEffect(() => {
     const loadLandingPresetFromCloud = async () => {
       try {
-        console.log('🔄 Loading default preset from cloud...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Loading default preset from cloud...');
+        }
         const response = await PresetClient.getPresets({ limit: 100 });
         const presets = response.presets;
         
@@ -54,48 +58,70 @@ export default function Home() {
         const landingPreset = presets.find(p => p.name === 'LANDING');
         
         if (landingPreset) {
-          console.log('✅ Found LANDING preset, applying...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Found LANDING preset, applying...');
+          }
           // Use the new loadPresetData method to properly apply the preset
           loadPresetData(landingPreset.data);
         } else {
-          console.log('⚠️ LANDING preset not found, trying localStorage...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ LANDING preset not found, trying localStorage...');
+          }
           // Fallback to localStorage
           const availablePresets = getAvailablePresets();
           if (availablePresets.includes('LANDING')) {
-            console.log('✅ Found LANDING preset in localStorage, loading...');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Found LANDING preset in localStorage, loading...');
+            }
             loadPreset('LANDING');
           } else if (availablePresets.includes('INIT')) {
-            console.log('✅ Found INIT preset in localStorage, loading...');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Found INIT preset in localStorage, loading...');
+            }
             loadPreset('INIT');
           } else {
-            console.log('⚠️ No default presets found, using default settings');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('⚠️ No default presets found, using default settings');
+            }
             // No default presets found, using default settings
           }
         }
       } catch (error) {
-        console.error('❌ Error loading cloud preset:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error loading cloud preset:', error);
+        }
         
         // Fallback to localStorage on error
         const availablePresets = getAvailablePresets();
         if (availablePresets.includes('LANDING')) {
-          console.log('✅ Found LANDING preset in localStorage (fallback), loading...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Found LANDING preset in localStorage (fallback), loading...');
+          }
           loadPreset('LANDING');
         } else if (availablePresets.includes('INIT')) {
-          console.log('✅ Found INIT preset in localStorage (fallback), loading...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Found INIT preset in localStorage (fallback), loading...');
+          }
           loadPreset('INIT');
         } else {
-          console.log('⚠️ No default presets found (fallback), using default settings');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ No default presets found (fallback), using default settings');
+          }
           // No default presets found, using default settings
         }
       } finally {
         // Mark preset loading as complete regardless of success/failure
-        console.log('✅ Preset loading complete');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Preset loading complete');
+        }
         setIsPresetLoaded(true);
       }
     };
 
     if (skipDefaultPreset) {
-      console.log('⏭️ Skipping default preset loading for testing');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⏭️ Skipping default preset loading for testing');
+      }
       setIsPresetLoaded(true);
     } else {
       loadLandingPresetFromCloud();

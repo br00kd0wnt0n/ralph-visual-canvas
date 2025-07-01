@@ -1296,7 +1296,9 @@ export const useVisualStore = create<Store>()(
       },
 
       loadPresetData: (presetData: Partial<VisualPreset>) => {
-        console.log('🎨 loadPresetData called with:', presetData);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🎨 loadPresetData called with:', presetData);
+        }
         
         set((state) => {
           // Ensure globalAnimationSpeed is properly set
@@ -1315,15 +1317,19 @@ export const useVisualStore = create<Store>()(
           };
 
           // Debug: Check what geometric data we're receiving
-          console.log('🎨 Preset geometric data:', presetData.geometric);
-          console.log('🎨 Current geometric state:', state.geometric);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎨 Preset geometric data:', presetData.geometric);
+            console.log('🎨 Current geometric state:', state.geometric);
+          }
           
           // Debug: Check specific sphere and cube data
           if (presetData.geometric) {
-            console.log('🎨 Preset spheres data:', presetData.geometric.spheres);
-            console.log('🎨 Preset cubes data:', presetData.geometric.cubes);
-            console.log('🎨 Current spheres data:', state.geometric.spheres);
-            console.log('🎨 Current cubes data:', state.geometric.cubes);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🎨 Preset spheres data:', presetData.geometric.spheres);
+              console.log('🎨 Preset cubes data:', presetData.geometric.cubes);
+              console.log('🎨 Current spheres data:', state.geometric.spheres);
+              console.log('🎨 Current cubes data:', state.geometric.cubes);
+            }
           }
           
           // Properly merge geometric shapes with deep merging
@@ -1341,7 +1347,9 @@ export const useVisualStore = create<Store>()(
           } : state.geometric;
           
           // Debug: Check the merged geometric data
-          console.log('🎨 Merged geometric data:', mergedGeometric);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎨 Merged geometric data:', mergedGeometric);
+          }
 
           // Properly merge particles
           const mergedParticles = {
@@ -1378,21 +1386,29 @@ export const useVisualStore = create<Store>()(
             _lastUpdate: Date.now()
           };
           
-          console.log('🎨 New visual store state:', newState);
-          console.log('🎨 Geometric shapes updated:', {
-            spheres: newState.geometric.spheres,
-            cubes: newState.geometric.cubes,
-            particles: newState.particles
-          });
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎨 New visual store state:', newState);
+            console.log('🎨 Geometric shapes updated:', {
+              spheres: newState.geometric.spheres,
+              cubes: newState.geometric.cubes,
+              toruses: newState.geometric.toruses,
+              blobs: newState.geometric.blobs,
+              crystals: newState.geometric.crystals
+            });
+          }
           
           // Add specific count debugging
-          console.log('🎨 Count values after merge:');
-          console.log('  - Spheres count:', newState.geometric.spheres.count);
-          console.log('  - Cubes count:', newState.geometric.cubes.count);
-          console.log('  - Particles count:', newState.particles.count);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎨 Count values after merge:');
+            console.log('  - Spheres count:', newState.geometric.spheres.count);
+            console.log('  - Cubes count:', newState.geometric.cubes.count);
+            console.log('  - Particles count:', newState.particles.count);
+          }
           
           // Force a store update to ensure all subscribers are notified
-          console.log('🎨 Forcing store update...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎨 Forcing store update...');
+          }
           
           return newState;
         });

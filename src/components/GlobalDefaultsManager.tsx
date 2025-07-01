@@ -362,10 +362,14 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                     try {
                       visualStore.clearCachedDefaults();
                       setUpdateTrigger(prev => prev + 1);
-                      console.log('[GlobalDefaultsPanel] Clear Cached Defaults clicked');
+                      if (process.env.NODE_ENV === 'development') {
+                        console.log('[GlobalDefaultsPanel] Clear Cached Defaults clicked');
+                      }
                       showFeedback('✅ Cached defaults cleared!');
                     } catch (error) {
-                      console.error('[GlobalDefaultsPanel] Error clearing cached defaults:', error);
+                      if (process.env.NODE_ENV === 'development') {
+                        console.error('[GlobalDefaultsPanel] Error clearing cached defaults:', error);
+                      }
                       showFeedback('❌ Error clearing cached defaults', 'error');
                     }
                   }}

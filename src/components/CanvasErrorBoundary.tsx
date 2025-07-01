@@ -28,7 +28,9 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
     }
     // Optionally: update Zustand error state
     // useVisualStore.getState().setCanvasError?.(error);
-    console.error('Canvas error boundary caught:', error, errorInfo);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Canvas error boundary caught:', error, errorInfo);
+    }
   }
 
   handleReset = () => {

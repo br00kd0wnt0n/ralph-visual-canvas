@@ -24,12 +24,16 @@ export class WeatherService {
   public setApiKey(apiKey: string): void {
     // Validate API key format (OpenWeather keys are typically 32 characters, not OpenAI format)
     if (apiKey && apiKey.startsWith('sk-')) {
-      console.warn('⚠️ You are using an OpenAI API key for the weather service. Please use a valid OpenWeather API key instead.');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ You are using an OpenAI API key for the weather service. Please use a valid OpenWeather API key instead.');
+      }
       return; // Don't set invalid keys
     }
     
     if (apiKey && apiKey.length < 20) {
-      console.warn('⚠️ OpenWeather API key seems too short. Please check your API key format.');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ OpenWeather API key seems too short. Please check your API key format.');
+      }
     }
     
     this.apiKey = apiKey;
@@ -54,15 +58,21 @@ export class WeatherService {
       );
 
       if (response.ok) {
-        console.log('✅ OpenWeather API key is valid');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ OpenWeather API key is valid');
+        }
         return true;
       } else {
         const errorText = await response.text();
-        console.error('❌ OpenWeather API key test failed:', errorText);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ OpenWeather API key test failed:', errorText);
+        }
         return false;
       }
     } catch (error) {
-      console.error('❌ OpenWeather API key test error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ OpenWeather API key test error:', error);
+      }
       return false;
     }
   }
@@ -70,7 +80,9 @@ export class WeatherService {
   public async getWeatherData(location: string): Promise<WeatherData> {
     // If no API key, try the free wttr.in API
     if (!this.apiKey) {
-      console.warn('No OpenWeather API key configured, trying free weather API');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('No OpenWeather API key configured, trying free weather API');
+      }
       return this.getFreeWeatherData(location);
     }
 
@@ -78,7 +90,9 @@ export class WeatherService {
       // First, get coordinates for the location
       const coords = await this.getCoordinates(location);
       if (!coords) {
-        console.warn(`Could not find coordinates for ${location}, trying free weather API`);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Could not find coordinates for ${location}, trying free weather API`);
+        }
         return this.getFreeWeatherData(location);
       }
 
@@ -112,12 +126,16 @@ export class WeatherService {
         }
       };
 
-      console.log('🌤️ Real weather data fetched:', transformedData);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🌤️ Real weather data fetched:', transformedData);
+      }
       return transformedData;
 
     } catch (error) {
-      console.error('Weather API error:', error);
-      console.warn('Falling back to free weather API');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Weather API error:', error);
+        console.warn('Falling back to free weather API');
+      }
       return this.getFreeWeatherData(location);
     }
   }
@@ -143,7 +161,9 @@ export class WeatherService {
 
       return null;
     } catch (error) {
-      console.error('Geocoding error:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Geocoding error:', error);
+      }
       return null;
     }
   }
@@ -343,12 +363,16 @@ export class WeatherService {
         }
       };
 
-      console.log('🌤️ Free weather data fetched:', transformedData);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🌤️ Free weather data fetched:', transformedData);
+      }
       return transformedData;
 
     } catch (error) {
-      console.error('Free weather API error:', error);
-      console.warn('Falling back to mock data');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Free weather API error:', error);
+        console.warn('Falling back to mock data');
+      }
       return this.getMockWeatherData(location);
     }
   }
