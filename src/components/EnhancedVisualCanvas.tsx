@@ -27,6 +27,11 @@ import { CanvasErrorBoundary } from './CanvasErrorBoundary';
 import { WebGLContextManager } from './WebGLContextManager';
 import CompanyLogo from './CompanyLogo';
 import { memoryManager } from '../utils/MemoryManager';
+import { OptimizedCameraControls, CameraPerformanceMonitor } from './OptimizedCameraSystem';
+import { WorkingAutoPan, AutoPanStatus } from './WorkingAutoPan';
+import { InstancedSpheres, InstancedCubes } from './InstancedShapes';
+import { SafeInstancedSpheres } from './SafeInstancedShapes';
+import { DistortionEffectFix } from './DistortionFix';
 
 // Trail renderer component with performance optimizations
 const TrailRenderer = () => {
@@ -976,7 +981,7 @@ const VolumetricFog = () => {
 };
 
 const Scene = () => {
-  const { effects, globalEffects, background, globalAnimationSpeed } = useVisualStore();
+  const { effects, globalEffects, background, globalAnimationSpeed, geometric } = useVisualStore();
   
   // Performance monitoring - only in development mode, throttled to every 30 frames
   useFrame((state) => {
@@ -999,6 +1004,10 @@ const Scene = () => {
     });
   }
   
+  // Use instanced rendering when object count is high
+  const useInstancedSpheres = geometric.spheres.count > 30;
+  const useInstancedCubes = geometric.cubes.count > 30;
+  
   return (
     <>
       {/* Background */}
@@ -1012,9 +1021,9 @@ const Scene = () => {
       {/* Volumetric Fog */}
       <VolumetricFog />
       
-      {/* Geometric Objects */}
-      <Spheres />
-      <Cubes />
+      {/* Geometric Objects - Use SAFE instanced or regular based on count */}
+      {useInstancedSpheres ? <SafeInstancedSpheres /> : <Spheres />}
+      {useInstancedCubes ? <InstancedCubes /> : <Cubes />}
       <Toruses />
       <Blobs />
       
@@ -1883,6 +1892,7 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
     return (
       <CanvasErrorBoundary>
         <WebGLContextManager>
+          <DistortionEffectFix />
           <div className={styles.canvasContainer}>
             {aberrationLayers}
             {rainbowLayer}
@@ -2022,8 +2032,13 @@ const EnhancedVisualCanvas = ({ showUI = false }: { showUI?: boolean }) => {
               }}
             >
               <CameraSync />
-              <CameraControls />
-              <AutoPanSystem />
+              <OptimizedCameraControls />
+              <WorkingAutoPan />
+              {process.env.NODE_ENV === 'development' && (
+                <>
+                  <CameraPerformanceMonitor />
+                </>
+              )}
               <Scene />
             </Canvas>
           </div>

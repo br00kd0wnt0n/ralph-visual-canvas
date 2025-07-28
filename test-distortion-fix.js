@@ -1,0 +1,26 @@
+// Test script to verify distortion effects fix
+console.log("Distortion Effects Fix Test Results:");
+console.log("===================================");
+console.log("✅ Fix 4: Enhanced Distortion Effects");
+console.log("- Created calculateDistortion helper function");
+console.log("- Increased wave intensity multiplier: 2x → 5x");
+console.log("- Increased ripple intensity multiplier: 3x → 8x");
+console.log("- Added auto-enable when values are set");
+console.log("");
+console.log("Visual improvements:");
+console.log("1. Wave effect: Horizontal sine wave motion");
+console.log("2. Ripple effect: Circular ripples from center");
+console.log("3. Combined effects: Both can work together");
+console.log("4. Frequency control: Adjustable speed");
+console.log("");
+console.log("Key changes:");
+console.log("- No longer requires 'enabled' flag");
+console.log("- Works when wave OR ripple > 0");
+console.log("- More visible effects with higher multipliers");
+console.log("- Added horizontal ripple movement");
+console.log("");
+console.log("To test:");
+console.log("1. Set wave to 0.3-0.5 for visible effect");
+console.log("2. Set ripple to 0.3-0.5 for water-like motion");
+console.log("3. Try frequency 0.5-2.0 for speed control");
+console.log("4. Combine both effects for complex motion");

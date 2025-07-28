@@ -251,7 +251,7 @@ export const GlobalEffectsDashboard = () => {
           label="Animation Speed"
           value={globalAnimationSpeed || 1.0}
           min={0.1}
-          max={3}
+          max={1.5}
           step={0.1}
           onChange={(value: number) => updateGlobalAnimationSpeed(value)}
         />

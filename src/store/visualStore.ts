@@ -572,7 +572,7 @@ export const GLOBAL_DEFAULTS = {
     maxPolarAngle: Math.PI,
     autoPan: {
       enabled: false,
-      speed: 0.15,
+      speed: 1.0,
       radius: 15,
       height: 3,
       easing: 0.015,

@@ -7,6 +7,12 @@ import { ColorHarmonyEngine } from './ColorHarmonyEngine';
 import { ParameterInterpolator } from './ParameterInterpolator';
 import { getSafeIntegration } from '../utils/SafeIntegration';
 import { ImageContext, EnhancedColorPalette } from '../types/ContextTypes';
+import { 
+  IMPROVED_PARAMETER_RANGES, 
+  selectMovementPattern, 
+  getEnabledFeatures,
+  adjustForPerformance 
+} from './ImprovedPresetParameters';
 
 // Core types for preset generation
 export interface GeneratedPreset {
@@ -310,58 +316,85 @@ export class AdvancedPresetGenerator {
     seed: number
   ): EnhancedVisualState {
     const harmonyMultiplier = 0.8 + (this.seededRandom(seed) * 0.4);
+    const ranges = IMPROVED_PARAMETER_RANGES;
+    const features = getEnabledFeatures('harmonic_emphasis');
     
     return {
       geometric: {
         spheres: {
-          count: Math.floor(8 + (context.complexity * 8)),
+          count: Math.floor(ranges.shapes.count.sweet + (context.complexity * 20)),
           color: this.varyColor(baseColorHarmony.secondary, 0.1, seed),
-          size: 1.0 + (this.seededRandom(seed + 1) * 0.3),
-          speed: 0.5 + (context.complexity * 0.3) * harmonyMultiplier,
-          organicness: 0.2 + (this.seededRandom(seed + 2) * 0.2),
+          size: ranges.shapes.size.default + (this.seededRandom(seed + 1) * ranges.shapes.size.variation),
+          speed: ranges.shapes.speed.default * harmonyMultiplier,
+          organicness: ranges.shapes.organicness.smooth,
+          movementPattern: selectMovementPattern('harmonic_emphasis', context.mood, harmonyMultiplier),
+          distance: ranges.shapes.distance.default,
         },
         cubes: {
-          count: Math.floor(6 + (context.complexity * 6)),
+          count: Math.floor(ranges.shapes.count.sweet * 0.8 + (context.complexity * 15)),
           color: this.varyColor(baseColorHarmony.primary, 0.15, seed + 3),
-          size: 0.8 + (this.seededRandom(seed + 4) * 0.4),
-          speed: 0.3 + (context.complexity * 0.2) * harmonyMultiplier,
-          organicness: 0.1 + (this.seededRandom(seed + 5) * 0.1),
+          size: ranges.shapes.size.default * 0.9 + (this.seededRandom(seed + 4) * 1.0),
+          speed: ranges.shapes.speed.calm * harmonyMultiplier,
+          organicness: ranges.shapes.organicness.smooth * 0.5,
+          movementPattern: 'orbit' as const,
+          distance: ranges.shapes.distance.default * 0.9,
         },
         toruses: {
-          count: Math.floor(4 + (context.complexity * 4)),
+          count: Math.floor(ranges.shapes.count.sweet * 0.6 + (context.complexity * 10)),
           color: this.varyColor(baseColorHarmony.accent, 0.12, seed + 6),
-          size: 1.2 + (this.seededRandom(seed + 7) * 0.3),
-          speed: 0.4 + (context.complexity * 0.25) * harmonyMultiplier,
-          organicness: 0.3 + (this.seededRandom(seed + 8) * 0.2),
+          size: ranges.shapes.size.default * 1.2 + (this.seededRandom(seed + 7) * 0.5),
+          speed: ranges.shapes.speed.default * 0.8 * harmonyMultiplier,
+          organicness: ranges.shapes.organicness.smooth * 1.5,
+          movementPattern: 'verticalSine' as const,
+          distance: ranges.shapes.distance.default * 1.1,
         },
         blobs: {
-          count: Math.floor(3 + (context.complexity * 3)),
+          count: Math.floor(ranges.shapes.count.min + (context.complexity * 8)),
           color: this.varyColor(baseColorHarmony.primary, 0.2, seed + 9),
-          size: 1.5 + (this.seededRandom(seed + 10) * 0.5),
-          speed: 0.6 + (context.complexity * 0.3) * harmonyMultiplier,
-          organicness: 0.8 + (this.seededRandom(seed + 11) * 0.2),
+          size: ranges.shapes.size.default * 1.5 + (this.seededRandom(seed + 10) * 1.0),
+          speed: ranges.shapes.speed.calm * harmonyMultiplier,
+          organicness: ranges.shapes.organicness.chaotic,
           complexity: 0.7 + (this.seededRandom(seed + 12) * 0.3),
           flow: 0.5 + (this.seededRandom(seed + 13) * 0.3),
+          movementPattern: 'verticalSine' as const,
+          distance: ranges.shapes.distance.default,
         }
       },
       effects: {
-        brightness: 1.0 + (harmonyMultiplier * 0.2),
-        saturation: 1.2 + (baseColorHarmony.harmonyScore * 0.3),
-        contrast: 1.1 + (this.seededRandom(seed + 14) * 0.2),
-        vignette: 0.1 + (this.seededRandom(seed + 15) * 0.2),
-        glow: 0.3 + (baseColorHarmony.harmonyScore * 0.4),
+        brightness: ranges.effects.brightness.balanced + (harmonyMultiplier * 0.1),
+        saturation: ranges.effects.saturation.rich + (baseColorHarmony.harmonyScore * 0.3),
+        contrast: ranges.effects.contrast.balanced + (this.seededRandom(seed + 14) * 0.2),
+        vignette: ranges.effects.vignette.subtle,
+        glow: ranges.effects.glow.subtle + (baseColorHarmony.harmonyScore * 0.3),
       },
       globalEffects: {
-        atmosphericBlur: {
+        atmosphericBlur: features.atmosphericBlur ? {
           enabled: true,
-          intensity: 0.2 + (harmonyMultiplier * 0.2),
-          layers: Math.floor(2 + (harmonyMultiplier * 2)),
-        }
+          intensity: ranges.globalEffects.atmosphericBlur.intensity.subtle,
+          layers: ranges.globalEffects.atmosphericBlur.layers.min + 1,
+        } : undefined,
+        shapeGlow: features.shapeGlow ? {
+          enabled: true,
+          intensity: ranges.globalEffects.shapeGlow.intensity.subtle,
+          useObjectColor: true,
+          pulsing: features.pulsing,
+          pulseSpeed: 1.0,
+        } : undefined,
       },
       animation: {
-        speed: 0.6 + (harmonyMultiplier * 0.2),
+        speed: ranges.animation.globalSpeed.balanced * harmonyMultiplier,
         organicness: 0.4 + (this.seededRandom(seed + 16) * 0.3),
         complexity: 0.5 + (context.complexity * 0.3),
+      },
+      particles: {
+        count: ranges.particles.count.sweet,
+        color: baseColorHarmony.supporting[0] || baseColorHarmony.secondary,
+        size: ranges.particles.size.visible,
+        speed: ranges.shapes.speed.calm,
+        opacity: ranges.shapes.opacity.glass,
+        spread: ranges.particles.spread.balanced,
+        movementPattern: 'random' as const,
+        distance: ranges.shapes.distance.default,
       }
     };
   }

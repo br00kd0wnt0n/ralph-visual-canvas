@@ -1,5 +1,6 @@
 // MemoryManager for Three.js resources
 import * as THREE from 'three';
+import { resourceManager } from './ResourceManager';
 
 const trackedResources = new Set<THREE.Object3D | THREE.Material | THREE.Texture | THREE.BufferGeometry>();
 
@@ -26,6 +27,9 @@ export function disposeAllResources() {
     disposeResource(resource);
   });
   trackedResources.clear();
+  
+  // Also dispose resources tracked by ResourceManager
+  resourceManager.disposeAll();
 }
 
 // Memory management utility for performance optimization
