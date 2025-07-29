@@ -6,21 +6,23 @@ import { useVisualStore } from '../store/visualStore';
 import { PresetClient } from '../lib/presetClient';
 import { generatePresetURL, copyPresetURL } from '../hooks/usePresetFromURL';
 
-export const QuickPresetShare: React.FC = () => {
+interface QuickPresetShareProps {
+  onClose?: () => void;
+}
+
+export const QuickPresetShare: React.FC<QuickPresetShareProps> = ({ onClose }) => {
   const { getAvailablePresets } = useVisualStore();
-  const [showShareMenu, setShowShareMenu] = useState(false);
+  // Always show the menu when this component is rendered
   const [cloudPresets, setCloudPresets] = useState<any[]>([]);
   const [localPresets, setLocalPresets] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    if (showShareMenu) {
-      // Load presets when menu opens
-      setLocalPresets(getAvailablePresets());
-      loadCloudPresets();
-    }
-  }, [showShareMenu, getAvailablePresets]);
+    // Load presets when component mounts
+    setLocalPresets(getAvailablePresets());
+    loadCloudPresets();
+  }, [getAvailablePresets]);
 
   const loadCloudPresets = async () => {
     setLoading(true);
@@ -48,40 +50,11 @@ export const QuickPresetShare: React.FC = () => {
     window.open(sampleURL, '_blank');
   };
 
-  if (!showShareMenu) {
-    return (
-      <button
-        onClick={() => setShowShareMenu(true)}
-        style={{
-          position: 'fixed',
-          top: '60px',
-          right: '20px',
-          backgroundColor: 'rgba(59, 130, 246, 0.9)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: '48px',
-          height: '48px',
-          fontSize: '20px',
-          cursor: 'pointer',
-          zIndex: 9999,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-        title="Share Presets"
-      >
-        🔗
-      </button>
-    );
-  }
+  // Component is always rendered as a panel
 
   return (
     <div style={{
-      position: 'fixed',
-      top: '60px',
-      right: '20px',
+      position: 'relative',
       backgroundColor: 'rgba(0, 0, 0, 0.9)',
       border: '1px solid rgba(255, 255, 255, 0.2)',
       borderRadius: '8px',
@@ -89,14 +62,13 @@ export const QuickPresetShare: React.FC = () => {
       minWidth: '280px',
       maxHeight: '400px',
       overflowY: 'auto',
-      zIndex: 9999,
       color: 'white',
       fontSize: '14px'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
         <h3 style={{ margin: 0, fontSize: '16px' }}>Share Presets</h3>
         <button
-          onClick={() => setShowShareMenu(false)}
+          onClick={onClose}
           style={{
             background: 'none',
             border: 'none',

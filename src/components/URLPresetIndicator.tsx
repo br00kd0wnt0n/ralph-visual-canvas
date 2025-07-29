@@ -7,10 +7,18 @@ import styles from './GlobalEffectsDashboard.module.css';
 
 interface URLPresetIndicatorProps {
   urlState: URLPresetState;
+  showUI?: boolean;
 }
 
-export const URLPresetIndicator: React.FC<URLPresetIndicatorProps> = ({ urlState }) => {
+export const URLPresetIndicator: React.FC<URLPresetIndicatorProps> = ({ urlState, showUI = false }) => {
   if (!urlState.isLoading && !urlState.presetId && !urlState.presetName && !urlState.error) {
+    return null;
+  }
+
+  // Only show loading and error states immediately, success state requires UI to be shown
+  const shouldShow = urlState.isLoading || urlState.error || (showUI && (urlState.presetId || urlState.presetName));
+  
+  if (!shouldShow) {
     return null;
   }
 

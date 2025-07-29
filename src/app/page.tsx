@@ -27,14 +27,17 @@ function HomeContent() {
   const [showAINew, setShowAINew] = useState(false);
   const [showTrailControls, setShowTrailControls] = useState(false);
   const [showPerformance, setShowPerformance] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const [isPresetLoaded, setIsPresetLoaded] = useState(false);
   const [showUI, setShowUI] = useState(false); // UI visibility state - hidden by default
   
   // Load preset from URL if provided
   const urlPresetState = usePresetFromURL();
   
-  // Enable default preset loading for production (skip if URL preset is loading)
-  const skipDefaultPreset = urlPresetState.isLoading || urlPresetState.presetId !== null || urlPresetState.presetName !== null;
+  // Enable default preset loading for production (skip if URL preset is loading or if URL params exist)
+  const searchParams = useSearchParams();
+  const hasURLPreset = searchParams.get('preset') || searchParams.get('p');
+  const skipDefaultPreset = hasURLPreset || urlPresetState.isLoading || urlPresetState.presetId !== null || urlPresetState.presetName !== null;
 
   // Keyboard event handler to toggle UI visibility with "1" key
   useEffect(() => {
@@ -127,18 +130,25 @@ function HomeContent() {
 
     if (skipDefaultPreset) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('⏭️ Skipping default preset loading for testing');
+        console.log('⏭️ Skipping default preset loading - URL preset detected:', {
+          hasURLPreset,
+          isLoading: urlPresetState.isLoading,
+          presetId: urlPresetState.presetId,
+          presetName: urlPresetState.presetName
+        });
       }
       setIsPresetLoaded(true);
     } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Loading default preset from cloud');
+      }
       loadLandingPresetFromCloud();
     }
-  }, [loadPreset, loadPresetData, getAvailablePresets, skipDefaultPreset]);
+  }, [loadPreset, loadPresetData, getAvailablePresets, skipDefaultPreset, hasURLPreset, urlPresetState]);
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
-      <URLPresetIndicator urlState={urlPresetState} />
-      <QuickPresetShare />
+      <URLPresetIndicator urlState={urlPresetState} showUI={showUI} />
       {/* Loading Screen - Show until preset is loaded */}
       {!isPresetLoaded && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
@@ -183,6 +193,8 @@ function HomeContent() {
           onTrailControlsToggle={() => setShowTrailControls(!showTrailControls)}
           isPerformanceOpen={showPerformance}
           onPerformanceToggle={() => setShowPerformance((v) => !v)}
+          isShareOpen={showShare}
+          onShareToggle={() => setShowShare(!showShare)}
         />
       )}
 
@@ -219,6 +231,19 @@ function HomeContent() {
         isOpen={showTrailControls} 
         onClose={() => setShowTrailControls(false)} 
       />
+
+      {/* Share Panel */}
+      {showShare && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 15000,
+        }}>
+          <QuickPresetShare onClose={() => setShowShare(false)} />
+        </div>
+      )}
 
       {/* Global Defaults Panel */}
       <GlobalDefaultsPanel 

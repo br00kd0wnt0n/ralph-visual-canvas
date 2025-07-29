@@ -4,6 +4,7 @@ import { GlobalDefaultsToggle } from './GlobalDefaultsToggle';
 import { AIToggle } from './AIToggle';
 import { TrailToggle } from './TrailToggle';
 import { PerformanceMonitor } from './PerformanceMonitor';
+import { ShareToggle } from './ShareToggle';
 
 interface BottomButtonBarProps {
   isDashboardOpen: boolean;
@@ -22,6 +23,8 @@ interface BottomButtonBarProps {
   onTrailControlsToggle: () => void;
   isPerformanceOpen: boolean;
   onPerformanceToggle: () => void;
+  isShareOpen: boolean;
+  onShareToggle: () => void;
 }
 
 export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
@@ -41,6 +44,8 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
   onTrailControlsToggle,
   isPerformanceOpen,
   onPerformanceToggle,
+  isShareOpen,
+  onShareToggle,
 }) => {
   return (
     <>
@@ -194,6 +199,11 @@ export const BottomButtonBar: React.FC<BottomButtonBarProps> = ({
           >
             🤖
           </button>
+        </div>
+        
+        {/* Share Button */}
+        <div style={{ pointerEvents: 'auto' }}>
+          <ShareToggle isOpen={isShareOpen} onToggle={onShareToggle} />
         </div>
         
       </div>
