@@ -19,6 +19,7 @@ import { useVisualStore } from '../store/visualStore';
 import { PresetClient } from '../lib/presetClient';
 import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
+import { initializeGlobalAPI } from '../api/GlobalAPI';
 
 function HomeContent() {
   const { ui, toggleDashboards, toggleCameraPositioningMode, toggleAutoPan, loadPreset, loadPresetData, getAvailablePresets, camera } = useVisualStore();
@@ -30,6 +31,11 @@ function HomeContent() {
   const [showShare, setShowShare] = useState(false);
   const [isPresetLoaded, setIsPresetLoaded] = useState(false);
   const [showUI, setShowUI] = useState(false); // UI visibility state - hidden by default
+  
+  // Initialize global API for external control
+  useEffect(() => {
+    initializeGlobalAPI();
+  }, []);
   
   // Load preset from URL if provided
   const urlPresetState = usePresetFromURL();

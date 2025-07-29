@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ralph Canvas API Test</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: black;
+      color: white;
+    }
+    
+    .controls {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      margin: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #2563eb;
+    }
+    
+    #status {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    #background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="background">
+    <!-- Ralph Canvas Background Component will be rendered here -->
+  </div>
+  
+  <div class="controls">
+    <h3>🎨 Ralph Canvas API Test</h3>
+    
+    <div>
+      <button onclick="testChangePreset('LANDING')">LANDING</button>
+      <button onclick="testChangePreset('creative')">Creative</button>
+      <button onclick="testChangePreset('minimal')">Minimal</button>
+    </div>
+    
+    <div>
+      <button onclick="listPresets()">List Presets</button>
+      <button onclick="getCurrentPreset()">Current Preset</button>
+      <button onclick="autoRotate()">Auto Rotate</button>
+    </div>
+    
+    <div id="status">
+      Ready - Click buttons to test API
+    </div>
+  </div>
+
+  <script>
+    let autoRotateInterval = null;
+    
+    // Wait for API to be available
+    function waitForAPI() {
+      if (typeof window.RalphCanvas !== 'undefined') {
+        updateStatus('✅ RalphCanvas API loaded');
+        return true;
+      }
+      return false;
+    }
+    
+    function updateStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+    
+    async function testChangePreset(presetName) {
+      if (!waitForAPI()) {
+        updateStatus('❌ API not loaded yet');
+        return;
+      }
+      
+      updateStatus(`🔄 Loading preset: ${presetName}...`);
+      
+      try {
+        const success = await window.RalphCanvas.changePreset(presetName);
+        if (success) {
+          updateStatus(`✅ Loaded preset: ${presetName}`);
+        } else {
+          updateStatus(`❌ Failed to load preset: ${presetName}`);
+        }
+      } catch (error) {
+        updateStatus(`❌ Error: ${error.message}`);
+      }
+    }
+    
+    function listPresets() {
+      if (!waitForAPI()) {
+        updateStatus('❌ API not loaded yet');
+        return;
+      }
+      
+      const presets = window.RalphCanvas.getAvailablePresets();
+      updateStatus(`📋 Local: [${presets.local.join(', ')}] Cloud: [${presets.cloud.join(', ')}]`);
+    }
+    
+    function getCurrentPreset() {
+      if (!waitForAPI()) {
+        updateStatus('❌ API not loaded yet');
+        return;
+      }
+      
+      const current = window.RalphCanvas.getCurrentPreset();
+      updateStatus(`🎯 Current preset: ${current || 'None'}`);
+    }
+    
+    function autoRotate() {
+      if (!waitForAPI()) {
+        updateStatus('❌ API not loaded yet');
+        return;
+      }
+      
+      if (autoRotateInterval) {
+        clearInterval(autoRotateInterval);
+        autoRotateInterval = null;
+        updateStatus('⏹️ Auto rotate stopped');
+        return;
+      }
+      
+      const presets = ['LANDING', 'creative', 'minimal'];
+      let index = 0;
+      
+      autoRotateInterval = setInterval(() => {
+        testChangePreset(presets[index]);
+        index = (index + 1) % presets.length;
+      }, 5000);
+      
+      updateStatus('🔄 Auto rotate started (5s intervals)');
+    }
+    
+    // Check API availability on load
+    setTimeout(() => {
+      if (!waitForAPI()) {
+        updateStatus('⏳ Waiting for RalphCanvas API...');
+        
+        // Keep checking for API
+        const checkInterval = setInterval(() => {
+          if (waitForAPI()) {
+            clearInterval(checkInterval);
+          }
+        }, 500);
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
