@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import EnhancedVisualCanvas from '../components/EnhancedVisualCanvas';
 import { usePresetFromURL } from '../hooks/usePresetFromURL';
 import { URLPresetIndicator } from '../components/URLPresetIndicator';
+import { QuickPresetShare } from '../components/QuickPresetShare';
 import { GlobalEffectsDashboard } from '../components/GlobalEffectsDashboard';
 import { ShapeParticleDashboard } from '../components/ShapeParticleDashboard';
 import { DashboardToggle } from '../components/DashboardToggle';
@@ -137,6 +138,7 @@ function HomeContent() {
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
       <URLPresetIndicator urlState={urlPresetState} />
+      <QuickPresetShare />
       {/* Loading Screen - Show until preset is loaded */}
       {!isPresetLoaded && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">

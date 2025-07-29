@@ -38,3 +38,74 @@
  ✓ Compiled /api/presets in 730ms (41 modules)
  ✓ Compiled /api/presets/[id] in 132ms (43 modules)
  ○ Compiling / ...
+ ⨯ ./src/components/PresetControls.tsx
+Error: 
+  [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/BD/visual-canvas-lab/src/components/PresetControls.tsx[0m:170:1]
+ [2m170[0m |   };
+ [2m171[0m | 
+ [2m172[0m |   return (
+ [2m173[0m |     <div>
+     : [31;1m     ^^^[0m
+ [2m174[0m |       {/* Storage Mode Toggle */}
+ [2m175[0m |       <div className="bg-black/20 rounded-lg p-3 mb-4">
+ [2m176[0m |         <h4 className="text-white font-medium mb-3">Storage Mode</h4>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/PresetControls.tsx
+./src/components/GlobalEffectsDashboard.tsx
+./src/app/page.tsx
+ ⨯ ./src/components/PresetControls.tsx
+Error: 
+  [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/BD/visual-canvas-lab/src/components/PresetControls.tsx[0m:170:1]
+ [2m170[0m |   };
+ [2m171[0m | 
+ [2m172[0m |   return (
+ [2m173[0m |     <div>
+     : [31;1m     ^^^[0m
+ [2m174[0m |       {/* Storage Mode Toggle */}
+ [2m175[0m |       <div className="bg-black/20 rounded-lg p-3 mb-4">
+ [2m176[0m |         <h4 className="text-white font-medium mb-3">Storage Mode</h4>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/PresetControls.tsx
+./src/components/GlobalEffectsDashboard.tsx
+./src/app/page.tsx
+ ⨯ ./src/components/PresetControls.tsx
+Error: 
+  [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4m/Users/BD/visual-canvas-lab/src/components/PresetControls.tsx[0m:170:1]
+ [2m170[0m |   };
+ [2m171[0m | 
+ [2m172[0m |   return (
+ [2m173[0m |     <div>
+     : [31;1m     ^^^[0m
+ [2m174[0m |       {/* Storage Mode Toggle */}
+ [2m175[0m |       <div className="bg-black/20 rounded-lg p-3 mb-4">
+ [2m176[0m |         <h4 className="text-white font-medium mb-3">Storage Mode</h4>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/PresetControls.tsx
+./src/components/GlobalEffectsDashboard.tsx
+./src/app/page.tsx
+ ✓ Compiled /_error in 1504ms (1242 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled / in 330ms (914 modules)
+ ✓ Compiled /api/presets in 148ms (937 modules)
+ ✓ Compiled /api/presets/[id] in 236ms (939 modules)
+ ✓ Compiled in 666ms (992 modules)
+ ✓ Compiled in 731ms (1905 modules)
+ ✓ Compiled /api/presets in 207ms (935 modules)
