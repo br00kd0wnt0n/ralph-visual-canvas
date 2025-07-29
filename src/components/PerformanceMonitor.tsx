@@ -20,8 +20,9 @@ export const PerformanceMonitor: React.FC = () => {
     const loop = () => {
       frameCount.current++;
       const now = performance.now();
-      if (now - lastFrame.current >= 2000) { // Update every 2 seconds instead of 1 second
-        setFps(frameCount.current / 2); // Divide by 2 since we're measuring over 2 seconds
+      if (now - lastFrame.current >= 1000) { // Update every 1 second for accurate FPS
+        const fps = Math.round((frameCount.current * 1000) / (now - lastFrame.current));
+        setFps(fps);
         frameCount.current = 0;
         lastFrame.current = now;
       }

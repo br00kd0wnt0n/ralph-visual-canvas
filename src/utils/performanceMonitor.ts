@@ -9,7 +9,7 @@ class PerformanceMonitor {
   private maxHistoryLength = 60; // Keep last 60 frames
   private isEnabled = false;
   private lastLogTime = 0;
-  private logInterval = 5000; // Log every 5 seconds instead of every second
+  private logInterval = 10000; // Log every 10 seconds to reduce spam
   private startTime = 0;
 
   private constructor() {}
@@ -58,13 +58,14 @@ class PerformanceMonitor {
       if (timeSinceLastLog >= this.logInterval) {
         this.lastLogTime = currentTime;
         
-        // Only log in development mode
+        // Only log in development mode and only for actual performance issues
         if (process.env.NODE_ENV === 'development') {
-          if (avgFps < 30) {
+          if (avgFps < 25) {
             console.warn(`⚠️ Low FPS detected: ${avgFps} FPS (current: ${fps} FPS)`);
-          } else if (avgFps < 50) {
+          } else if (avgFps < 40) {
             console.info(`📊 Moderate FPS: ${avgFps} FPS (current: ${fps} FPS)`);
           }
+          // Remove logging for moderate performance (40-60 FPS is normal)
         }
       }
 

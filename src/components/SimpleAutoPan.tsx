@@ -58,9 +58,9 @@ export const AutoPanDebugMonitor = () => {
     frameCount.current++;
     const now = performance.now();
     
-    // Report every 3 seconds when auto-pan is active
-    if (now - lastReport.current > 3000) {
-      const fps = (frameCount.current / 3).toFixed(1);
+    // Report every 10 seconds when auto-pan is active
+    if (now - lastReport.current > 10000) {
+      const fps = Math.round((frameCount.current * 1000) / (now - lastReport.current));
       console.log(`🎥 Auto-Pan Active - FPS: ${fps}, Speed: ${camera.autoPan.speed}x, Global: ${globalAnimationSpeed.toFixed(1)}x`);
       frameCount.current = 0;
       lastReport.current = now;
