@@ -324,7 +324,7 @@ const PresetControls: React.FC = React.memo(() => {
                   className={styles.mt1}
                 />
               )}
-            <>
+            </>
           ) : (
             <div className="text-center py-4">
               <p className="text-gray-400 text-sm">
