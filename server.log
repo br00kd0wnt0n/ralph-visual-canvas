@@ -33,22 +33,8 @@
    - Local:        http://localhost:3000
    - Environments: .env.local
 
- ✓ Ready in 1297ms
- ○ Compiling / ...
- ✓ Compiled / in 6.8s (1803 modules)
+ ✓ Ready in 7s
  ○ Compiling /api/presets ...
- ✓ Compiled /api/presets in 577ms (1754 modules)
- ✓ Compiled in 1139ms (1731 modules)
- ✓ Compiled in 623ms (1731 modules)
- ✓ Compiled /api/presets in 139ms (890 modules)
- ○ Compiling /not-found ...
- ✓ Compiled /not-found in 505ms (1722 modules)
- ✓ Compiled in 583ms (1736 modules)
- ✓ Compiled /api/presets in 165ms (890 modules)
- ✓ Compiled in 1169ms (1731 modules)
- ✓ Compiled in 914ms (1731 modules)
- ✓ Compiled /api/presets in 186ms (890 modules)
- ✓ Compiled in 614ms (864 modules)
- ✓ Compiled in 759ms (1731 modules)
- ✓ Compiled in 529ms (1733 modules)
- ✓ Compiled /api/presets in 104ms (891 modules)
+ ✓ Compiled /api/presets in 730ms (41 modules)
+ ✓ Compiled /api/presets/[id] in 132ms (43 modules)
+ ○ Compiling / ...

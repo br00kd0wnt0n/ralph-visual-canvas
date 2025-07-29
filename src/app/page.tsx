@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import EnhancedVisualCanvas from '../components/EnhancedVisualCanvas';
+import { usePresetFromURL } from '../hooks/usePresetFromURL';
+import { URLPresetIndicator } from '../components/URLPresetIndicator';
 import { GlobalEffectsDashboard } from '../components/GlobalEffectsDashboard';
 import { ShapeParticleDashboard } from '../components/ShapeParticleDashboard';
 import { DashboardToggle } from '../components/DashboardToggle';
@@ -16,7 +19,7 @@ import { PresetClient } from '../lib/presetClient';
 import styles from './page.module.css';
 import { BottomButtonBar } from '../components/BottomButtonBar';
 
-export default function Home() {
+function HomeContent() {
   const { ui, toggleDashboards, toggleCameraPositioningMode, toggleAutoPan, loadPreset, loadPresetData, getAvailablePresets, camera } = useVisualStore();
   const [showGlobalDefaults, setShowGlobalDefaults] = useState(false);
   const [showAITest, setShowAITest] = useState(false);
@@ -26,8 +29,11 @@ export default function Home() {
   const [isPresetLoaded, setIsPresetLoaded] = useState(false);
   const [showUI, setShowUI] = useState(false); // UI visibility state - hidden by default
   
-  // Enable default preset loading for production
-  const skipDefaultPreset = false; // Set to true to disable default preset loading for testing
+  // Load preset from URL if provided
+  const urlPresetState = usePresetFromURL();
+  
+  // Enable default preset loading for production (skip if URL preset is loading)
+  const skipDefaultPreset = urlPresetState.isLoading || urlPresetState.presetId !== null || urlPresetState.presetName !== null;
 
   // Keyboard event handler to toggle UI visibility with "1" key
   useEffect(() => {
@@ -130,6 +136,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
+      <URLPresetIndicator urlState={urlPresetState} />
       {/* Loading Screen - Show until preset is loaded */}
       {!isPresetLoaded && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
@@ -217,5 +224,14 @@ export default function Home() {
         onClose={() => setShowGlobalDefaults(false)} 
       />
     </main>
+  );
+}
+
+// Wrap with Suspense for useSearchParams
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useVisualStore } from '../store/visualStore';
 import { PresetClient } from '../lib/presetClient';
 import { Preset } from '../types/preset';
+import { PresetShareButton } from './PresetShareButton';
 import styles from './GlobalEffectsDashboard.module.css';
 
 const PresetControls: React.FC = React.memo(() => {
@@ -268,6 +269,13 @@ const PresetControls: React.FC = React.memo(() => {
               Delete
             </button>
           </div>
+          {selectedPreset && (
+            <PresetShareButton 
+              presetName={selectedPreset}
+              isCloudPreset={false}
+              className={styles.mt1}
+            />
+          )}
         </div>
       )}
 
@@ -309,7 +317,14 @@ const PresetControls: React.FC = React.memo(() => {
                   Delete
                 </button>
               </div>
-            </>
+              {selectedCloudPreset && (
+                <PresetShareButton 
+                  presetId={selectedCloudPreset}
+                  isCloudPreset={true}
+                  className={styles.mt1}
+                />
+              )}
+            <>
           ) : (
             <div className="text-center py-4">
               <p className="text-gray-400 text-sm">

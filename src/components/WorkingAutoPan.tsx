@@ -9,21 +9,11 @@ export const WorkingAutoPan = () => {
   
   // Simple angle tracking for 360-degree rotation
   const angleRef = useRef(0);
+  const logTimer = useRef(0);
   
   useFrame((state, deltaTime) => {
     // Only run if auto-pan is enabled
     if (!camera.autoPan.enabled) return;
-    
-    // Debug logging
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Auto-pan active:', {
-        enabled: camera.autoPan.enabled,
-        speed: camera.autoPan.speed,
-        radius: camera.autoPan.radius,
-        height: camera.autoPan.height,
-        globalSpeed: globalAnimationSpeed
-      });
-    }
     
     // Get auto-pan settings
     const { speed, radius, height } = camera.autoPan;
@@ -42,9 +32,17 @@ export const WorkingAutoPan = () => {
     threeCamera.position.set(x, height, z);
     threeCamera.lookAt(0, 0, 0);
     
-    // Position logging for debugging
+    // Minimal logging - only every 2 seconds in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Camera position:', { x: x.toFixed(2), y: height, z: z.toFixed(2), angle: angleRef.current.toFixed(2) });
+      logTimer.current += deltaTime;
+      if (logTimer.current > 2) {
+        console.log('Auto-pan status:', {
+          speed: speed,
+          angle: angleRef.current.toFixed(2),
+          position: `(${x.toFixed(1)}, ${height}, ${z.toFixed(1)})`
+        });
+        logTimer.current = 0;
+      }
     }
   });
   

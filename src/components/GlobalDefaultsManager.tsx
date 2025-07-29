@@ -535,7 +535,7 @@ export default function GlobalDefaultsPanel({ isOpen, onClose }: GlobalDefaultsP
                             <input
                               type="range"
                               min="1"
-                              max="50"
+                              max="40"
                               step="0.5"
                               value={currentDefaults.camera.depthOfField.focusDistance}
                               onChange={(e) => handleUpdateDefaults('camera', { 

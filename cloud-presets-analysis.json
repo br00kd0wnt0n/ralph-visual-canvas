@@ -1,0 +1,5007 @@
+{
+    "presets": [
+        {
+            "_id": "6888cf1e4eed6102720d2aab",
+            "name": "MURDERBOT 2",
+            "description": "SLOW",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-07-29T13:39:42.619Z",
+            "updatedAt": "2025-07-29T13:39:42.619Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 18,
+                        "size": 4.4,
+                        "color": "#00ff88",
+                        "speed": 0.8,
+                        "opacity": 0.3,
+                        "organicness": 0.6,
+                        "rotation": 0.92,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 11,
+                        "size": 7.7,
+                        "color": "#ff7b00",
+                        "rotation": 0.3,
+                        "opacity": 0.8,
+                        "organicness": 1.8,
+                        "speed": 0.2,
+                        "movementPattern": "verticalSine",
+                        "distance": 1.2,
+                        "pulseEnabled": false,
+                        "pulseSize": 0.4
+                    },
+                    "toruses": {
+                        "count": 12,
+                        "size": 14.1,
+                        "color": "#9900ff",
+                        "speed": 0.1,
+                        "opacity": 0.7,
+                        "organicness": 2,
+                        "rotation": 0,
+                        "movementPattern": "orbit",
+                        "distance": 6.4,
+                        "pulseEnabled": false,
+                        "pulseSize": 3
+                    },
+                    "blobs": {
+                        "count": 7,
+                        "size": 11.5,
+                        "color": "#1c1b1d",
+                        "speed": 0.1,
+                        "opacity": 1,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 7.9,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#b80090"
+                    },
+                    "metamorphosis": {
+                        "color": "#00ffff"
+                    },
+                    "fireflies": {
+                        "color": "#fff93d"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ff00ae"
+                    },
+                    "ribbons": {
+                        "count": 5,
+                        "length": 10,
+                        "width": 0.4,
+                        "color": "#ff6b6b",
+                        "speed": 1.5,
+                        "opacity": 0.8,
+                        "flow": 1,
+                        "organicness": 0.3
+                    },
+                    "radialGrowth": {
+                        "color": "#ff1493"
+                    }
+                },
+                "particles": {
+                    "count": 800,
+                    "size": 4.17,
+                    "color": "#ff6600",
+                    "speed": 0.1,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "orbit",
+                    "distance": 1.5,
+                    "pulseEnabled": true,
+                    "pulseSize": 0.3
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": true,
+                        "intensity": 0,
+                        "layers": 10
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.4,
+                        "radius": 20,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 6,
+                        "aberrationColors": {
+                            "red": "#37ff00",
+                            "green": "#001eff",
+                            "blue": "#000000"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": false,
+                        "wave": 0,
+                        "ripple": 0,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.1,
+                        "lightShafts": 0,
+                        "density": 1.8,
+                        "color": "#9941e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": true,
+                        "speed": 1.8,
+                        "amplitude": 0.8,
+                        "contourLevels": 4,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.4,
+                            "fadeEnd": 0.45
+                        },
+                        "preset": 4
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 0.5,
+                        "rotationSpeed": 0.5,
+                        "wireframeOpacity": 0.8,
+                        "size": 3.6,
+                        "blur": 0
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 1.1,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 45
+                    },
+                    "layeredSineWaves": {
+                        "enabled": true,
+                        "layers": 140,
+                        "points": 500,
+                        "waveAmplitude": 45,
+                        "speed": 0.4,
+                        "opacity": 0.9,
+                        "lineWidth": 1.3,
+                        "size": 0.8,
+                        "width": 190,
+                        "height": 200,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.1,
+                            "fadeEnd": 0.2
+                        }
+                    },
+                    "depthOfField": {
+                        "enabled": false,
+                        "focusDistance": 15,
+                        "blurRadius": 5,
+                        "bokehEffect": true
+                    },
+                    "radialGrowth": {
+                        "enabled": false,
+                        "maxRadiators": 10,
+                        "spawnRate": 0.5,
+                        "growthSpeed": 0.1
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.3,
+                    "vignette": 0.5,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 12,
+                    "height": 2,
+                    "fov": 67,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "autoPan": {
+                        "enabled": false,
+                        "speed": 0.6,
+                        "radius": 15,
+                        "height": 3,
+                        "easing": 0.015,
+                        "currentAngle": 1.5737963267948964
+                    },
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 33,
+                        "focalLength": 145,
+                        "bokehScale": 3.5,
+                        "blur": 1.6
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "6888cda84eed6102720d2aaa",
+            "name": "NEW",
+            "description": "1",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-07-29T13:33:28.723Z",
+            "updatedAt": "2025-07-29T13:33:28.723Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 3,
+                        "size": 14.8,
+                        "color": "#37ff00",
+                        "speed": 1.5,
+                        "rotation": 4.97,
+                        "opacity": 0.9,
+                        "organicness": 4.5,
+                        "movementPattern": "verticalSine",
+                        "distance": 0.7,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 0,
+                        "size": 1.7,
+                        "color": "#ff00cc",
+                        "rotation": 1.2,
+                        "speed": 1,
+                        "opacity": 0.8,
+                        "organicness": 0.6,
+                        "movementPattern": "orbit",
+                        "distance": 2.5,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "toruses": {
+                        "count": 7,
+                        "size": 13.5,
+                        "color": "#ffa500",
+                        "speed": 0.3,
+                        "rotation": 4.63,
+                        "opacity": 0.7,
+                        "organicness": 4.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 2.3,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "blobs": {
+                        "count": 2,
+                        "size": 13.8,
+                        "color": "#9370db",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 1.5,
+                        "movementPattern": "orbit",
+                        "distance": 3,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#00ffff"
+                    },
+                    "metamorphosis": {
+                        "color": "#ffffff"
+                    },
+                    "fireflies": {
+                        "color": "#fefff0"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ffffff"
+                    }
+                },
+                "particles": {
+                    "count": 980,
+                    "size": 2.22,
+                    "color": "#ff8800",
+                    "speed": 1.4,
+                    "opacity": 0.9,
+                    "spread": 47.2,
+                    "movementPattern": "orbit",
+                    "distance": 9.1,
+                    "pulseEnabled": false,
+                    "pulseSize": 1
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0.5,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0,
+                        "radius": 1,
+                        "useObjectColor": false,
+                        "customColor": "#7324c2",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 6.5,
+                        "aberrationColors": {
+                            "red": "#d400ff",
+                            "green": "#5515a2",
+                            "blue": "#0000ff"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0.8
+                    },
+                    "distortion": {
+                        "enabled": false,
+                        "wave": 0.7,
+                        "ripple": 0.2,
+                        "noise": 0.1,
+                        "frequency": 3.7
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.3,
+                        "lightShafts": 0,
+                        "density": 0.5,
+                        "color": "#4169e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": true,
+                        "speed": 0.3,
+                        "amplitude": 1,
+                        "contourLevels": 14,
+                        "preset": 2,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.2,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 2.5,
+                        "rotationSpeed": 1.5,
+                        "wireframeOpacity": 0.8,
+                        "size": 11.3,
+                        "blur": 0.9,
+                        "intensity": 2.5,
+                        "layers": 2
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 1.3,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 35
+                    },
+                    "layeredSineWaves": {
+                        "enabled": true,
+                        "layers": 85,
+                        "points": 450,
+                        "waveAmplitude": 55,
+                        "speed": 0.5,
+                        "opacity": 0.4,
+                        "lineWidth": 0.9,
+                        "size": 8.6,
+                        "width": 200,
+                        "height": 110,
+                        "intensity": 2.5,
+                        "layerCount": 4,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.1,
+                    "vignette": 0.15,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 15,
+                    "height": 2.9999999999999996,
+                    "fov": 111,
+                    "position": [
+                        -13.933365566031306,
+                        2.9999999999999996,
+                        5.55529693205801
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "autoPan": {
+                        "enabled": true,
+                        "speed": 0.6,
+                        "radius": 15,
+                        "height": 3,
+                        "easing": 0.015,
+                        "currentAngle": 1.5737963267948964
+                    },
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 35.5,
+                        "focalLength": 185,
+                        "bokehScale": 2.3,
+                        "blur": 1.4
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.2
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "686e62c5a63c173742e2ba4c",
+            "name": "LANDING",
+            "description": "Basic",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-07-09T12:38:29.060Z",
+            "updatedAt": "2025-07-09T12:38:29.060Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 0,
+                        "size": 5.8,
+                        "color": "#37ff00",
+                        "speed": 1.5,
+                        "rotation": 0,
+                        "opacity": 0.9,
+                        "organicness": 0.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 0,
+                        "size": 1.7,
+                        "color": "#ff00cc",
+                        "rotation": 1.2,
+                        "speed": 1,
+                        "opacity": 0.8,
+                        "organicness": 0.6,
+                        "movementPattern": "orbit",
+                        "distance": 2.5,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "toruses": {
+                        "count": 0,
+                        "size": 3.3,
+                        "color": "#ffa500",
+                        "speed": 1.2,
+                        "rotation": 0,
+                        "opacity": 0.7,
+                        "organicness": 3.1,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "blobs": {
+                        "count": 0,
+                        "size": 1.8,
+                        "color": "#9370db",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 1.5,
+                        "movementPattern": "orbit",
+                        "distance": 3,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#00ffff"
+                    },
+                    "metamorphosis": {
+                        "color": "#ffffff"
+                    },
+                    "fireflies": {
+                        "color": "#fefff0"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ffffff"
+                    }
+                },
+                "particles": {
+                    "count": 980,
+                    "size": 2.16,
+                    "color": "#ffffff",
+                    "speed": 1.4,
+                    "opacity": 0.9,
+                    "spread": 47.2,
+                    "movementPattern": "orbit",
+                    "distance": 9.1,
+                    "pulseEnabled": false,
+                    "pulseSize": 1
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0.5,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.4,
+                        "radius": 20,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 3.7,
+                        "aberrationColors": {
+                            "red": "#d400ff",
+                            "green": "#5515a2",
+                            "blue": "#0000ff"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.7,
+                        "ripple": 0.7,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": false,
+                        "fog": 0,
+                        "lightShafts": 0,
+                        "density": 0.5,
+                        "color": "#4169e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.8,
+                        "amplitude": 1,
+                        "contourLevels": 14,
+                        "preset": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.25,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 2.5,
+                        "rotationSpeed": 1.5,
+                        "wireframeOpacity": 0.3,
+                        "size": 2.5,
+                        "blur": 0.9,
+                        "intensity": 1,
+                        "layers": 1
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 1.3,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 35
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 85,
+                        "points": 450,
+                        "waveAmplitude": 55,
+                        "speed": 0.5,
+                        "opacity": 0.4,
+                        "lineWidth": 0.2,
+                        "size": 1.1,
+                        "width": 200,
+                        "height": 110,
+                        "intensity": 2.5,
+                        "layerCount": 2,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.1,
+                    "vignette": 0.15,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 15.269540607188613,
+                    "height": -0.9171312040359612,
+                    "fov": 60,
+                    "position": [
+                        -0.25539957196427887,
+                        -0.9171312040359612,
+                        15.26740454082561
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "autoPan": {
+                        "enabled": false,
+                        "speed": 0.6,
+                        "radius": 15,
+                        "height": 3,
+                        "easing": 0.015,
+                        "currentAngle": 1.5737963267948964
+                    },
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 21,
+                        "focalLength": 75,
+                        "bokehScale": 4.4,
+                        "blur": 1.9
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.2
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "685adcba5ef03e70eb285641",
+            "name": "ST",
+            "description": "",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-24T17:13:30.365Z",
+            "updatedAt": "2025-06-24T17:13:30.365Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 34,
+                        "size": 4.4,
+                        "color": "#E94560",
+                        "speed": 3,
+                        "rotation": 0.92,
+                        "opacity": 0.76,
+                        "organicness": 0.6,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 23,
+                        "size": 7.7,
+                        "color": "#F3722C",
+                        "rotation": 0.75,
+                        "speed": 0.3,
+                        "opacity": 0.75,
+                        "organicness": 1.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 1.2,
+                        "pulseEnabled": false,
+                        "pulseSize": 0.4
+                    },
+                    "toruses": {
+                        "count": 12,
+                        "size": 14.1,
+                        "color": "#9900ff",
+                        "speed": 0.1,
+                        "rotation": 0,
+                        "opacity": 0.7,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 6.4,
+                        "pulseEnabled": false,
+                        "pulseSize": 3
+                    },
+                    "blobs": {
+                        "count": 7,
+                        "size": 11.5,
+                        "color": "#1c1b1d",
+                        "speed": 0.1,
+                        "opacity": 1,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 7.9,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#b80090"
+                    },
+                    "metamorphosis": {
+                        "color": "#ffaa00"
+                    },
+                    "fireflies": {
+                        "color": "#fff93d"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ff00ae"
+                    }
+                },
+                "particles": {
+                    "count": 170,
+                    "size": 0.185,
+                    "color": "#F3722C",
+                    "speed": 1.7999999999999998,
+                    "opacity": 0.87,
+                    "spread": 40,
+                    "movementPattern": "orbit",
+                    "distance": 1.5,
+                    "pulseEnabled": true,
+                    "pulseSize": 0.3
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": true,
+                        "intensity": 0.28,
+                        "layers": 3
+                    },
+                    "colorBlending": {
+                        "enabled": true,
+                        "mode": "screen",
+                        "intensity": 0.6400000000000001
+                    },
+                    "shapeGlow": {
+                        "enabled": true,
+                        "intensity": 0.54,
+                        "radius": 4.7,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": true,
+                        "pulseSpeed": 0.75
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 6,
+                        "aberrationColors": {
+                            "red": "#37ff00",
+                            "green": "#001eff",
+                            "blue": "#000000"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.21,
+                        "ripple": 0.13999999999999999,
+                        "noise": 0.06999999999999999,
+                        "frequency": 1.5499999999999998
+                    },
+                    "particleInteraction": {
+                        "enabled": true,
+                        "magnetism": 0.27,
+                        "repulsion": 0.12,
+                        "flowField": true,
+                        "turbulence": 0.7899999999999999
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.1,
+                        "lightShafts": 0,
+                        "density": 1.8,
+                        "color": "#9941e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.5,
+                        "amplitude": 0.5,
+                        "contourLevels": 5,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": true,
+                        "morphSpeed": 1.2,
+                        "rotationSpeed": 1.12,
+                        "wireframeOpacity": 0.58,
+                        "size": 1.28,
+                        "blur": 0.21
+                    },
+                    "fireflies": {
+                        "enabled": false,
+                        "count": 100,
+                        "speed": 0.5,
+                        "glowIntensity": 0.5,
+                        "swarmRadius": 20
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 80,
+                        "points": 200,
+                        "waveAmplitude": 40,
+                        "speed": 0.5,
+                        "opacity": 0.5,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 100,
+                        "height": 100,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.54,
+                    "contrast": 1.1600000000000001,
+                    "saturation": 1.1,
+                    "hue": 15,
+                    "brightness": 1,
+                    "vignette": 0.1,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 11.091578033703648,
+                    "height": 4.997689138218121,
+                    "fov": 60,
+                    "position": [
+                        -10.535431503721068,
+                        4.997689138218121,
+                        3.468109904276238
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "autoPan": {
+                        "enabled": true,
+                        "speed": 0.15,
+                        "radius": 15,
+                        "height": 3,
+                        "easing": 0.015,
+                        "currentAngle": 53.672850000018826
+                    },
+                    "depthOfField": {
+                        "enabled": false,
+                        "focusDistance": 10,
+                        "focalLength": 50,
+                        "bokehScale": 1,
+                        "blur": 0.5
+                    }
+                },
+                "background": {
+                    "opacity": null,
+                    "blur": 2,
+                    "color": "#1A1A2E",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -30,
+                                "objects": [],
+                                "opacity": 0.7,
+                                "movement": "slow"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "685abd6aff9941e3dffd84bb",
+            "name": "RALPHSPACE",
+            "description": "1",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-24T14:59:54.331Z",
+            "updatedAt": "2025-06-24T14:59:54.331Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 0,
+                        "size": 5.8,
+                        "color": "#37ff00",
+                        "speed": 1.5,
+                        "rotation": 0,
+                        "opacity": 0.9,
+                        "organicness": 0.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 0,
+                        "size": 1.7,
+                        "color": "#ff00cc",
+                        "rotation": 1.2,
+                        "speed": 1,
+                        "opacity": 0.8,
+                        "organicness": 0.6,
+                        "movementPattern": "orbit",
+                        "distance": 2.5,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "toruses": {
+                        "count": 0,
+                        "size": 3.3,
+                        "color": "#ffa500",
+                        "speed": 1.2,
+                        "rotation": 0,
+                        "opacity": 0.7,
+                        "organicness": 3.1,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "blobs": {
+                        "count": 0,
+                        "size": 1.8,
+                        "color": "#9370db",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 1.5,
+                        "movementPattern": "orbit",
+                        "distance": 3,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#00ffff"
+                    },
+                    "metamorphosis": {
+                        "color": "#ffffff"
+                    },
+                    "fireflies": {
+                        "color": "#ffff00"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ffff00"
+                    }
+                },
+                "particles": {
+                    "count": 430,
+                    "size": 0.14,
+                    "color": "#ffffff",
+                    "speed": 0.4,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "verticalSine",
+                    "distance": 1.5,
+                    "pulseEnabled": false,
+                    "pulseSize": 1
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0.5,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.4,
+                        "radius": 20,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 3.7,
+                        "aberrationColors": {
+                            "red": "#ff0000",
+                            "green": "#00ff00",
+                            "blue": "#0000ff"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.7,
+                        "ripple": 0.7,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": false,
+                        "fog": 0,
+                        "lightShafts": 0,
+                        "density": 0.5,
+                        "color": "#4169e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.5,
+                        "amplitude": 0.5,
+                        "contourLevels": 5,
+                        "preset": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 2.5,
+                        "rotationSpeed": 1.5,
+                        "wireframeOpacity": 0.3,
+                        "size": 2.5,
+                        "blur": 0.9,
+                        "intensity": 1,
+                        "layers": 1
+                    },
+                    "fireflies": {
+                        "enabled": false,
+                        "count": 100,
+                        "speed": 0.5,
+                        "glowIntensity": 0.5,
+                        "swarmRadius": 20
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 80,
+                        "points": 200,
+                        "waveAmplitude": 40,
+                        "speed": 0.5,
+                        "opacity": 0.5,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 100,
+                        "height": 100,
+                        "intensity": 1,
+                        "layerCount": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.1,
+                    "vignette": 0.15,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 12,
+                    "height": 2,
+                    "fov": 60,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "autoPan": {
+                        "enabled": true,
+                        "speed": 0.15,
+                        "radius": 15,
+                        "height": 3,
+                        "easing": 0.015,
+                        "currentAngle": 5.605725000000191
+                    },
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 19,
+                        "focalLength": 50,
+                        "bokehScale": 3,
+                        "blur": 0.5
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.5
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "685aac91b4332c19eca29f59",
+            "name": "RALPH",
+            "description": "BASIC",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-24T13:48:01.636Z",
+            "updatedAt": "2025-06-24T13:48:01.636Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 12,
+                        "size": 1.2,
+                        "color": "#330025",
+                        "speed": 1.1,
+                        "opacity": 0.9,
+                        "organicness": 0.3
+                    },
+                    "cubes": {
+                        "count": 0,
+                        "size": 2.6,
+                        "color": "#000000",
+                        "rotation": 1.8,
+                        "opacity": 0.8,
+                        "organicness": 1.4,
+                        "speed": 0.4
+                    },
+                    "toruses": {
+                        "count": 5,
+                        "size": 2.5,
+                        "color": "#002d57",
+                        "speed": 0.6,
+                        "opacity": 0.4,
+                        "organicness": 0.4
+                    },
+                    "blobs": {
+                        "count": 6,
+                        "size": 2.9,
+                        "color": "#000000",
+                        "speed": 0.5,
+                        "opacity": 1,
+                        "organicness": 0.8
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#ba03fc"
+                    },
+                    "metamorphosis": {
+                        "color": "#00ffff"
+                    },
+                    "fireflies": {
+                        "color": "#f49ae3"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#a600ff"
+                    }
+                },
+                "particles": {
+                    "count": 800,
+                    "size": 0.55,
+                    "color": "#ff00dd",
+                    "speed": 1.5,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "orbit",
+                    "distance": 1.5,
+                    "pulseEnabled": true,
+                    "pulseSize": 0.3
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": true,
+                        "mode": "overlay",
+                        "intensity": 1.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.3,
+                        "radius": 76.7,
+                        "useObjectColor": true,
+                        "customColor": "#ff0000",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 7.2,
+                        "aberrationColors": {
+                            "red": "#ff00f7",
+                            "green": "#c400fa",
+                            "blue": "#ff00dd"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0.6,
+                            "speed": 1,
+                            "rotation": 47,
+                            "blendMode": "normal",
+                            "colors": [
+                                "#e100ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.65
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.1,
+                        "ripple": 0.3,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": false,
+                        "fog": 0.2,
+                        "lightShafts": 0,
+                        "density": 1.8,
+                        "color": "#ee00ff"
+                    },
+                    "trails": {
+                        "enabled": true,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 1000,
+                            "opacity": 1,
+                            "width": 1,
+                            "fadeRate": 0.9
+                        },
+                        "cubeTrails": {
+                            "enabled": false,
+                            "length": 1000,
+                            "opacity": 1,
+                            "width": 1,
+                            "fadeRate": 0.9
+                        },
+                        "blobTrails": {
+                            "enabled": false,
+                            "length": 1000,
+                            "opacity": 1,
+                            "width": 1,
+                            "fadeRate": 0.9
+                        },
+                        "torusTrails": {
+                            "enabled": false,
+                            "length": 1000,
+                            "opacity": 1,
+                            "width": 1,
+                            "fadeRate": 0.9
+                        },
+                        "particleTrails": {
+                            "enabled": false,
+                            "length": 1500,
+                            "opacity": 1,
+                            "width": 0.95,
+                            "fadeRate": 0.8
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.5,
+                        "amplitude": 1,
+                        "contourLevels": 2,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.6
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 0.5,
+                        "rotationSpeed": 0.5,
+                        "wireframeOpacity": 0.8,
+                        "size": 1.5,
+                        "blur": 0
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 0.4,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 15
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 85,
+                        "points": 280,
+                        "waveAmplitude": 60,
+                        "speed": 0.5,
+                        "opacity": 0.3,
+                        "lineWidth": 0.1,
+                        "size": 1.8,
+                        "width": 100,
+                        "height": 40,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.4,
+                            "fadeEnd": 0.75
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.4,
+                    "vignette": 0.9,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 4.999431206745019,
+                    "height": -0.0754162384638886,
+                    "fov": 60,
+                    "position": [
+                        -0.01838130201444163,
+                        -0.0754162384638886,
+                        4.99939741556042
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "autoPan": {
+                        "enabled": false,
+                        "speed": 0.15,
+                        "radius": 15,
+                        "height": 3,
+                        "easing": 0.015,
+                        "currentAngle": 0.601349999999978
+                    },
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 33,
+                        "focalLength": 145,
+                        "bokehScale": 3.5,
+                        "blur": 1.6
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "6859a1d1987afa40c2e909e4",
+            "name": "UPSIDEDOWN",
+            "description": "1",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-23T18:49:53.281Z",
+            "updatedAt": "2025-06-23T18:49:53.281Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 12,
+                        "size": 5.8,
+                        "color": "#000000",
+                        "speed": 1.5,
+                        "rotation": 0,
+                        "opacity": 0.9,
+                        "organicness": 0.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 20,
+                        "size": 1.8,
+                        "color": "#000000",
+                        "rotation": 1.2,
+                        "speed": 1,
+                        "opacity": 0.1,
+                        "organicness": 5,
+                        "movementPattern": "orbit",
+                        "distance": 2.5,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "toruses": {
+                        "count": 9,
+                        "size": 15,
+                        "color": "#000000",
+                        "speed": 1.2,
+                        "rotation": 0,
+                        "opacity": 0.7,
+                        "organicness": 3.1,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "blobs": {
+                        "count": 14,
+                        "size": 2.6,
+                        "color": "#000000",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 4.6,
+                        "movementPattern": "orbit",
+                        "distance": 3,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#ffbc85"
+                    },
+                    "metamorphosis": {
+                        "color": "#ff0000"
+                    },
+                    "fireflies": {
+                        "color": "#ff0a0a"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ffff00"
+                    }
+                },
+                "particles": {
+                    "count": 430,
+                    "size": 0.19,
+                    "color": "#ffffff",
+                    "speed": 0.4,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "verticalSine",
+                    "distance": 1.5,
+                    "pulseEnabled": false,
+                    "pulseSize": 1
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0.5,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.4,
+                        "radius": 20,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": false,
+                        "aberration": 2.3,
+                        "aberrationColors": {
+                            "red": "#ff0000",
+                            "green": "#00ff00",
+                            "blue": "#0000ff"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.7,
+                        "ripple": 0.7,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.6,
+                        "lightShafts": 0,
+                        "density": 0.2,
+                        "color": "#702323"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.2,
+                        "amplitude": 1,
+                        "contourLevels": 18,
+                        "preset": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": true,
+                        "morphSpeed": 2.5,
+                        "rotationSpeed": 1.5,
+                        "wireframeOpacity": 0.3,
+                        "size": 2.5,
+                        "blur": 0.9,
+                        "intensity": 1,
+                        "layers": 1
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 2.4,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 20
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 80,
+                        "points": 200,
+                        "waveAmplitude": 40,
+                        "speed": 0.5,
+                        "opacity": 0.5,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 100,
+                        "height": 100,
+                        "intensity": 1,
+                        "layerCount": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.7,
+                    "vignette": 0.6
+                },
+                "camera": {
+                    "distance": 12,
+                    "height": 2,
+                    "fov": 60,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 32.5,
+                        "focalLength": 75,
+                        "bokehScale": 2.8,
+                        "blur": 1.2
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.5
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "6859a143987afa40c2e909e3",
+            "name": "RED",
+            "description": "BLACK",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-23T18:47:31.441Z",
+            "updatedAt": "2025-06-23T18:47:31.441Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 12,
+                        "size": 5.8,
+                        "color": "#000000",
+                        "speed": 1.5,
+                        "rotation": 0,
+                        "opacity": 0.9,
+                        "organicness": 0.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 10,
+                        "size": 3.7,
+                        "color": "#000000",
+                        "rotation": 1.2,
+                        "speed": 1,
+                        "opacity": 0.8,
+                        "organicness": 0.6,
+                        "movementPattern": "orbit",
+                        "distance": 2.5,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "toruses": {
+                        "count": 9,
+                        "size": 7.3,
+                        "color": "#000000",
+                        "speed": 1.2,
+                        "rotation": 0,
+                        "opacity": 0.7,
+                        "organicness": 3.1,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "blobs": {
+                        "count": 6,
+                        "size": 1.8,
+                        "color": "#000000",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 1.5,
+                        "movementPattern": "orbit",
+                        "distance": 3,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#ffbc85"
+                    },
+                    "metamorphosis": {
+                        "color": "#ff0000"
+                    },
+                    "fireflies": {
+                        "color": "#ff0a0a"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ffff00"
+                    }
+                },
+                "particles": {
+                    "count": 430,
+                    "size": 0.19,
+                    "color": "#f8ccaf",
+                    "speed": 0.4,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "verticalSine",
+                    "distance": 1.5,
+                    "pulseEnabled": false,
+                    "pulseSize": 1
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0.5,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.4,
+                        "radius": 20,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": false,
+                        "aberration": 0,
+                        "aberrationColors": {
+                            "red": "#ff0000",
+                            "green": "#00ff00",
+                            "blue": "#0000ff"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.7,
+                        "ripple": 0.7,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": false,
+                        "fog": 0,
+                        "lightShafts": 0,
+                        "density": 0.5,
+                        "color": "#4169e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.2,
+                        "amplitude": 1,
+                        "contourLevels": 18,
+                        "preset": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": true,
+                        "morphSpeed": 2.5,
+                        "rotationSpeed": 1.5,
+                        "wireframeOpacity": 0.3,
+                        "size": 2.5,
+                        "blur": 0.9,
+                        "intensity": 1,
+                        "layers": 1
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 2.4,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 20
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 80,
+                        "points": 200,
+                        "waveAmplitude": 40,
+                        "speed": 0.5,
+                        "opacity": 0.5,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 100,
+                        "height": 100,
+                        "intensity": 1,
+                        "layerCount": 1,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.1,
+                    "vignette": 0.15
+                },
+                "camera": {
+                    "distance": 12,
+                    "height": 2,
+                    "fov": 60,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "depthOfField": {
+                        "enabled": false,
+                        "focusDistance": 10,
+                        "focalLength": 50,
+                        "bokehScale": 1,
+                        "blur": 0.5
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.5
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "68599f7d987afa40c2e909e1",
+            "name": "R",
+            "description": "Purple",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-23T18:39:57.162Z",
+            "updatedAt": "2025-06-23T18:39:57.162Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 12,
+                        "size": 1.2,
+                        "color": "#330025",
+                        "speed": 1.5,
+                        "rotation": 0.92,
+                        "opacity": 0.9,
+                        "organicness": 0.3,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#000000",
+                        "rotation": 1.5,
+                        "speed": 0.4,
+                        "opacity": 0.8,
+                        "organicness": 0.2,
+                        "movementPattern": "verticalSine",
+                        "distance": 1.2,
+                        "pulseEnabled": false,
+                        "pulseSize": 0.4
+                    },
+                    "toruses": {
+                        "count": 5,
+                        "size": 2.8,
+                        "color": "#002d57",
+                        "speed": 0.4,
+                        "rotation": 0,
+                        "opacity": 0.4,
+                        "organicness": 0.4,
+                        "movementPattern": "orbit",
+                        "distance": 6.4,
+                        "pulseEnabled": false,
+                        "pulseSize": 3
+                    },
+                    "blobs": {
+                        "count": 6,
+                        "size": 1.8,
+                        "color": "#9370db",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 0.8,
+                        "movementPattern": "orbit",
+                        "distance": 7.9,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#00ffff"
+                    },
+                    "metamorphosis": {
+                        "color": "#00ffff"
+                    },
+                    "fireflies": {
+                        "color": "#ffff00"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ffff00"
+                    }
+                },
+                "particles": {
+                    "count": 800,
+                    "size": 0.55,
+                    "color": "#ff0088",
+                    "speed": 1.5,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "orbit",
+                    "distance": 1.5,
+                    "pulseEnabled": true,
+                    "pulseSize": 0.3
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": true,
+                        "mode": "overlay",
+                        "intensity": 1.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.3,
+                        "radius": 76.7,
+                        "useObjectColor": true,
+                        "customColor": "#ff0000",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 7.2,
+                        "aberrationColors": {
+                            "red": "#ff00f7",
+                            "green": "#6400fa",
+                            "blue": "#000000"
+                        },
+                        "rainbow": {
+                            "enabled": true,
+                            "intensity": 0.6,
+                            "speed": 1,
+                            "rotation": 47,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#e100ff",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.65
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.1,
+                        "ripple": 0.3,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.2,
+                        "lightShafts": 0,
+                        "density": 1.8,
+                        "color": "#ee00ff"
+                    },
+                    "trails": {
+                        "enabled": true,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.5,
+                        "amplitude": 0.5,
+                        "contourLevels": 5,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": true,
+                        "morphSpeed": 2.9,
+                        "rotationSpeed": 1.8,
+                        "wireframeOpacity": 0.8,
+                        "size": 4.5,
+                        "blur": 1,
+                        "layers": 1,
+                        "intensity": 0.8
+                    },
+                    "fireflies": {
+                        "enabled": false,
+                        "count": 100,
+                        "speed": 0.5,
+                        "glowIntensity": 0.5,
+                        "swarmRadius": 20
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 80,
+                        "points": 200,
+                        "waveAmplitude": 40,
+                        "speed": 0.5,
+                        "opacity": 0.5,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 100,
+                        "height": 100,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.4,
+                    "vignette": 0.8,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 12,
+                    "height": 2,
+                    "fov": 60,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 6.5,
+                        "focalLength": 60,
+                        "bokehScale": 0.4,
+                        "blur": 1.8
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "68599ee0987afa40c2e909e0",
+            "name": "MURDERBOT 3000",
+            "description": "",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-23T18:37:20.416Z",
+            "updatedAt": "2025-06-23T18:37:20.416Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 18,
+                        "size": 4.4,
+                        "color": "#00ff88",
+                        "speed": 4.6,
+                        "rotation": 0.92,
+                        "opacity": 0.3,
+                        "organicness": 0.6,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 11,
+                        "size": 7.7,
+                        "color": "#ff7b00",
+                        "rotation": 1.6,
+                        "speed": 0.3,
+                        "opacity": 0.8,
+                        "organicness": 1.8,
+                        "movementPattern": "verticalSine",
+                        "distance": 1.2,
+                        "pulseEnabled": false,
+                        "pulseSize": 0.4
+                    },
+                    "toruses": {
+                        "count": 12,
+                        "size": 14.1,
+                        "color": "#9900ff",
+                        "speed": 0.1,
+                        "rotation": 0,
+                        "opacity": 0.7,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 6.4,
+                        "pulseEnabled": false,
+                        "pulseSize": 3
+                    },
+                    "blobs": {
+                        "count": 7,
+                        "size": 11.5,
+                        "color": "#1c1b1d",
+                        "speed": 0.1,
+                        "opacity": 1,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 7.9,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#b80090"
+                    },
+                    "metamorphosis": {
+                        "color": "#00ffff"
+                    },
+                    "fireflies": {
+                        "color": "#fff93d"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ff00ae"
+                    }
+                },
+                "particles": {
+                    "count": 800,
+                    "size": 0.16,
+                    "color": "#f9a771",
+                    "speed": 0.1,
+                    "opacity": 1,
+                    "spread": 40,
+                    "movementPattern": "orbit",
+                    "distance": 1.5,
+                    "pulseEnabled": true,
+                    "pulseSize": 0.3
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": true,
+                        "intensity": 0,
+                        "layers": 10
+                    },
+                    "colorBlending": {
+                        "enabled": false,
+                        "mode": "screen",
+                        "intensity": 0.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.4,
+                        "radius": 20,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 6,
+                        "aberrationColors": {
+                            "red": "#37ff00",
+                            "green": "#001eff",
+                            "blue": "#000000"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": false,
+                        "wave": 0,
+                        "ripple": 0,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.1,
+                        "lightShafts": 0,
+                        "density": 1.8,
+                        "color": "#9941e1"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": true,
+                        "speed": 1.8,
+                        "amplitude": 0.8,
+                        "contourLevels": 4,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.4,
+                            "fadeEnd": 0.45
+                        },
+                        "preset": 4
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 0.5,
+                        "rotationSpeed": 0.5,
+                        "wireframeOpacity": 0.8,
+                        "size": 3.6,
+                        "blur": 0
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 1.1,
+                        "glowIntensity": 1.9,
+                        "swarmRadius": 45
+                    },
+                    "layeredSineWaves": {
+                        "enabled": true,
+                        "layers": 140,
+                        "points": 500,
+                        "waveAmplitude": 45,
+                        "speed": 0.4,
+                        "opacity": 0.9,
+                        "lineWidth": 1.3,
+                        "size": 0.8,
+                        "width": 190,
+                        "height": 200,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.1,
+                            "fadeEnd": 0.2
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.3,
+                    "vignette": 0.5
+                },
+                "camera": {
+                    "distance": 12,
+                    "height": 2,
+                    "fov": 67,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 33,
+                        "focalLength": 145,
+                        "bokehScale": 3.5,
+                        "blur": 1.6
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "68598f73a022401e453cee4c",
+            "name": "Stranger",
+            "description": "Poster",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-23T17:31:31.690Z",
+            "updatedAt": "2025-06-23T17:31:31.690Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 34,
+                        "size": 12.2,
+                        "color": "#E94560",
+                        "speed": 3,
+                        "rotation": 1.97,
+                        "opacity": 0.76,
+                        "organicness": 0.6,
+                        "movementPattern": "verticalSine",
+                        "distance": 2,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "cubes": {
+                        "count": 23,
+                        "size": 5.2,
+                        "color": "#F5F5F5",
+                        "rotation": 0.75,
+                        "speed": 0.3,
+                        "opacity": 0.75,
+                        "organicness": 2,
+                        "movementPattern": "verticalSine",
+                        "distance": 1.2,
+                        "pulseEnabled": false,
+                        "pulseSize": 0.4
+                    },
+                    "toruses": {
+                        "count": 12,
+                        "size": 8.9,
+                        "color": "#9900ff",
+                        "speed": 1.9,
+                        "rotation": 1.75,
+                        "opacity": 0.7,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 6.4,
+                        "pulseEnabled": false,
+                        "pulseSize": 3
+                    },
+                    "blobs": {
+                        "count": 7,
+                        "size": 3,
+                        "color": "#1c1b1d",
+                        "speed": 0.1,
+                        "opacity": 1,
+                        "organicness": 2,
+                        "movementPattern": "orbit",
+                        "distance": 7.9,
+                        "pulseEnabled": false,
+                        "pulseSize": 1
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#b80090"
+                    },
+                    "metamorphosis": {
+                        "color": "#ffaa00"
+                    },
+                    "fireflies": {
+                        "color": "#fff93d"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#ff00ae"
+                    }
+                },
+                "particles": {
+                    "count": 170,
+                    "size": 0.185,
+                    "color": "#F5F5F5",
+                    "speed": 1.7999999999999998,
+                    "opacity": 0.87,
+                    "spread": 40,
+                    "movementPattern": "verticalSine",
+                    "distance": 9.1,
+                    "pulseEnabled": true,
+                    "pulseSize": 0.3
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": true,
+                        "intensity": 0.28,
+                        "layers": 3
+                    },
+                    "colorBlending": {
+                        "enabled": true,
+                        "mode": "screen",
+                        "intensity": 0.6400000000000001
+                    },
+                    "shapeGlow": {
+                        "enabled": true,
+                        "intensity": 0.54,
+                        "radius": 4.7,
+                        "useObjectColor": true,
+                        "customColor": "#ffffff",
+                        "pulsing": true,
+                        "pulseSpeed": 0.75
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 6,
+                        "aberrationColors": {
+                            "red": "#37ff00",
+                            "green": "#001eff",
+                            "blue": "#000000"
+                        },
+                        "rainbow": {
+                            "enabled": false,
+                            "intensity": 0,
+                            "speed": 1,
+                            "rotation": 0,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#ff0000",
+                                "#ff7f00",
+                                "#ffff00",
+                                "#00ff00",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.3
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.21,
+                        "ripple": 0.13999999999999999,
+                        "noise": 0.06999999999999999,
+                        "frequency": 1.5499999999999998
+                    },
+                    "particleInteraction": {
+                        "enabled": true,
+                        "magnetism": 0.27,
+                        "repulsion": 0.13333333333333333,
+                        "flowField": true,
+                        "turbulence": 0.7999999999999999
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.8,
+                        "lightShafts": 0,
+                        "density": 2,
+                        "color": "#9941e1"
+                    },
+                    "trails": {
+                        "enabled": true,
+                        "sphereTrails": {
+                            "enabled": false,
+                            "length": 761,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": false,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": false,
+                        "speed": 0.5,
+                        "amplitude": 0.5,
+                        "contourLevels": 5,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": true,
+                        "morphSpeed": 1.2,
+                        "rotationSpeed": 1.12,
+                        "wireframeOpacity": 0.58,
+                        "size": 1.28,
+                        "blur": 0.21
+                    },
+                    "fireflies": {
+                        "enabled": false,
+                        "count": 100,
+                        "speed": 0.5,
+                        "glowIntensity": 0.5,
+                        "swarmRadius": 20
+                    },
+                    "layeredSineWaves": {
+                        "enabled": false,
+                        "layers": 80,
+                        "points": 200,
+                        "waveAmplitude": 40,
+                        "speed": 0.5,
+                        "opacity": 0.5,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 100,
+                        "height": 100,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.54,
+                    "contrast": 1.1600000000000001,
+                    "saturation": 1.1,
+                    "hue": 15,
+                    "brightness": 1,
+                    "vignette": 0.1,
+                    "bloom": false,
+                    "chromaticAberration": 0,
+                    "motionBlur": false
+                },
+                "camera": {
+                    "distance": 8,
+                    "height": 2,
+                    "fov": 60,
+                    "position": [
+                        0,
+                        2,
+                        12
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "depthOfField": {
+                        "enabled": false,
+                        "focusDistance": 10,
+                        "focalLength": 50,
+                        "bokehScale": 1,
+                        "blur": 0.5
+                    }
+                },
+                "background": {
+                    "opacity": null,
+                    "blur": 2,
+                    "color": "#1A1A2E",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -30,
+                                "objects": [],
+                                "opacity": 0.7,
+                                "movement": "slow"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        },
+        {
+            "_id": "6855ecc7d696714c00aee8c1",
+            "name": "RalphNew",
+            "description": "Camera",
+            "category": "default",
+            "tags": [],
+            "createdAt": "2025-06-20T23:20:39.358Z",
+            "updatedAt": "2025-06-20T23:20:39.358Z",
+            "data": {
+                "geometric": {
+                    "spheres": {
+                        "count": 12,
+                        "size": 3,
+                        "color": "#330025",
+                        "speed": 1.5,
+                        "opacity": 0.9,
+                        "organicness": 1.7
+                    },
+                    "cubes": {
+                        "count": 8,
+                        "size": 2.2,
+                        "color": "#000000",
+                        "rotation": 1.5,
+                        "speed": 1,
+                        "opacity": 0.8,
+                        "organicness": 1.7
+                    },
+                    "toruses": {
+                        "count": 5,
+                        "size": 2.8,
+                        "color": "#002d57",
+                        "speed": 0.4,
+                        "opacity": 0.4,
+                        "organicness": 0.4
+                    },
+                    "blobs": {
+                        "count": 6,
+                        "size": 2.8,
+                        "color": "#9370db",
+                        "speed": 1,
+                        "opacity": 1,
+                        "organicness": 0.8
+                    },
+                    "crystals": {
+                        "count": 8,
+                        "size": 1,
+                        "color": "#4ecdc4",
+                        "rotation": 2,
+                        "opacity": 0.9,
+                        "complexity": 16,
+                        "organicness": 0.2
+                    },
+                    "waveInterference": {
+                        "color": "#fb00ff"
+                    },
+                    "metamorphosis": {
+                        "color": "#00ffff"
+                    },
+                    "fireflies": {
+                        "color": "#ffff00"
+                    },
+                    "layeredSineWaves": {
+                        "color": "#c733ba"
+                    }
+                },
+                "particles": {
+                    "count": 316,
+                    "size": 0.52,
+                    "color": "#ff0088",
+                    "speed": 4.1,
+                    "opacity": 0.9,
+                    "spread": 20
+                },
+                "globalEffects": {
+                    "atmosphericBlur": {
+                        "enabled": false,
+                        "intensity": 0,
+                        "layers": 5
+                    },
+                    "colorBlending": {
+                        "enabled": true,
+                        "mode": "overlay",
+                        "intensity": 1.5
+                    },
+                    "shapeGlow": {
+                        "enabled": false,
+                        "intensity": 0.3,
+                        "radius": 76.7,
+                        "useObjectColor": true,
+                        "customColor": "#ff0000",
+                        "pulsing": false,
+                        "pulseSpeed": 1
+                    },
+                    "chromatic": {
+                        "enabled": true,
+                        "aberration": 7.2,
+                        "aberrationColors": {
+                            "red": "#ff00f7",
+                            "green": "#6400fa",
+                            "blue": "#000000"
+                        },
+                        "rainbow": {
+                            "enabled": true,
+                            "intensity": 0.6,
+                            "speed": 1,
+                            "rotation": 47,
+                            "blendMode": "screen",
+                            "colors": [
+                                "#e100ff",
+                                "#0000ff",
+                                "#4b0082",
+                                "#9400d3"
+                            ],
+                            "opacity": 0.65
+                        },
+                        "prism": 0.9
+                    },
+                    "distortion": {
+                        "enabled": true,
+                        "wave": 0.1,
+                        "ripple": 0.3,
+                        "noise": 0,
+                        "frequency": 1
+                    },
+                    "particleInteraction": {
+                        "enabled": false,
+                        "magnetism": 0,
+                        "repulsion": 0,
+                        "flowField": false,
+                        "turbulence": 0
+                    },
+                    "volumetric": {
+                        "enabled": true,
+                        "fog": 0.2,
+                        "lightShafts": 0,
+                        "density": 1.8,
+                        "color": "#ee00ff"
+                    },
+                    "trails": {
+                        "enabled": false,
+                        "sphereTrails": {
+                            "enabled": true,
+                            "length": 150,
+                            "opacity": 0.6,
+                            "width": 0.8,
+                            "fadeRate": 0.3
+                        },
+                        "cubeTrails": {
+                            "enabled": true,
+                            "length": 120,
+                            "opacity": 0.5,
+                            "width": 0.7,
+                            "fadeRate": 0.4
+                        },
+                        "blobTrails": {
+                            "enabled": true,
+                            "length": 200,
+                            "opacity": 0.7,
+                            "width": 0.9,
+                            "fadeRate": 0.2
+                        },
+                        "torusTrails": {
+                            "enabled": true,
+                            "length": 100,
+                            "opacity": 0.5,
+                            "width": 0.6,
+                            "fadeRate": 0.5
+                        },
+                        "particleTrails": {
+                            "enabled": true,
+                            "length": 300,
+                            "opacity": 0.8,
+                            "width": 0.3,
+                            "fadeRate": 0.1
+                        }
+                    },
+                    "waveInterference": {
+                        "enabled": true,
+                        "speed": 0.5,
+                        "amplitude": 0.5,
+                        "contourLevels": 5,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.3,
+                            "fadeEnd": 0.5
+                        }
+                    },
+                    "metamorphosis": {
+                        "enabled": false,
+                        "morphSpeed": 0.5,
+                        "rotationSpeed": 0.5,
+                        "wireframeOpacity": 0.8,
+                        "size": 1.5,
+                        "blur": 0
+                    },
+                    "fireflies": {
+                        "enabled": true,
+                        "count": 100,
+                        "speed": 2.4,
+                        "glowIntensity": 1.8,
+                        "swarmRadius": 40
+                    },
+                    "layeredSineWaves": {
+                        "enabled": true,
+                        "layers": 90,
+                        "points": 50,
+                        "waveAmplitude": 35,
+                        "speed": 0.5,
+                        "opacity": 1,
+                        "lineWidth": 0.6,
+                        "size": 1,
+                        "width": 180,
+                        "height": 100,
+                        "edgeFade": {
+                            "enabled": true,
+                            "fadeStart": 0.1,
+                            "fadeEnd": 0.5
+                        }
+                    }
+                },
+                "effects": {
+                    "glow": 0.6,
+                    "contrast": 1.2,
+                    "saturation": 1.5,
+                    "hue": 0,
+                    "brightness": 1.4,
+                    "vignette": 0.4
+                },
+                "camera": {
+                    "distance": 12.14503953773938,
+                    "height": -0.705701513918618,
+                    "fov": 60,
+                    "position": [
+                        0.35296741082399147,
+                        -0.705701513918618,
+                        12.139909364577193
+                    ],
+                    "target": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "rotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0
+                    },
+                    "autoRotate": false,
+                    "autoRotateSpeed": 0.5,
+                    "damping": 0.05,
+                    "enableZoom": true,
+                    "enablePan": true,
+                    "enableRotate": true,
+                    "minDistance": 5,
+                    "maxDistance": 50,
+                    "minPolarAngle": 0,
+                    "maxPolarAngle": 3.141592653589793,
+                    "depthOfField": {
+                        "enabled": true,
+                        "focusDistance": 43.5,
+                        "focalLength": 200,
+                        "bokehScale": 5,
+                        "blur": 1.7
+                    }
+                },
+                "background": {
+                    "opacity": 0.8,
+                    "blur": 2,
+                    "color": "#000011",
+                    "gradient": true
+                },
+                "backgroundConfig": {
+                    "enabled": false,
+                    "mode": "full3D",
+                    "viewport": {
+                        "bounds": {
+                            "x": [
+                                -60,
+                                60
+                            ],
+                            "y": [
+                                -35,
+                                35
+                            ],
+                            "z": [
+                                -80,
+                                20
+                            ]
+                        },
+                        "safeZone": 0.8
+                    },
+                    "timeScale": 1,
+                    "camera": {
+                        "fixed": false,
+                        "position": [
+                            0,
+                            0,
+                            60
+                        ],
+                        "target": [
+                            0,
+                            0,
+                            0
+                        ]
+                    },
+                    "artisticLayout": {
+                        "layers": {
+                            "deepBackground": {
+                                "zPosition": -80,
+                                "objects": [
+                                    "metamorphosis"
+                                ],
+                                "opacity": 0.6,
+                                "movement": "minimal"
+                            },
+                            "farBackground": {
+                                "zPosition": -50,
+                                "objects": [
+                                    "waveInterference"
+                                ],
+                                "opacity": 0.8,
+                                "movement": "slow"
+                            },
+                            "midBackground": {
+                                "zPosition": -20,
+                                "objects": [],
+                                "opacity": 0.9,
+                                "movement": "normal"
+                            },
+                            "nearBackground": {
+                                "zPosition": -5,
+                                "objects": [
+                                    "blobs",
+                                    "spheres",
+                                    "cubes"
+                                ],
+                                "opacity": 1,
+                                "movement": "normal"
+                            },
+                            "foreground": {
+                                "zPosition": 5,
+                                "objects": [
+                                    "fireflies"
+                                ],
+                                "opacity": 1,
+                                "movement": "active"
+                            }
+                        },
+                        "camera": {
+                            "position": [
+                                0,
+                                0,
+                                60
+                            ],
+                            "target": [
+                                0,
+                                0,
+                                0
+                            ],
+                            "fov": 75
+                        },
+                        "viewport": {
+                            "bounds": {
+                                "x": [
+                                    -60,
+                                    60
+                                ],
+                                "y": [
+                                    -35,
+                                    35
+                                ],
+                                "z": [
+                                    -80,
+                                    20
+                                ]
+                            }
+                        }
+                    }
+                },
+                "ui": {},
+                "globalAnimationSpeed": 0.1
+            },
+            "isPublic": false,
+            "createdBy": "user",
+            "version": "1.0.0"
+        }
+    ],
+    "total": 12,
+    "page": 1,
+    "limit": 20
+}

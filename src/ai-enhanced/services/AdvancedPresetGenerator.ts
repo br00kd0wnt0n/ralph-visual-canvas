@@ -13,6 +13,7 @@ import {
   getEnabledFeatures,
   adjustForPerformance 
 } from './ImprovedPresetParameters';
+import { improvedColorPresetGenerator } from './ImprovedColorPresetGenerator';
 
 // Core types for preset generation
 export interface GeneratedPreset {
@@ -319,11 +320,14 @@ export class AdvancedPresetGenerator {
     const ranges = IMPROVED_PARAMETER_RANGES;
     const features = getEnabledFeatures('harmonic_emphasis');
     
-    return {
+    // Apply strong image color mapping
+    const colorMapping = improvedColorPresetGenerator.generateColorMapping(context);
+    
+    const basePreset = {
       geometric: {
         spheres: {
-          count: Math.floor(ranges.shapes.count.sweet + (context.complexity * 20)),
-          color: this.varyColor(baseColorHarmony.secondary, 0.1, seed),
+          count: Math.floor(8 + context.complexity * 15), // Cloud preset inspired: 8-23 range
+          color: colorMapping.shapes.primary, // Direct image color
           size: ranges.shapes.size.default + (this.seededRandom(seed + 1) * ranges.shapes.size.variation),
           speed: ranges.shapes.speed.default * harmonyMultiplier,
           organicness: ranges.shapes.organicness.smooth,
@@ -331,8 +335,8 @@ export class AdvancedPresetGenerator {
           distance: ranges.shapes.distance.default,
         },
         cubes: {
-          count: Math.floor(ranges.shapes.count.sweet * 0.8 + (context.complexity * 15)),
-          color: this.varyColor(baseColorHarmony.primary, 0.15, seed + 3),
+          count: Math.floor(5 + context.complexity * 12), // Cloud preset inspired: 5-17 range
+          color: colorMapping.shapes.secondary, // Direct image color
           size: ranges.shapes.size.default * 0.9 + (this.seededRandom(seed + 4) * 1.0),
           speed: ranges.shapes.speed.calm * harmonyMultiplier,
           organicness: ranges.shapes.organicness.smooth * 0.5,
@@ -340,8 +344,8 @@ export class AdvancedPresetGenerator {
           distance: ranges.shapes.distance.default * 0.9,
         },
         toruses: {
-          count: Math.floor(ranges.shapes.count.sweet * 0.6 + (context.complexity * 10)),
-          color: this.varyColor(baseColorHarmony.accent, 0.12, seed + 6),
+          count: Math.floor(4 + context.complexity * 8), // Cloud preset inspired: 4-12 range
+          color: colorMapping.shapes.accent, // Direct image color
           size: ranges.shapes.size.default * 1.2 + (this.seededRandom(seed + 7) * 0.5),
           speed: ranges.shapes.speed.default * 0.8 * harmonyMultiplier,
           organicness: ranges.shapes.organicness.smooth * 1.5,
@@ -349,8 +353,8 @@ export class AdvancedPresetGenerator {
           distance: ranges.shapes.distance.default * 1.1,
         },
         blobs: {
-          count: Math.floor(ranges.shapes.count.min + (context.complexity * 8)),
-          color: this.varyColor(baseColorHarmony.primary, 0.2, seed + 9),
+          count: Math.floor(3 + context.complexity * 6), // Cloud preset inspired: 3-9 range
+          color: improvedColorPresetGenerator.adjustBrightness(colorMapping.shapes.primary, -0.3), // Darker variant
           size: ranges.shapes.size.default * 1.5 + (this.seededRandom(seed + 10) * 1.0),
           speed: ranges.shapes.speed.calm * harmonyMultiplier,
           organicness: ranges.shapes.organicness.chaotic,
@@ -375,10 +379,21 @@ export class AdvancedPresetGenerator {
         } : undefined,
         shapeGlow: features.shapeGlow ? {
           enabled: true,
-          intensity: ranges.globalEffects.shapeGlow.intensity.subtle,
+          intensity: 0.4 + context.complexity * 0.3, // Enhanced intensity
           useObjectColor: true,
           pulsing: features.pulsing,
           pulseSpeed: 1.0,
+        } : undefined,
+        chromatic: {
+          enabled: true,
+          aberration: 3.0 + context.complexity * 3.0, // Cloud preset inspired: 3-6 range
+          aberrationColors: colorMapping.effects.chromatic
+        },
+        trails: context.complexity > 0.5 ? {
+          enabled: true,
+          sphereTrails: { enabled: true, length: 150, opacity: 0.6 },
+          cubeTrails: { enabled: true, length: 120, opacity: 0.5 },
+          particleTrails: { enabled: true, length: 200, opacity: 0.4 }
         } : undefined,
       },
       animation: {
@@ -387,9 +402,9 @@ export class AdvancedPresetGenerator {
         complexity: 0.5 + (context.complexity * 0.3),
       },
       particles: {
-        count: ranges.particles.count.sweet,
-        color: baseColorHarmony.supporting[0] || baseColorHarmony.secondary,
-        size: ranges.particles.size.visible,
+        count: Math.floor(200 + context.complexity * 600), // Cloud preset inspired: 200-800
+        color: colorMapping.particles, // Bright version of primary color
+        size: 0.2 + (1 - context.complexity) * 1.5, // Smaller when more particles
         speed: ranges.shapes.speed.calm,
         opacity: ranges.shapes.opacity.glass,
         spread: ranges.particles.spread.balanced,
@@ -397,6 +412,9 @@ export class AdvancedPresetGenerator {
         distance: ranges.shapes.distance.default,
       }
     };
+    
+    // Apply enhanced color mapping to complete preset
+    return improvedColorPresetGenerator.applyColorsToPreset(basePreset, colorMapping, context);
   }
 
   /**
